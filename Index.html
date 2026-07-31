@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>dod.io - Magnet Radar & Reaction Emojis Edition</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Segoe UI', Tahoma, sans-serif; touch-action: none; user-select: none; }
+        #gameCanvas { display: block; background: #0b0e14; }
+
+        /* MAIN MENU SCREEN (Default Language: English) */
+        #mainMenu {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 50; color: white; text-align: center;
+        }
+
+        .lang-picker { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 10px; border-radius: 8px; outline: none; }
+        .game-title { font-size: 48px; font-weight: 900; color: #f1c40f; text-shadow: 0 4px 20px rgba(241, 196, 15, 0.5); margin-bottom: 5px; }
+        
+        .menu-box {
+            background: rgba(0, 0, 0, 0.75); border: 2px solid rgba(255, 255, 255, 0.15);
+            padding: 22px; border-radius: 20px; width: 330px; box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+
+        /* Profile & Mascot Card */
+        .profile-card {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            background: rgba(255, 255, 255, 0.08); padding: 12px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15); margin-bottom: 12px;
+        }
+
+        .mascot-avatar {
+            width: 55px; height: 55px; background: radial-gradient(circle, #2ecc71, #1e8449);
+            border: 2px solid #f1c40f; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 30px; box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+            animation: snakePulse 1.5s infinite ease-in-out alternate;
+        }
+
+        @keyframes snakePulse {
+            0% { transform: scale(1) rotate(-5deg); }
+            100% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .input-field {
+            width: 100%; padding: 10px; border: none; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15); color: white; text-align: center; font-size: 15px; outline: none; box-sizing: border-box;
+        }
+
+        /* Social Login Buttons */
+        .social-btn-container { display: flex; flex-direction: column; gap: 6px; margin: 10px 0; }
+        
+        .btn-social {
+            width: 100%; padding: 9px; border: none; border-radius: 8px; font-weight: bold;
+            font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+            color: white; transition: 0.2s;
+        }
+        .btn-google { background: #ea4335; }
+        .btn-facebook { background: #1877f2; }
+
+        .btn-play {
+            width: 100%; padding: 13px; margin-top: 8px; background: #2ecc71; color: white;
+            border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-secondary {
+            width: 100%; padding: 9px; margin: 3px 0; background: #9b59b6; color: white;
+            border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px;
+        }
+
+        /* IN-GAME HUD */
+        #ui { position: absolute; top: 10px; left: 10px; color: #fff; font-size: 13px; pointer-events: none; z-index: 10; display: none; }
+        #minimap { position: absolute; top: 10px; right: 10px; width: 130px; height: 95px; background: #000; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 8px; z-index: 10; display: none; }
+
+        /* REACTION EMOJIS BAR NEAR MINIMAP */
+        #emojiBar {
+            position: absolute; top: 10px; right: 150px; display: flex; gap: 6px; z-index: 15; display: none;
+        }
+        .emoji-btn {
+            width: 32px; height: 32px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%; font-size: 16px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.5); transition: 0.2s;
+        }
+        .emoji-btn:active { transform: scale(1.2); }
+
+        /* GARAGE BUTTON UNDER MINIMAP */
+        #safeZoneBtn {
+            position: absolute; top: 112px; right: 10px;
+            padding: 6px 12px; color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 6px;
+            font-weight: bold; font-size: 11px; cursor: pointer; background: rgba(40, 167, 69, 0.85);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4); z-index: 10; display: none;
+        }
+
+        /* BOOST BUTTON */
+        #boostBtn {
+            position: absolute; bottom: 80px; right: 25px; width: 65px; height: 65px;
+            background: rgba(241, 196, 15, 0.9); border: 3px solid #fff; border-radius: 50%;
+            color: #000; font-size: 24px; font-weight: bold; display: flex; align-items: center;
+            justify-content: center; z-index: 25; display: none; cursor: pointer; box-shadow: 0 0 20px #f1c40f;
+            touch-action: none; user-select: none;
+        }
+
+        /* 360 ANALOG JOYSTICK */
+        #joystickZone {
+            position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.12); border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%; z-index: 20; display: none; touch-action: none;
+        }
+        #joystickKnob {
+            position: absolute; top: 50%; left: 50%; width: 50px; height: 50px;
+            background: rgba(255, 255, 255, 0.6); border: 2px solid #fff; border-radius: 50%;
+            transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .modal {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 310px; max-height: 80vh; overflow-y: auto; background: rgba(15, 15, 15, 0.98); border: 2px solid #2ecc71;
+            border-radius: 12px; padding: 16px; color: white; text-align: center; z-index: 60; box-shadow: 0 0 25px rgba(46, 204, 113, 0.4);
+        }
+        .skin-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 13px; }
+        .cardBtn { background: #27ae60; border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
+        .buyBtn { background: #e67e22; border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        
+        .garage-option { background: rgba(255,255,255,0.05); padding: 8px; margin: 6px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body>
+
+<!-- 1. MAIN MENU SCREEN (Default Language: English) -->
+<div id="mainMenu">
+    <select class="lang-picker" id="langSelect" onchange="changeLanguage(this.value)">
+        <option value="en">🇬🇧 English</option>
+        <option value="ku">☀️ کوردی</option>
+        <option value="ar">🇮🇶 العربية</option>
+    </select>
+
+    <div class="game-title">dod.io</div>
+    <div class="menu-box">
+        <div class="profile-card">
+            <div class="mascot-avatar">🐍</div>
+            <div style="flex-grow: 1;">
+                <input type="text" id="playerNameInput" class="input-field" placeholder="Username..." value="Shafeeq">
+            </div>
+        </div>
+
+        <div class="social-btn-container">
+            <button class="btn-social btn-google" onclick="loginSocial('Google')">🌐 Sign in with Google</button>
+            <button class="btn-social btn-facebook" onclick="loginSocial('Facebook')">📘 Sign in with Facebook</button>
+        </div>
+        
+        <button class="btn-secondary" id="txtShopBtn" onclick="toggleShop()">🦁 Animals & Birds Shop</button>
+        <button class="btn-secondary" style="background:#e67e22;" id="txtSettingsBtn" onclick="toggleSettings()">⚙️ Joystick Settings</button>
+
+        <button class="btn-play" id="txtPlayBtn" onclick="startGame()">PLAY AS GUEST 🎮</button>
+    </div>
+</div>
+
+<!-- 2. IN-GAME HUD -->
+<div id="ui">
+    <div><span id="txtScore">Score</span>: <span id="scoreText" style="color:#2ecc71; font-weight:bold;">0</span></div>
+    <div><span id="txtCoins">Coins</span>: <span id="coinsText" style="color:#f1c40f; font-weight:bold;">0</span> 🪙</div>
+    <div>Multiplier: <span id="multiText" style="color:#e67e22; font-weight:bold;">x1</span></div>
+    <div><span id="txtSkin">Head</span>: <span id="currentSkinName" style="color: #3498db;">🐍 Anaconda</span></div>
+</div>
+
+<!-- EMOJI REACTION BAR NEAR MINIMAP -->
+<div id="emojiBar">
+    <div class="emoji-btn" onclick="triggerEmoji('👍')">👍</div>
+    <div class="emoji-btn" onclick="triggerEmoji('🤝')">🤝</div>
+    <div class="emoji-btn" onclick="triggerEmoji('😂')">😂</div>
+    <div class="emoji-btn" onclick="triggerEmoji('😭')">😭</div>
+</div>
+
+<canvas id="minimap"></canvas>
+<button id="safeZoneBtn" onclick="toggleGarageMenu()">🛡️ Garage Park</button>
+
+<!-- Boost Button -->
+<div id="boostBtn">⚡</div>
+
+<!-- 360 ANALOG JOYSTICK -->
+<div id="joystickZone">
+    <div id="joystickKnob"></div>
+</div>
+
+<!-- Garage Parking Menu Modal -->
+<div id="garageParkModal" class="modal">
+    <h3 style="color:#2ecc71; margin-top:0;" id="txtGarageTitle">🛡️ Safe Garage Parking</h3>
+    <p style="font-size:12px; color:#ccc;" id="txtGarageDesc">Park safely using coins:</p>
+    
+    <div class="garage-option">
+        <div>⏱️ 15 Mins Safe Park</div>
+        <button class="cardBtn" onclick="buyGarageTime(50, 15)">Buy 15m (50 Coins 🪙)</button>
+    </div>
+
+    <div class="garage-option">
+        <div>⏱️ 30 Mins Safe Park</div>
+        <button class="cardBtn" onclick="buyGarageTime(90, 30)">Buy 30m (90 Coins 🪙)</button>
+    </div>
+
+    <div class="garage-option">
+        <div>⏱️ 1 Hour Safe Park</div>
+        <button class="cardBtn" onclick="buyGarageTime(160, 60)">Buy 1h (160 Coins 🪙)</button>
+    </div>
+
+    <button style="background:#e74c3c; border:none; color:#fff; padding:6px 14px; margin-top:10px; border-radius:5px; font-weight:bold; width:100%; cursor:pointer;" onclick="toggleGarageMenu()">Close</button>
+</div>
+
+<!-- Settings Modal for Controls & Joystick Size -->
+<div id="settingsModal" class="modal" style="border-color:#e67e22;">
+    <h3 style="color:#e67e22; margin-top:0;">⚙️ Game Settings</h3>
+    
+    <label style="font-size:12px; color:#ddd; display:block; text-align:left; margin-bottom:4px;">Control Mode:</label>
+    <select id="ctrlModeSetting" class="input-field" style="margin-bottom:12px; background:rgba(255,255,255,0.2);">
+        <option value="joystick">Joystick + Touch Mode</option>
+        <option value="touch">Touch Move Only</option>
+    </select>
+
+    <label style="font-size:12px; color:#ddd; display:block; text-align:left; margin-bottom:4px;">Joystick Size:</label>
+    <input type="range" id="joystickSizeSlider" min="80" max="180" value="120" oninput="adjustJoystickSize(this.value)" style="width:90%;">
+    <p id="sizeLabel" style="font-size:12px; color:#aaa; margin-top:2px;">Size: 120px</p>
+    
+    <button style="background:#3498db; border:none; color:#fff; padding:6px 14px; margin-top:10px; border-radius:5px; font-weight:bold; width:100%; cursor:pointer;" onclick="saveSettings()">Save & Close</button>
+</div>
+
+<!-- Shop Modal -->
+<div id="shopModal" class="modal" style="border-color:#9b59b6;">
+    <h3 id="txtShopTitle">🦁 Animals & Birds Shop</h3>
+    <div id="skinsContainer"></div>
+    <button style="background:#e74c3c; border:none; color:#fff; padding:6px 14px; margin-top:15px; border-radius:5px;" id="txtCloseShop" onclick="toggleShop()">Close</button>
+</div>
+
+<!-- Game Over Modal -->
+<div id="gameOverModal" class="modal" style="border-color: #e74c3c;">
+    <h2 style="color: #e74c3c;" id="txtGameOver">💥 GAME OVER!</h2>
+    <p id="deathReason">You died!</p>
+    <button class="cardBtn" style="background:#3498db;" id="txtMenuBtn" onclick="returnToMenu()">Main Menu 🏠</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const mCanvas = document.getElementById('minimap');
+const mCtx = mCanvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+mCanvas.width = 130;
+mCanvas.height = 95;
+
+const MAP_WIDTH = 20000;
+const MAP_HEIGHT = 15000;
+let cameraZoom = 0.42; // Further Camera View
+
+let currentLang = "en";
+let gameStarted = false;
+let score = 0;
+let coins = 0;
+let isDead = false;
+let inSafeZone = false;
+let playerName = "Shafeeq";
+let controlMode = "joystick";
+
+let baseSpeed = 5.2;
+let currentSpeed = baseSpeed;
+let angle = 0;
+let targetAngle = 0;
+
+let currentMultiplier = 1;
+let magnetActive = false;
+let hasSpeedBoost = false;
+let isBoosting = false;
+
+let activeEmoji = null;
+let emojiTimeout = null;
+
+let snake = [{x: MAP_WIDTH/2, y: MAP_HEIGHT/2}];
+let snakeLength = 15;
+
+const TRANSLATIONS = {
+    en: { shopBtn: "🦁 Animals & Birds Shop", settingsBtn: "⚙️ Game Settings", playBtn: "PLAY AS GUEST 🎮", score: "Score", coins: "Coins", skin: "Head", garageBtn: "🛡️ Garage Park", shopTitle: "🦁 Animal Heads Shop", close: "Close", gameOver: "💥 GAME OVER!", menuBtn: "Main Menu 🏠", garageTitle: "🛡️ Safe Garage Parking", garageDesc: "Park safely using coins:" },
+    ku: { shopBtn: "🦁 فرۆشگای ئاژەڵ و باڵندەکان", settingsBtn: "⚙️ ڕێکخستنی یاری", playBtn: "دەستپێکردن وەک میوان 🎮", score: "خاڵ", coins: "کۆین", skin: "کەلە", garageBtn: "🛡️ گەراجی پارێزراو", shopTitle: "🦁 فرۆشگای سەری ئاژەڵەکان", close: "داخستن", gameOver: "💥 یاری کۆتایی هات!", menuBtn: "لاپەڕەی سەرەکی 🏠", garageTitle: "🛡️ گەراجی پارێزراو", garageDesc: "شوێنی وەستاندن بە کۆین:" },
+    ar: { shopBtn: "🦁 متجر الحيوانات والطيور", settingsBtn: "⚙️ إعدادات اللعبة", playBtn: "اللعب كضيف 🎮", score: "النقاط", coins: "العملات", skin: "الرأس", garageBtn: "🛡️ المرآب الآمن", shopTitle: "🦁 متجر رؤوس الحيوانات", close: "إغلاق", gameOver: "💥 انتهت اللعبة!", menuBtn: "القائمة الرئيسية 🏠", garageTitle: "🛡️ وقوف السيارات الآمن", garageDesc: "احجز مكانك بالعملات:" }
+};
+
+function changeLanguage(lang) {
+    currentLang = lang;
+    const t = TRANSLATIONS[lang];
+    document.getElementById('txtShopBtn').innerText = t.shopBtn;
+    document.getElementById('txtSettingsBtn').innerText = t.settingsBtn;
+    document.getElementById('txtPlayBtn').innerText = t.playBtn;
+    document.getElementById('txtScore').innerText = t.score;
+    document.getElementById('txtCoins').innerText = t.coins;
+    document.getElementById('txtSkin').innerText = t.skin;
+    document.getElementById('safeZoneBtn').innerText = t.garageBtn;
+    document.getElementById('txtShopTitle').innerText = t.shopTitle;
+    document.getElementById('txtCloseShop').innerText = t.close;
+    document.getElementById('txtGameOver').innerText = t.gameOver;
+    document.getElementById('txtMenuBtn').innerText = t.menuBtn;
+    document.getElementById('txtGarageTitle').innerText = t.garageTitle;
+    document.getElementById('txtGarageDesc').innerText = t.garageDesc;
+}
+
+function loginSocial(provider) {
+    let namePrompt = prompt(`Sign in with ${provider}:\nPlease enter your username:`, playerName);
+    if(namePrompt && namePrompt.trim() !== "") {
+        playerName = namePrompt.trim();
+        document.getElementById('playerNameInput').value = playerName;
+        alert(`Successfully signed in with ${provider} as ${playerName}! 🎉`);
+    }
+}
+
+function triggerEmoji(emojiStr) {
+    activeEmoji = emojiStr;
+    if(emojiTimeout) clearTimeout(emojiTimeout);
+    emojiTimeout = setTimeout(() => { activeEmoji = null; }, 3500);
+}
+
+// Skins
+let ALL_SKINS = [];
+ALL_SKINS.push({ id: "anaconda", name: "🐍 Anaconda (Default)", icon: "🐍", price: 0, colors: ["#27ae60", "#2ecc71"], isOwned: true });
+
+const freeAnimalHeads = [
+    { icon: "🦁", name: "Lion" }, { icon: "🐯", name: "Tiger" },
+    { icon: "🐺", name: "Wolf" }, { icon: "🦊", name: "Fox" }, { icon: "🐻", name: "Bear" }
+];
+freeAnimalHeads.forEach((item, i) => ALL_SKINS.push({ id: "fa"+i, name: item.icon + " " + item.name, icon: item.icon, price: 0, colors: ["#2ecc71", "#27ae60"], isOwned: true }));
+
+const paidIcons = ["🐵", "🐶", "🐱", "🐭", "🐹", "🐰", "🐸", "🐷", "🐮", "🐼", "🦝", "🐲", "🐔", "🐧", "🦆", "🦩"];
+for(let i = 1; i <= 100; i++) {
+    let icon = paidIcons[i % paidIcons.length];
+    ALL_SKINS.push({ id: "p"+i, name: `${icon} Head #${i}`, icon: icon, price: 100, colors: ["#9b59b6", "#8e44ad"], isOwned: false });
+}
+
+let activeSkinObj = ALL_SKINS[0];
+
+function renderShop() {
+    const box = document.getElementById('skinsContainer');
+    box.innerHTML = "";
+    ALL_SKINS.forEach(s => {
+        let btnHtml = s.isOwned ? `<button class="cardBtn" onclick="equipSkin('${s.id}')">Equip</button>` : `<button class="buyBtn" onclick="buySkin('${s.id}')">${s.price} 🪙</button>`;
+        box.innerHTML += `<div class="skin-item"><span>${s.name}</span> ${btnHtml}</div>`;
+    });
+}
+
+function equipSkin(id) {
+    activeSkinObj = ALL_SKINS.find(s => s.id === id);
+    document.getElementById('currentSkinName').innerText = activeSkinObj.name;
+    toggleShop();
+}
+
+function buySkin(id) {
+    let s = ALL_SKINS.find(item => item.id === id);
+    if(coins >= s.price) {
+        coins -= s.price;
+        s.isOwned = true;
+        document.getElementById('coinsText').innerText = coins;
+        equipSkin(id);
+        renderShop();
+    } else {
+        alert("Not enough coins!");
+    }
+}
+
+const garages = [
+    { x: 200, y: 200, w: 450, h: 450 },
+    { x: MAP_WIDTH - 650, y: 200, w: 450, h: 450 },
+    { x: 200, y: MAP_HEIGHT - 650, w: 450, h: 450 },
+    { x: MAP_WIDTH - 650, y: MAP_HEIGHT - 650, w: 450, h: 450 }
+];
+
+function createBot(id) {
+    return {
+        id: id, name: `Bot_${id}`, headIcon: ["🦊", "🐯", "🐺", "🐻", "🐊"][id % 5],
+        x: Math.random() * (MAP_WIDTH - 1500) + 750,
+        y: Math.random() * (MAP_HEIGHT - 1500) + 750,
+        angle: Math.random() * Math.PI * 2, speed: 4.5, color: ["#e74c3c", "#f1c40f", "#3498db", "#e67e22"][id % 4],
+        body: [], length: 25 + Math.floor(Math.random() * 30)
+    };
+}
+
+let bots = [];
+for(let i = 1; i <= 20; i++) {
+    let b = createBot(i);
+    for(let j = 0; j < b.length; j++) b.body.push({x: b.x - j*7, y: b.y});
+    bots.push(b);
+}
+
+// Foods & Coins Array
+let foods = [];
+let coinItems = [];
+const FRUIT_ICONS = ["🍎", "🍉", "🍌", "🍊", "🍇", "🍓", "🍍", "🍒", "🍑", "🥭"];
+const GLOW_COLORS = ["#ff4757", "#2ed573", "#1e90ff", "#ffa502", "#e84393", "#00d2d3"];
+
+function spawnFood(x, y, isGlowing = false, val = 1) {
+    return {
+        x: x || (Math.random() * (MAP_WIDTH - 400) + 200),
+        y: y || (Math.random() * (MAP_HEIGHT - 400) + 200),
+        icon: FRUIT_ICONS[Math.floor(Math.random() * FRUIT_ICONS.length)],
+        color: GLOW_COLORS[Math.floor(Math.random() * GLOW_COLORS.length)],
+        isGlowing: isGlowing,
+        val: val,
+        spawnTime: Date.now()
+    };
+}
+
+function spawnCoinItem() {
+    return {
+        x: Math.random() * (MAP_WIDTH - 600) + 300,
+        y: Math.random() * (MAP_HEIGHT - 600) + 300
+    };
+}
+
+for(let i = 0; i < 2200; i++) foods.push(spawnFood());
+for(let i = 0; i < 150; i++) coinItems.push(spawnCoinItem());
+
+let powerUps = [];
+
+function spawnPowerUp() {
+    let rand = Math.random();
+    let pType;
+
+    if(rand < 0.25) {
+        pType = { type: "magnet", val: 0, icon: "🧲", color: "#e74c3c" };
+    } else if(rand < 0.50) {
+        pType = { type: "speed", val: 0, icon: "⚡", color: "#f1c40f" };
+    } else if(rand < 0.65) {
+        pType = { type: "uturn", val: 0, icon: "🌀", color: "#3498db" };
+    } else if(rand < 0.80) {
+        pType = { type: "zoom", val: 0, icon: "🔍", color: "#2ecc71" };
+    } else if(rand < 0.92) {
+        pType = { type: "multi", val: 2, icon: "x2", color: "#8e44ad" };
+    } else {
+        let val = Math.random() < 0.5 ? 8 : 10;
+        return {
+            x: MAP_WIDTH/2 + (Math.random() - 0.5) * 3000,
+            y: MAP_HEIGHT/2 + (Math.random() - 0.5) * 3000,
+            type: "multi", val: val, icon: "x" + val, color: "#e67e22"
+        };
+    }
+
+    return {
+        x: Math.random() * (MAP_WIDTH - 600) + 300,
+        y: Math.random() * (MAP_HEIGHT - 600) + 300,
+        ...pType
+    };
+}
+
+for(let i = 0; i < 400; i++) powerUps.push(spawnPowerUp());
+
+function startGame() {
+    let inputName = document.getElementById('playerNameInput').value;
+    if(inputName.trim() !== "") playerName = inputName;
+
+    document.getElementById('mainMenu').style.display = 'none';
+    document.getElementById('ui').style.display = 'block';
+    document.getElementById('minimap').style.display = 'block';
+    document.getElementById('emojiBar').style.display = 'flex';
+    document.getElementById('safeZoneBtn').style.display = 'block';
+
+    if(controlMode === "joystick") document.getElementById('joystickZone').style.display = 'block';
+    else document.getElementById('joystickZone').style.display = 'none';
+
+    gameStarted = true;
+}
+
+// TOUCH & JOYSTICK CONTROLS
+window.addEventListener('touchmove', e => {
+    if(!gameStarted || isDead || controlMode === "joystick") return;
+    let touch = e.touches[0];
+    let touchX = touch.clientX - canvas.width / 2;
+    let touchY = touch.clientY - canvas.height / 2;
+    targetAngle = Math.atan2(touchY, touchX);
+});
+
+const joystickZone = document.getElementById('joystickZone');
+const joystickKnob = document.getElementById('joystickKnob');
+let isJoystickActive = false;
+
+joystickZone.addEventListener('touchstart', e => { isJoystickActive = true; handleJoystickMove(e.touches[0]); });
+joystickZone.addEventListener('touchmove', e => { if(isJoystickActive) handleJoystickMove(e.touches[0]); });
+joystickZone.addEventListener('touchend', () => {
+    isJoystickActive = false;
+    joystickKnob.style.top = '50%';
+    joystickKnob.style.left = '50%';
+});
+
+function handleJoystickMove(touch) {
+    let rect = joystickZone.getBoundingClientRect();
+    let centerX = rect.left + rect.width / 2;
+    let centerY = rect.top + rect.height / 2;
+
+    let deltaX = touch.clientX - centerX;
+    let deltaY = touch.clientY - centerY;
+
+    let distance = Math.hypot(deltaX, deltaY);
+    let maxRadius = rect.width / 2;
+
+    if(distance > maxRadius) {
+        deltaX = (deltaX / distance) * maxRadius;
+        deltaY = (deltaY / distance) * maxRadius;
+    }
+
+    joystickKnob.style.left = `${50 + (deltaX / rect.width) * 100}%`;
+    joystickKnob.style.top = `${50 + (deltaY / rect.height) * 100}%`;
+
+    targetAngle = Math.atan2(deltaY, deltaX);
+}
+
+const boostBtn = document.getElementById('boostBtn');
+boostBtn.onmousedown = boostBtn.ontouchstart = () => { if(hasSpeedBoost) isBoosting = true; };
+boostBtn.onmouseup = boostBtn.ontouchend = () => { isBoosting = false; };
+
+function toggleGarageMenu() {
+    const m = document.getElementById('garageParkModal');
+    m.style.display = m.style.display === 'block' ? 'none' : 'block';
+}
+
+function toggleSettings() {
+    const m = document.getElementById('settingsModal');
+    m.style.display = m.style.display === 'block' ? 'none' : 'block';
+}
+
+function adjustJoystickSize(val) {
+    joystickZone.style.width = val + 'px';
+    joystickZone.style.height = val + 'px';
+    document.getElementById('sizeLabel').innerText = `Size: ${val}px`;
+}
+
+function saveSettings() {
+    controlMode = document.getElementById('ctrlModeSetting').value;
+    toggleSettings();
+}
+
+function buyGarageTime(cost, timeMins) {
+    if(coins >= cost) {
+        coins -= cost;
+        document.getElementById('coinsText').innerText = coins;
+        alert(`Garage Parking reserved for ${timeMins} minutes! 🛡️`);
+        toggleGarageMenu();
+    } else {
+        alert("Not enough coins!");
+    }
+}
+
+function toggleShop() {
+    renderShop();
+    const m = document.getElementById('shopModal');
+    m.style.display = m.style.display === 'block' ? 'none' : 'block';
+}
+
+function returnToMenu() { location.reload(); }
+
+function update() {
+    if(!gameStarted || isDead) return;
+
+    let head = snake[0];
+
+    // Check inside garage
+    inSafeZone = false;
+    garages.forEach(g => {
+        if(head.x > g.x && head.x < g.x + g.w && head.y > g.y && head.y < g.y + g.h) {
+            inSafeZone = true;
+        }
+    });
+
+    let diff = targetAngle - angle;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    angle += diff * 0.18;
+
+    currentSpeed = (hasSpeedBoost && isBoosting) ? baseSpeed * 2.2 : baseSpeed;
+
+    let newHead = { x: head.x + Math.cos(angle) * currentSpeed, y: head.y + Math.sin(angle) * currentSpeed };
+
+    if(newHead.x <= 50 || newHead.x >= MAP_WIDTH - 50 || newHead.y <= 50 || newHead.y >= MAP_HEIGHT - 50) {
+        killPlayer("Hit the red boundary!");
+        return;
+    }
+
+    let pThickness = Math.min(20 + Math.floor(snakeLength * 0.08), 55);
+
+    bots.forEach(b => {
+        b.body.forEach(p => {
+            if(!inSafeZone && Math.hypot(newHead.x - p.x, newHead.y - p.y) < pThickness) {
+                killPlayer("Crashed into " + b.name + "!");
+            }
+        });
+    });
+
+    if(isDead) return;
+
+    bots.forEach((b, bIndex) => {
+        let bHead = b.body[0];
+        snake.forEach(p => {
+            if(!inSafeZone && Math.hypot(bHead.x - p.x, bHead.y - p.y) < pThickness) {
+                b.body.forEach(bp => {
+                    foods.push(spawnFood(bp.x + (Math.random()-0.5)*20, bp.y + (Math.random()-0.5)*20, true, 3));
+                });
+
+                let newBot = createBot(b.id);
+                for(let j = 0; j < newBot.length; j++) newBot.body.push({x: newBot.x - j*7, y: newBot.y});
+                bots[bIndex] = newBot;
+            }
+        });
+    });
+
+    snake.unshift(newHead);
+    while(snake.length > snakeLength) snake.pop();
+
+    bots.forEach(b => {
+        let bHead = b.body[0];
+        if(Math.random() < 0.15 && Math.hypot(head.x - bHead.x, head.y - bHead.y) < 600) {
+            b.angle = Math.atan2(head.y - bHead.y, head.x - bHead.x);
+        } else if(Math.random() < 0.05) {
+            b.angle += (Math.random() - 0.5) * 1.5;
+        }
+
+        let bNewHead = { x: bHead.x + Math.cos(b.angle) * b.speed, y: bHead.y + Math.sin(b.angle) * b.speed };
+        if(bNewHead.x < 300 || bNewHead.x > MAP_WIDTH - 300 || bNewHead.y < 300 || bNewHead.y > MAP_HEIGHT - 300) b.angle += Math.PI;
+        b.body.unshift(bNewHead);
+        while(b.body.length > b.length) b.body.pop();
+    });
+
+    // MAGNET POWER-UP: Pulls Foods, Coins AND ALL Power-Ups (x2..x10, Speed, etc)
+    if(magnetActive) {
+        foods.forEach(f => {
+            if(Math.hypot(head.x - f.x, head.y - f.y) < 550) {
+                f.x += (head.x - f.x) * 0.18;
+                f.y += (head.y - f.y) * 0.18;
+            }
+        });
+        coinItems.forEach(c => {
+            if(Math.hypot(head.x - c.x, head.y - c.y) < 550) {
+                c.x += (head.x - c.x) * 0.18;
+                c.y += (head.y - c.y) * 0.18;
+            }
+        });
+        powerUps.forEach(p => {
+            if(Math.hypot(head.x - p.x, head.y - p.y) < 550) {
+                p.x += (head.x - p.x) * 0.18;
+                p.y += (head.y - p.y) * 0.18;
+            }
+        });
+    }
+
+    powerUps.forEach((p, index) => {
+        if(Math.hypot(head.x - p.x, head.y - p.y) < 35) {
+            applyPowerUp(p);
+            powerUps[index] = spawnPowerUp();
+        }
+    });
+
+    // Eat Coins 🪙
+    coinItems.forEach((c, index) => {
+        if(Math.hypot(head.x - c.x, head.y - c.y) < pThickness + 10) {
+            coins += 1;
+            document.getElementById('coinsText').innerText = coins;
+            coinItems[index] = spawnCoinItem();
+        }
+    });
+
+    // Eat Foods 🍏
+    foods.forEach((f, index) => {
+        if(Math.hypot(head.x - f.x, head.y - f.y) < pThickness + 10) {
+            score += (10 * f.val * currentMultiplier);
+            snakeLength += f.val * currentMultiplier * 0.4;
+            document.getElementById('scoreText').innerText = score;
+            foods[index] = spawnFood(); 
+        }
+    });
+
+    // 15-second Fade-out
+    let now = Date.now();
+    for(let i = foods.length - 1; i >= 0; i--) {
+        if(foods[i].isGlowing && (now - foods[i].spawnTime > 15000)) {
+            foods.splice(i, 1);
+        }
+    }
+}
+
+function applyPowerUp(p) {
+    if(p.type === 'multi') {
+        currentMultiplier = p.val;
+        document.getElementById('multiText').innerText = "x" + currentMultiplier;
+        setTimeout(() => { currentMultiplier = 1; document.getElementById('multiText').innerText = "x1"; }, 12000);
+    } else if(p.type === 'speed') {
+        hasSpeedBoost = true;
+        document.getElementById('boostBtn').style.display = 'flex';
+        setTimeout(() => { hasSpeedBoost = false; isBoosting = false; document.getElementById('boostBtn').style.display = 'none'; }, 12000);
+    } else if(p.type === 'magnet') {
+        magnetActive = true;
+        setTimeout(() => { magnetActive = false; }, 10000);
+    } else if(p.type === 'uturn') {
+        targetAngle += Math.PI;
+    } else if(p.type === 'zoom') {
+        cameraZoom = 0.32;
+        setTimeout(() => { cameraZoom = 0.42; }, 20000);
+    }
+}
+
+function killPlayer(reason) {
+    isDead = true;
+    document.getElementById('boostBtn').style.display = 'none';
+    document.getElementById('joystickZone').style.display = 'none';
+    document.getElementById('deathReason').innerText = reason;
+    document.getElementById('gameOverModal').style.display = 'block';
+
+    snake.forEach(p => foods.push(spawnFood(p.x, p.y, true, 4)));
+}
+
+function drawGridBackground() {
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.lineWidth = 1.8;
+    for(let x = 0; x < MAP_WIDTH; x += 140) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_HEIGHT); ctx.stroke(); }
+    for(let y = 0; y < MAP_HEIGHT; y += 140) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_WIDTH, y); ctx.stroke(); }
+}
+
+let glowPulse = 0;
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if(!gameStarted) return;
+
+    ctx.save();
+    
+    ctx.translate(canvas.width/2, canvas.height/2);
+    ctx.scale(cameraZoom, cameraZoom);
+    ctx.translate(-canvas.width/2, -canvas.height/2);
+
+    let head = snake[0];
+    ctx.translate(canvas.width/2 - head.x, canvas.height/2 - head.y);
+    drawGridBackground();
+
+    ctx.strokeStyle = "#e74c3c"; ctx.lineWidth = 30;
+    ctx.strokeRect(10, 10, MAP_WIDTH - 20, MAP_HEIGHT - 20);
+
+    // Draw Garages
+    garages.forEach(g => {
+        ctx.fillStyle = "rgba(46, 204, 113, 0.3)";
+        ctx.fillRect(g.x, g.y, g.w, g.h);
+        ctx.strokeStyle = "#2ecc71"; ctx.lineWidth = 5;
+        ctx.strokeRect(g.x, g.y, g.w, g.h);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 22px sans-serif";
+        ctx.fillText("🛡️ SAFE GARAGE", g.x + 110, g.y + 230);
+    });
+
+    glowPulse += 0.1;
+    let orbPulse = 4 + Math.sin(glowPulse) * 3;
+
+    // Draw Yellow Coin Items 🪙
+    coinItems.forEach(c => {
+        ctx.beginPath(); ctx.arc(c.x, c.y, 14, 0, Math.PI * 2);
+        ctx.fillStyle = "#f1c40f"; ctx.fill();
+        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.fillStyle = "#000"; ctx.font = "bold 13px sans-serif";
+        ctx.fillText("C", c.x - 4, c.y + 5);
+    });
+
+    // Draw Power-Ups
+    powerUps.forEach(p => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, 22 + orbPulse, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.25)"; ctx.fill();
+
+        ctx.beginPath(); ctx.arc(p.x, p.y, 20, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+        ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2.5; ctx.stroke();
+
+        ctx.fillStyle = "#fff"; ctx.font = "bold 15px sans-serif";
+        ctx.fillText(p.icon, p.x - 11, p.y + 6);
+    });
+
+    // Draw Big Rich Fruits with 15s Fade-out
+    let now = Date.now();
+    ctx.font = "28px sans-serif";
+    foods.forEach(f => {
+        if(f.isGlowing) {
+            let age = now - f.spawnTime;
+            let alpha = Math.max(1 - (age / 15000), 0);
+            ctx.globalAlpha = alpha;
+            ctx.shadowColor = f.color;
+            ctx.shadowBlur = 18;
+            ctx.beginPath(); ctx.arc(f.x, f.y, 10 + orbPulse, 0, Math.PI * 2);
+            ctx.fillStyle = f.color; ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1.0;
+        } else {
+            ctx.fillText(f.icon, f.x - 14, f.y + 10);
+        }
+    });
+
+    // Draw Bots
+    bots.forEach(b => {
+        let botThickness = Math.min(16 + Math.floor(b.length * 0.04), 38);
+        
+        for(let i = b.body.length - 1; i >= 1; i--) {
+            let p = b.body[i];
+            ctx.beginPath(); ctx.arc(p.x, p.y, botThickness, 0, Math.PI * 2);
+            ctx.fillStyle = b.color; ctx.fill();
+        }
+
+        let bHead = b.body[0];
+        ctx.beginPath(); ctx.arc(bHead.x, bHead.y, botThickness + 5, 0, Math.PI * 2);
+        ctx.fillStyle = "#f39c12"; ctx.fill();
+        ctx.font = `${Math.floor(botThickness * 1.8)}px sans-serif`;
+        ctx.fillText(b.headIcon, bHead.x - (botThickness * 0.8), bHead.y + (botThickness * 0.6));
+
+        ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif";
+        ctx.fillText(b.name, bHead.x - 20, bHead.y - 30);
+    });
+
+    // Draw Player Snake
+    if(!isDead) {
+        let colors = activeSkinObj.colors;
+        let playerThickness = Math.min(20 + Math.floor(snakeLength * 0.08), 55);
+
+        // Draw Pulsing Glowing Magnet Radar Ring if Magnet Power-Up is Active!
+        if(magnetActive) {
+            ctx.beginPath();
+            ctx.arc(head.x, head.y, 120 + Math.sin(glowPulse * 2) * 20, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(52, 152, 219, 0.12)";
+            ctx.fill();
+            ctx.strokeStyle = "rgba(52, 152, 219, 0.7)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        for(let i = snake.length - 1; i >= 1; i--) {
+            let part = snake[i];
+            ctx.beginPath(); ctx.arc(part.x, part.y, playerThickness, 0, Math.PI * 2);
+            ctx.fillStyle = colors[i % colors.length]; ctx.fill();
+            ctx.strokeStyle = "rgba(0,0,0,0.5)"; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+
+        let headPart = snake[0];
+
+        if(activeSkinObj.id === "anaconda") {
+            // Realistic Anaconda Head
+            ctx.save();
+            ctx.translate(headPart.x, headPart.y);
+            ctx.rotate(angle);
+
+            ctx.beginPath();
+            ctx.ellipse(0, 0, playerThickness + 8, playerThickness + 2, 0, 0, Math.PI * 2);
+            ctx.fillStyle = "#1e8449"; ctx.fill();
+            ctx.strokeStyle = "#145a32"; ctx.lineWidth = 3; ctx.stroke();
+
+            // Yellow Eyes & Pupils
+            ctx.fillStyle = "#f1c40f";
+            ctx.beginPath(); ctx.arc(playerThickness * 0.3, -playerThickness * 0.4, 5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(playerThickness * 0.3, playerThickness * 0.4, 5, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = "#000";
+            ctx.beginPath(); ctx.arc(playerThickness * 0.35, -playerThickness * 0.4, 2.5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(playerThickness * 0.35, playerThickness * 0.4, 2.5, 0, Math.PI * 2); ctx.fill();
+
+            // Forked Tongue
+            ctx.strokeStyle = "#e74c3c"; ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(playerThickness + 6, 0);
+            ctx.lineTo(playerThickness + 14, 0);
+            ctx.lineTo(playerThickness + 18, -4);
+            ctx.moveTo(playerThickness + 14, 0);
+            ctx.lineTo(playerThickness + 18, 4);
+            ctx.stroke();
+
+            ctx.restore();
+        } else {
+            // Animal Head Skins
+            ctx.beginPath(); ctx.arc(headPart.x, headPart.y, playerThickness + 6, 0, Math.PI * 2);
+            ctx.fillStyle = colors[0]; ctx.fill();
+            ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 4; ctx.stroke();
+
+            ctx.font = `${Math.floor(playerThickness * 2.0)}px sans-serif`;
+            ctx.fillText(activeSkinObj.icon, headPart.x - (playerThickness * 0.8), headPart.y + (playerThickness * 0.7));
+        }
+
+        ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif";
+        ctx.fillText(playerName, headPart.x - 20, headPart.y - (playerThickness + 18));
+
+        // Draw Active Reaction Emoji Balloon above Player Head
+        if(activeEmoji) {
+            ctx.font = "32px sans-serif";
+            ctx.fillText(activeEmoji, headPart.x - 16, headPart.y - (playerThickness + 40));
+        }
+    }
+
+    ctx.restore();
+
+    // Minimap
+    mCtx.fillStyle = "#0a0a0a";
+    mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
+    let scaleX = mCanvas.width / MAP_WIDTH;
+    let scaleY = mCanvas.height / MAP_HEIGHT;
+
+    garages.forEach(g => {
+        mCtx.fillStyle = "#2ecc71";
+        mCtx.fillRect(g.x * scaleX, g.y * scaleY, g.w * scaleX, g.h * scaleY);
+    });
+
+    bots.forEach(b => {
+        mCtx.fillStyle = "#e74c3c";
+        mCtx.beginPath(); mCtx.arc(b.body[0].x * scaleX, b.body[0].y * scaleY, 3, 0, Math.PI * 2); mCtx.fill();
+    });
+
+    mCtx.fillStyle = "#f1c40f";
+    mCtx.beginPath(); mCtx.arc(snake[0].x * scaleX, snake[0].y * scaleY, 4, 0, Math.PI * 2); mCtx.fill();
+}
+
+function loop() { update(); draw(); requestAnimationFrame(loop); }
+loop();
+</script>
+
+</body>
+</html>
