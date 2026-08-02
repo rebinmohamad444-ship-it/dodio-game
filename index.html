@@ -20,63 +20,64 @@
         }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
+        /* HUD Top Left */
         #radar-wrapper {
             position: absolute; top: 10px; left: 10px;
             display: flex; flex-direction: column; align-items: center;
             gap: 4px; z-index: 5;
         }
         #radar-canvas {
-            width: 70px; height: 70px;
+            width: 75px; height: 75px;
             background: rgba(0, 0, 0, 0.85);
             border: 2px solid #2ecc71; border-radius: 50%;
         }
         #hud-stats {
             background: rgba(0,0,0,0.75); padding: 4px 8px;
             border-radius: 6px; border: 1px solid #2ecc71;
-            font-size: 10px; margin-top: 4px; text-align: center; width: 70px;
+            font-size: 10px; margin-top: 4px; text-align: center; width: 75px;
         }
 
         #exit-btn {
             background: #e74c3c; color: #fff; font-weight: bold;
-            border: none; padding: 4px 8px; border-radius: 6px;
-            font-size: 10px; cursor: pointer; width: 70px; text-align: center; margin-top: 4px;
+            border: none; padding: 5px 8px; border-radius: 6px;
+            font-size: 10px; cursor: pointer; width: 75px; text-align: center; margin-top: 4px;
         }
 
         #red-zone-alert {
-            position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%);
-            color: #e74c3c; font-size: 18px; font-weight: bold;
-            background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 8px;
+            position: absolute; top: 18%; left: 50%; transform: translate(-50%, -50%);
+            color: #e74c3c; font-size: 16px; font-weight: bold;
+            background: rgba(0,0,0,0.85); padding: 8px 16px; border-radius: 8px;
             border: 2px solid #e74c3c; display: none; z-index: 8;
             animation: blinker 0.5s linear infinite;
         }
 
         #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.85); padding: 6px 10px;
+            background: rgba(0,0,0,0.85); padding: 8px 12px;
             border-radius: 8px; border: 1.5px solid #f1c40f;
-            font-size: 9px; z-index: 5; min-width: 120px; pointer-events: none;
+            font-size: 10px; z-index: 5; min-width: 140px; pointer-events: none;
         }
 
         #active-powers-container {
-            position: absolute; top: 135px; left: 10px;
-            display: flex; flex-direction: column; gap: 3px; z-index: 5;
+            position: absolute; top: 140px; left: 10px;
+            display: flex; flex-direction: column; gap: 4px; z-index: 5;
         }
         .power-badge {
-            background: rgba(241, 196, 15, 0.9); color: #111;
-            padding: 2px 6px; border-radius: 8px; font-weight: bold;
-            font-size: 9px; box-shadow: 0 0 6px #f1c40f; width: fit-content;
+            background: rgba(241, 196, 15, 0.95); color: #111;
+            padding: 3px 8px; border-radius: 8px; font-weight: bold;
+            font-size: 10px; box-shadow: 0 0 6px #f1c40f; width: fit-content;
         }
 
         #ingame-garage-btn {
             position: absolute; bottom: 15px; left: 15px;
             background: rgba(243, 156, 18, 0.85); border: 1.5px solid #fff;
-            color: #fff; padding: 6px 12px; border-radius: 12px;
+            color: #fff; padding: 8px 14px; border-radius: 12px;
             font-size: 11px; font-weight: bold; z-index: 10; cursor: pointer;
         }
 
         #boost-btn {
             position: absolute; bottom: 20px; right: 20px;
-            width: 60px; height: 60px; background: rgba(231, 76, 60, 0.9);
+            width: 65px; height: 65px; background: rgba(231, 76, 60, 0.9);
             border: 2px solid #fff; border-radius: 50%;
             color: #fff; font-weight: bold; font-size: 11px;
             z-index: 10; display: none; justify-content: center; align-items: center;
@@ -92,12 +93,13 @@
 
         h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
         .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 280px; }
-        button { padding: 9px; font-size: 12px; border-radius: 12px; border: none; background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; }
+        button, input { padding: 10px; font-size: 12px; border-radius: 12px; border: none; outline: none; }
+        button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; }
         button.shop-btn { background: #f39c12; color: #fff; }
 
         .shop-list {
             display: flex; flex-direction: column; gap: 8px;
-            max-height: 220px; overflow-y: auto; width: 85%; max-width: 320px; margin: 10px 0;
+            max-height: 230px; overflow-y: auto; width: 85%; max-width: 320px; margin: 10px 0;
         }
         .shop-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -109,7 +111,7 @@
 <body>
 
 <div id="radar-wrapper">
-    <canvas id="radar-canvas" width="70" height="70"></canvas>
+    <canvas id="radar-canvas" width="75" height="75"></canvas>
     <div id="hud-stats">
         <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
         <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
@@ -121,7 +123,7 @@
 <div id="active-powers-container"></div>
 
 <div id="leaderboard-box">
-    <h4 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 TOP 10 PLAYERS</h4>
+    <h4 style="color:#f1c40f; text-align:center; margin-bottom:4px; font-size:10px;">🏆 TOP 10 PLAYERS</h4>
     <div id="topList"></div>
 </div>
 
@@ -131,12 +133,12 @@
 <!-- Main Menu -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
-    <div style="font-size:30px; margin-bottom:8px;">🐍</div>
-    <div style="font-size:12px; color:#f1c40f; margin-bottom:10px;">
+    <div style="font-size:32px; margin-bottom:8px;">🐍</div>
+    <div style="font-size:12px; color:#f1c40f; margin-bottom:12px;">
         High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">0</span> 🪙
     </div>
     <div class="btn-group">
-        <input type="text" id="playerName" placeholder="Enter Player Name" style="padding:9px; border-radius:12px; border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
+        <input type="text" id="playerName" placeholder="Enter Player Name" style="border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
         <button onclick="startGame()">Play Game 🎮</button>
         <button class="shop-btn" onclick="openShop()">Shop & Country Flags 🛒</button>
     </div>
@@ -146,7 +148,7 @@
 <div id="exit-modal">
     <h3 style="color:#e74c3c; margin-bottom:15px;">Exit Game?</h3>
     <div class="btn-group">
-        <button onclick="confirmExit()" style="background:#e74c3c; color:#fff;">Go to Main Menu 🏠</button>
+        <button onclick="confirmExit()" style="background:#e74c3c; color:#fff;">Main Menu 🏠</button>
         <button onclick="closeExitModal()" style="background:#2ecc71; color:#111;">Continue Playing ▶️</button>
     </div>
 </div>
@@ -171,7 +173,6 @@
     const MAP_CENTER = 7000;
     let cameraScale = 0.65;
     let gameRunning = false;
-    let lastTime = performance.now();
 
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
@@ -190,25 +191,31 @@
     let coinItems = [];
     let powerups = [];
 
-    // Full Flag Skins Database with Colors for Body Pattern
+    // Full Country Flag Skins
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', price: 0, colors: ['#2ecc71', '#27ae60'] },
         { id: 'free2', name: '🔵 Sky Blue', price: 0, colors: ['#3498db', '#2980b9'] },
+        { id: 'free3', name: '🔴 Ruby Red', price: 0, colors: ['#e74c3c', '#c0392b'] },
+        { id: 'free4', name: '🟡 Bright Yellow', price: 0, colors: ['#f1c40f', '#f39c12'] },
+        { id: 'free5', name: '🟣 Royal Purple', price: 0, colors: ['#9b59b6', '#8e44ad'] },
         { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
         { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, colors: ['#009c3b', '#ffdf00', '#002776'] },
         { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, colors: ['#74acdf', '#ffffff', '#74acdf'] },
         { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, colors: ['#000000', '#dd0000', '#ffce00'] },
         { id: 'france', name: '🇫🇷 France Flag', price: 100, colors: ['#002395', '#ffffff', '#ed2939'] },
-        { id: 'spain', name: '🇪🇸 Spain Flag', price: 100, colors: ['#aa152b', '#f1bf00', '#aa152b'] }
+        { id: 'spain', name: '🇪🇸 Spain Flag', price: 100, colors: ['#aa152b', '#f1bf00', '#aa152b'] },
+        { id: 'italy', name: '🇮🇹 Italy Flag', price: 100, colors: ['#009246', '#ffffff', '#ce2b37'] },
+        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', price: 100, colors: ['#ffffff', '#ce1124', '#ffffff'] },
+        { id: 'portugal', name: '🇵🇹 Portugal Flag', price: 100, colors: ['#046a38', '#da291c'] }
     ];
 
     let ownedSkins = skinsDatabase.map(s => s.id);
 
     const garages = [
-        { x: MAP_CENTER - 3500, y: MAP_CENTER - 3500 },
-        { x: MAP_CENTER + 3500, y: MAP_CENTER - 3500 },
-        { x: MAP_CENTER - 3500, y: MAP_CENTER + 3500 },
-        { x: MAP_CENTER + 3500, y: MAP_CENTER + 3500 }
+        { x: MAP_CENTER - 3200, y: MAP_CENTER - 3200 },
+        { x: MAP_CENTER + 3200, y: MAP_CENTER - 3200 },
+        { x: MAP_CENTER - 3200, y: MAP_CENTER + 3200 },
+        { x: MAP_CENTER + 3200, y: MAP_CENTER + 3200 }
     ];
 
     function resize() {
@@ -236,7 +243,6 @@
         let container = document.getElementById('shopItemsContainer');
         container.innerHTML = "";
         skinsDatabase.forEach(s => {
-            let isOwned = ownedSkins.includes(s.id);
             let isSelected = player.skin === s.id;
             container.innerHTML += `
                 <div class="shop-item">
@@ -252,7 +258,6 @@
     function startGame() {
         document.getElementById('menu-overlay').style.display = 'none';
         gameRunning = true; initGame();
-        lastTime = performance.now();
         requestAnimationFrame(gameLoop);
     }
 
@@ -289,7 +294,7 @@
         }
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🎯', '🎛️']; // 🎯 Sniper Scope, 🎛️ Airplane Steering
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🎯', '🎛️'];
         for(let i=0; i<200; i++) {
             let angle = Math.random() * Math.PI * 2;
             let r = Math.random() * (MAP_RADIUS - 100);
@@ -299,7 +304,7 @@
 
     function spawnBot(id) {
         let angle = Math.random() * Math.PI * 2;
-        let r = Math.random() * (MAP_RADIUS - 1000);
+        let r = Math.random() * (MAP_RADIUS - 1200);
         let bx = MAP_CENTER + Math.cos(angle)*r;
         let by = MAP_CENTER + Math.sin(angle)*r;
         let body = [];
@@ -373,11 +378,8 @@
         document.getElementById('topList').innerHTML = html;
     }
 
-    function gameLoop(now) {
+    function gameLoop() {
         if(!gameRunning) return;
-        let dt = (now - lastTime) / 1000;
-        if(dt > 0.1) dt = 0.1;
-        lastTime = now;
 
         deadRemains = deadRemains.filter(r => Date.now() - r.spawnTime < 20000);
 
@@ -386,21 +388,21 @@
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
 
-            player.angle += diff * (isSteeringActive ? 0.45 : 0.22);
+            player.angle += diff * (isSteeringActive ? 0.42 : 0.20);
 
-            let currentSpeed = (manualSpeedBoost ? 380 : 220) * (dt * 60 / 1);
-            player.x += Math.cos(player.angle) * (currentSpeed * 0.08);
-            player.y += Math.sin(player.angle) * (currentSpeed * 0.08);
+            // FIX CONTROLLED NORMAL SPEED
+            let moveSpeed = manualSpeedBoost ? 6.5 : 3.8;
+            player.x += Math.cos(player.angle) * moveSpeed;
+            player.y += Math.sin(player.angle) * moveSpeed;
             player.body.unshift({x: player.x, y: player.y});
 
-            // Growth in Length & Thickness
-            let maxAllowedSegments = Math.min(90, 30 + Math.floor(score / 100));
+            let maxAllowedSegments = Math.min(85, 30 + Math.floor(score / 120));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
-            // Circular Zone Death Check
+            // Circular Boundary
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
-            if(distFromCenter >= MAP_RADIUS - 50) {
-                player.alive = false; alert("Game Over! You hit the Circular Red Zone!"); location.reload();
+            if(distFromCenter >= MAP_RADIUS - 40) {
+                player.alive = false; alert("Game Over! You hit the Red Zone!"); location.reload();
             }
             document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 800 ? 'block' : 'none';
 
@@ -413,26 +415,24 @@
                 });
             });
 
-            // Eat Fruits
             fruits.forEach((f, i) => {
-                if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
+                if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 20) {
                     score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     f.x = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
                     f.y = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
-                    if(player.sizeRadius < 35) player.sizeRadius += 0.05; // Thickness Growth!
+                    if(player.sizeRadius < 32) player.sizeRadius += 0.05;
                 }
             });
 
-            // Eat Powerups
             powerups.forEach((p, i) => {
-                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 25) {
+                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 22) {
                     if(p.icon.includes('x')) {
                         let val = parseInt(p.icon.replace('x', '')) || 2;
                         currentMultiplier = val;
                         addPowerupTimer(`Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
                     }
-                    if(p.icon === '🎯') { // Sniper Camera Zoom
+                    if(p.icon === '🎯') {
                         cameraScale = 0.38;
                         addPowerupTimer('Sniper Zoom', '🎯', 15000, () => cameraScale = 0.65);
                     }
@@ -452,7 +452,6 @@
             });
         }
 
-        // Smart Bots Logic
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
@@ -460,7 +459,7 @@
                 b.angle = Math.atan2(player.y - b.y, player.x - b.x);
             } else { b.angle += (Math.random() - 0.5) * 0.1; }
 
-            b.x += Math.cos(b.angle) * 4.2; b.y += Math.sin(b.angle) * 4.2;
+            b.x += Math.cos(b.angle) * 3.4; b.y += Math.sin(b.angle) * 3.4;
             b.body.unshift({x: b.x, y: b.y}); b.body.pop();
 
             player.body.forEach((pSeg, idx) => {
@@ -476,11 +475,10 @@
         ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
 
-        // CIRCULAR MAP BORDER
+        // Circular Map Edge
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 25; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-        // Garages
         garages.forEach(g => {
             ctx.fillStyle = '#2ecc71'; ctx.fillRect(g.x - 100, g.y - 100, 200, 200);
             ctx.fillStyle = '#fff'; ctx.font = "bold 20px Arial"; ctx.fillText("GARAGE 🚗", g.x - 50, g.y + 5);
@@ -517,11 +515,10 @@
 
         ctx.restore();
 
-        // Radar
-        radarCtx.clearRect(0, 0, 70, 70);
+        radarCtx.clearRect(0, 0, 75, 75);
         if(player.alive) {
             radarCtx.fillStyle = '#2ecc71'; radarCtx.beginPath();
-            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*70, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*70, 3.5, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, 3.5, 0, Math.PI*2); radarCtx.fill();
         }
 
         renderPowerBadges(); updateLeaderboard();
