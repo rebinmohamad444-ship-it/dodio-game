@@ -23,16 +23,38 @@
         /* Top HUD */
         #hud-top-left {
             position: absolute; top: 10px; left: 10px;
-            background: rgba(0,0,0,0.7); padding: 8px 12px;
+            background: rgba(0,0,0,0.75); padding: 8px 12px;
             border-radius: 8px; border: 1px solid #2ecc71;
-            font-size: 12px; z-index: 5; pointer-events: none;
+            font-size: 11px; z-index: 5; pointer-events: none;
         }
 
-        /* Radar Top Right */
-        #radar-wrapper {
+        /* Danger Indicator */
+        #danger-warning {
+            position: absolute; top: 15px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(231, 76, 60, 0.9); color: #fff;
+            padding: 6px 15px; border-radius: 20px;
+            font-weight: bold; font-size: 13px; z-index: 10;
+            display: none; animation: flash 0.6s infinite alternate;
+        }
+        @keyframes flash {
+            from { opacity: 1; box-shadow: 0 0 10px #e74c3c; }
+            to { opacity: 0.2; box-shadow: none; }
+        }
+
+        /* Leaderboard Top Right */
+        #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.8); padding: 6px 10px;
+            border-radius: 8px; border: 1px solid #f1c40f;
+            font-size: 10px; z-index: 5; min-width: 110px; pointer-events: none;
+        }
+
+        /* Radar Bottom Right */
+        #radar-wrapper {
+            position: absolute; bottom: 10px; right: 10px;
             display: flex; flex-direction: column; align-items: center;
-            gap: 6px; z-index: 5;
+            gap: 4px; z-index: 5;
         }
         #radar-canvas {
             width: 85px; height: 85px;
@@ -40,73 +62,94 @@
             border: 2px solid #2ecc71; border-radius: 50%;
         }
 
-        /* Reaction Emojis below Radar */
-        #emoji-bar {
-            display: flex; gap: 4px; background: rgba(0,0,0,0.7);
-            padding: 4px; border-radius: 12px; border: 1px solid #444;
-        }
-        .emoji-btn {
-            font-size: 16px; cursor: pointer; transition: transform 0.1s;
-        }
-        .emoji-btn:active { transform: scale(1.3); }
-
-        /* Go to Garage Button */
-        #garage-btn {
-            position: absolute; bottom: 20px; right: 15px;
-            background: #f39c12; color: #111; font-weight: bold;
-            padding: 10px 14px; border-radius: 20px; border: none;
-            font-size: 12px; z-index: 5; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.4);
-        }
-
         /* Menu Overlay */
-        #menu-overlay {
+        #menu-overlay, #settings-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 12, 16, 0.94); display: flex;
+            background: rgba(10, 12, 16, 0.95); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
+        #settings-modal { display: none; z-index: 30; }
+
+        .lang-switch { position: absolute; top: 15px; display: flex; gap: 8px; }
+        .lang-btn { padding: 4px 10px; font-size: 11px; background: #222; border: 1px solid #2ecc71; color: #fff; border-radius: 10px; cursor: pointer; }
+
         h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
-        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 80%; max-width: 250px; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 260px; }
         button, select, input {
-            padding: 10px; font-size: 13px; border-radius: 15px;
+            padding: 9px; font-size: 12px; border-radius: 12px;
             border: 1.5px solid #2ecc71; background: #181c24; color: #fff; text-align: center; outline: none;
         }
         button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; border: none; }
+        button.set-btn { background: #e67e22; color: #fff; }
     </style>
 </head>
 <body>
 
+<div id="danger-warning">⚠️ DANGER ZONE ⚠️</div>
+
 <div id="hud-top-left">
-    <div>Score: <span id="scoreVal" style="color:#2ecc71; font-weight:bold;">0</span></div>
-    <div>Coins: <span id="coinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    <div><span id="lbl-score">Score</span>: <span id="scoreVal" style="color:#2ecc71; font-weight:bold;">0</span></div>
+    <div><span id="lbl-coins">Coins</span>: <span id="coinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+</div>
+
+<div id="leaderboard-box">
+    <h5 style="color:#f1c40f; text-align:center; margin-bottom:3px;">🏆 Top 10</h5>
+    <div id="topList"></div>
 </div>
 
 <div id="radar-wrapper">
     <canvas id="radar-canvas" width="85" height="85"></canvas>
-    <div id="emoji-bar">
-        <span class="emoji-btn" onclick="triggerEmoji('😂')">😂</span>
-        <span class="emoji-btn" onclick="triggerEmoji('😭')">😭</span>
-        <span class="emoji-btn" onclick="triggerEmoji('👍')">👍</span>
-        <span class="emoji-btn" onclick="triggerEmoji('💪')">💪</span>
-        <span class="emoji-btn" onclick="triggerEmoji('✌️')">✌️</span>
+</div>
+
+<!-- Main Menu -->
+<div id="menu-overlay">
+    <div class="lang-switch">
+        <button class="lang-btn" onclick="setLanguage('en')">English</button>
+        <button class="lang-btn" onclick="setLanguage('ku')">کوردی</button>
+        <button class="lang-btn" onclick="setLanguage('ar')">العربية</button>
+    </div>
+
+    <h1>dod.io</h1>
+    <div style="font-size:32px; margin-bottom:10px;">🐍</div>
+    
+    <div class="btn-group">
+        <input type="text" id="playerName" placeholder="Enter Player Name">
+        
+        <select id="skinSelect">
+            <optgroup label="Regions / هەرێمەکان">
+                <option value="kurdish">✌️ Kurdistan (کوردستان)</option>
+                <option value="catalonia">🟡🔴 Catalonia</option>
+                <option value="scotland">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland</option>
+            </optgroup>
+            <optgroup label="Countries / وڵاتان">
+                <option value="brazil">🇧🇷 Brazil</option>
+                <option value="argentina">🇦🇷 Argentina</option>
+                <option value="germany">🇩🇪 Germany</option>
+                <option value="france">🇫🇷 France</option>
+                <option value="spain">🇪🇸 Spain</option>
+                <option value="italy">🇮🇹 Italy</option>
+                <option value="ukraine">🇺🇦 Ukraine</option>
+                <option value="japan">🇯🇵 Japan</option>
+                <option value="usa">🇺🇸 USA</option>
+                <option value="iraq">🇮🇶 Iraq</option>
+            </optgroup>
+        </select>
+
+        <button id="btn-play" onclick="startGame()">PLAY GAME 🎮</button>
+        <button id="btn-settings" class="set-btn" onclick="openSettings()">SETTINGS ⚙️</button>
     </div>
 </div>
 
-<button id="garage-btn" onclick="navigateToGarage()">🚗 Go To Garage</button>
-
-<!-- Menu Overlay -->
-<div id="menu-overlay">
-    <h1>dod.io</h1>
-    <div style="font-size:35px; margin-bottom:10px;">🐍</div>
+<!-- Settings Modal -->
+<div id="settings-modal">
+    <h3 style="color:#2ecc71; margin-bottom:15px;" id="lbl-settings-title">Settings</h3>
     <div class="btn-group">
-        <input type="text" id="playerName" placeholder="Enter Player Name">
-        <select id="skinSelect">
-            <option value="kurdish">✌️ Kurdistan</option>
-            <option value="brazil">🇧🇷 Brazil</option>
-            <option value="argentina">🇦🇷 Argentina</option>
-            <option value="germany">🇩🇪 Germany</option>
+        <label id="lbl-ctrl-type">Control Type:</label>
+        <select id="controlType">
+            <option value="touch">Touch / Joystick</option>
+            <option value="buttons">Buttons</option>
         </select>
-        <button onclick="startGame()">Play Game 🎮</button>
+        <button onclick="closeSettings()" id="btn-save">Save & Close</button>
     </div>
 </div>
 
@@ -118,29 +161,34 @@
     const radarCanvas = document.getElementById('radar-canvas');
     const radarCtx = radarCanvas.getContext('2d');
 
-    const MAP_SIZE = 10000; // 4x Bigger Map
+    const MAP_SIZE = 20000; // Giant Map
     let gameRunning = false;
     let score = 0, coins = 0;
-    let cameraScale = 1;
-    let turnAgility = 0.1;
+    let lang = 'en';
 
-    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [] };
+    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true };
     let bots = [];
     let fruits = [];
-    let coinItems = [];
-    let powerups = [];
-    let deadRemains = []; // Food remains after snake explosion
-
-    // 4 Corner Garages
-    const garages = [
-        { x: 400, y: 400 },
-        { x: MAP_SIZE - 400, y: 400 },
-        { x: 400, y: MAP_SIZE - 400 },
-        { x: MAP_SIZE - 400, y: MAP_SIZE - 400 }
-    ];
-
-    // Red Zone
     let redZoneRadius = MAP_SIZE / 2;
+
+    const langData = {
+        en: { play: "PLAY GAME 🎮", settings: "SETTINGS ⚙️", score: "Score", coins: "Coins", namePh: "Enter Player Name", setT: "Settings", ctrl: "Control Type:", save: "Save & Close" },
+        ku: { play: "یاری بکە 🎮", settings: "سێتینگ ⚙️", score: "خاڵ", coins: "کۆین", namePh: "ناوت بنووسە", setT: "ڕێکخستنەکان", ctrl: "جۆری کۆنتڕۆڵ:", save: "پاشەکەوتکردن" },
+        ar: { play: "ابدأ اللعب 🎮", settings: "الإعدادات ⚙️", score: "النقاط", coins: "العملات", namePh: "أدخل اسم اللاعب", setT: "الإعدادات", ctrl: "نوع التحكم:", save: "حفظ وإغلاق" }
+    };
+
+    function setLanguage(l) {
+        lang = l;
+        const d = langData[l];
+        document.getElementById('btn-play').innerText = d.play;
+        document.getElementById('btn-settings').innerText = d.settings;
+        document.getElementById('lbl-score').innerText = d.score;
+        document.getElementById('lbl-coins').innerText = d.coins;
+        document.getElementById('playerName').placeholder = d.namePh;
+        document.getElementById('lbl-settings-title').innerText = d.setT;
+        document.getElementById('lbl-ctrl-type').innerText = d.ctrl;
+        document.getElementById('btn-save').innerText = d.save;
+    }
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -149,7 +197,11 @@
     window.addEventListener('resize', resize);
     resize();
 
+    function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
+    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
     function startGame() {
+        player.skin = document.getElementById('skinSelect').value;
         document.getElementById('menu-overlay').style.display = 'none';
         gameRunning = true;
         initGame();
@@ -157,53 +209,38 @@
     }
 
     function initGame() {
+        player.alive = true;
+        player.x = MAP_SIZE/2; player.y = MAP_SIZE/2;
         player.body = [];
         for(let i=0; i<25; i++) player.body.push({x: player.x - i*6, y: player.y});
 
-        // Spawn 10 Bots
+        // Spawn Bots
         bots = [];
         for(let i=0; i<10; i++) spawnBot(i);
 
         // Spawn Fruits (🍌 🍉 🍒 🍎 🍓)
         fruits = [];
         const fruitTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<600; i++) {
+        for(let i=0; i<800; i++) {
             fruits.push({
                 x: Math.random() * MAP_SIZE,
                 y: Math.random() * MAP_SIZE,
                 type: fruitTypes[Math.floor(Math.random() * fruitTypes.length)]
             });
         }
-
-        // Spawn Coins
-        coinItems = [];
-        for(let i=0; i<200; i++) {
-            coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
-        }
-
-        // Power-ups (🧲, ⚡, 📷, ☸️)
-        powerups = [];
-        const pTypes = ['magnet', 'speed', 'camera', 'wheel'];
-        for(let i=0; i<40; i++) {
-            powerups.push({
-                x: Math.random() * MAP_SIZE,
-                y: Math.random() * MAP_SIZE,
-                type: pTypes[Math.floor(Math.random() * pTypes.length)]
-            });
-        }
     }
 
     function spawnBot(id) {
-        let bx = Math.random() * (MAP_SIZE - 1000) + 500;
-        let by = Math.random() * (MAP_SIZE - 1000) + 500;
+        let bx = Math.random() * (MAP_SIZE - 2000) + 1000;
+        let by = Math.random() * (MAP_SIZE - 2000) + 1000;
         let body = [];
         for(let j=0; j<20; j++) body.push({x: bx - j*6, y: by});
-        bots[id] = { id, x: bx, y: by, angle: Math.random()*Math.PI*2, body, alive: true };
+        const skins = ['brazil', 'germany', 'france', 'argentina', 'spain'];
+        bots[id] = { id, name: "Bot_" + (id+1), x: bx, y: by, angle: Math.random()*Math.PI*2, body, skin: skins[id%skins.length], score: Math.floor(Math.random()*500+100), alive: true };
     }
 
-    // Touch / Mouse Direction
     function handlePointer(e) {
-        if(!gameRunning) return;
+        if(!gameRunning || !player.alive) return;
         const cx = e.touches ? e.touches[0].clientX : e.clientX;
         const cy = e.touches ? e.touches[0].clientY : e.clientY;
         player.targetAngle = Math.atan2(cy - canvas.height/2, cx - canvas.width/2);
@@ -211,154 +248,130 @@
     window.addEventListener('touchmove', handlePointer);
     window.addEventListener('mousemove', handlePointer);
 
-    function triggerEmoji(emoji) {
-        // Visual emoji display overhead
+    function getSkinColor(skin) {
+        switch(skin) {
+            case 'kurdish': return '#00A859';
+            case 'brazil': return '#FFDF00';
+            case 'argentina': return '#74ACDF';
+            case 'germany': return '#DD0000';
+            default: return '#2ecc71';
+        }
     }
 
-    function navigateToGarage() {
-        // Point direction to nearest garage
-        let minD = Infinity, targetG = garages[0];
-        garages.forEach(g => {
-            let d = Math.hypot(player.x - g.x, player.y - g.y);
-            if(d < minD) { minD = d; targetG = g; }
-        });
-        player.targetAngle = Math.atan2(targetG.y - player.y, targetG.x - player.x);
-    }
+    function updateLeaderboard() {
+        let list = [{ name: document.getElementById('playerName').value || "Player", score: score, skin: player.skin }];
+        bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score, skin: b.skin }); });
+        list.sort((a, b) => b.score - a.score);
 
-    function explodeSnake(body) {
-        body.forEach(p => {
-            deadRemains.push({ x: p.x, y: p.y, spawnTime: Date.now() });
+        let html = "";
+        list.slice(0, 10).forEach((item, idx) => {
+            let color = getSkinColor(item.skin);
+            html += `<div style="color:${color};">${idx+1}. ${item.name} - ${item.score}</div>`;
         });
+        document.getElementById('topList').innerHTML = html;
     }
 
     function gameLoop() {
         if(!gameRunning) return;
 
-        // Shrink Red Zone
-        if(redZoneRadius > 1000) redZoneRadius -= 0.1;
+        if(player.alive) {
+            // Player movement
+            let diff = player.targetAngle - player.angle;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            player.angle += diff * 0.1;
 
-        // Player Turn Smoothness
-        let diff = player.targetAngle - player.angle;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-        player.angle += diff * turnAgility;
+            player.x += Math.cos(player.angle) * 3.5;
+            player.y += Math.sin(player.angle) * 3.5;
+            player.body.unshift({x: player.x, y: player.y});
+            player.body.pop();
 
-        // Move Player
-        let speed = 3.5;
-        player.x += Math.cos(player.angle) * speed;
-        player.y += Math.sin(player.angle) * speed;
-        player.body.unshift({x: player.x, y: player.y});
-        player.body.pop();
-
-        // Move Bots
-        bots.forEach(bot => {
-            if(!bot.alive) return;
-            bot.angle += (Math.random() - 0.5) * 0.2;
-            bot.x += Math.cos(bot.angle) * 3;
-            bot.y += Math.sin(bot.angle) * 3;
-            bot.body.unshift({x: bot.x, y: bot.y});
-            bot.body.pop();
-
-            // Collision check with player
-            let distToPlayer = Math.hypot(bot.x - player.x, bot.y - player.y);
-            if(distToPlayer < 20) {
-                // Explode Bot
-                bot.alive = false;
-                explodeSnake(bot.body);
-                setTimeout(() => spawnBot(bot.id), 20000); // Respawn after 20s
+            // Check Red Zone Danger & Collision
+            let distFromCenter = Math.hypot(player.x - MAP_SIZE/2, player.y - MAP_SIZE/2);
+            if(distFromCenter > redZoneRadius - 300) {
+                document.getElementById('danger-warning').style.display = 'block';
+            } else {
+                document.getElementById('danger-warning').style.display = 'none';
             }
-        });
 
-        // Filter dead remains older than 20s
-        let now = Date.now();
-        deadRemains = deadRemains.filter(r => now - r.spawnTime < 20000);
+            if(distFromCenter >= redZoneRadius) {
+                player.alive = false;
+                alert("Game Over! You hit the Danger Red Zone!");
+                location.reload();
+            }
 
-        // CAMERA FOLLOW & SCALE
-        const camX = canvas.width / 2 - player.x * cameraScale;
-        const camY = canvas.height / 2 - player.y * cameraScale;
+            // Eat Fruits
+            fruits.forEach((f, i) => {
+                let d = Math.hypot(player.x - f.x, player.y - f.y);
+                if(d < 25) {
+                    score += 10;
+                    document.getElementById('scoreVal').innerText = score;
+                    fruits[i].x = Math.random() * MAP_SIZE;
+                    fruits[i].y = Math.random() * MAP_SIZE;
+                    player.body.push({...player.body[player.body.length-1]});
+                }
+            });
+        }
+
+        // Camera Follow
+        const camX = canvas.width / 2 - player.x;
+        const camY = canvas.height / 2 - player.y;
 
         ctx.fillStyle = '#12161f';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.save();
         ctx.translate(camX, camY);
-        ctx.scale(cameraScale, cameraScale);
 
-        // Draw Map Grid & Red Zone
+        // Map Border & Red Zone
         ctx.strokeStyle = '#1e2532'; ctx.lineWidth = 10;
         ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-        ctx.strokeStyle = 'rgba(231, 76, 60, 0.4)'; ctx.lineWidth = 20;
+        ctx.strokeStyle = 'rgba(231, 76, 60, 0.5)'; ctx.lineWidth = 15;
         ctx.beginPath();
         ctx.arc(MAP_SIZE/2, MAP_SIZE/2, redZoneRadius, 0, Math.PI*2);
         ctx.stroke();
 
-        // Draw Garages
-        garages.forEach(g => {
-            ctx.fillStyle = '#f39c12';
-            ctx.fillRect(g.x - 100, g.y - 100, 200, 200);
-            ctx.fillStyle = '#fff'; ctx.font = "20px Arial";
-            ctx.fillText("GARAGE 🚗", g.x - 55, g.y + 10);
-        });
-
         // Draw Fruits
         fruits.forEach(f => {
-            ctx.font = "22px Arial";
+            ctx.font = "24px Arial";
             ctx.fillText(f.type, f.x, f.y);
         });
 
-        // Draw Coins
-        coinItems.forEach(c => {
-            ctx.font = "18px Arial";
-            ctx.fillText("🪙", c.x, c.y);
-        });
-
-        // Draw Dead Remains
-        deadRemains.forEach(r => {
-            ctx.fillStyle = '#e74c3c'; ctx.beginPath();
-            ctx.arc(r.x, r.y, 6, 0, Math.PI*2); ctx.fill();
-        });
-
-        // Draw Power-ups
-        powerups.forEach(p => {
-            ctx.font = "20px Arial";
-            let icon = p.type === 'magnet' ? '🧲' : p.type === 'speed' ? '⚡' : p.type === 'camera' ? '📷' : '☸️';
-            ctx.fillText(icon, p.x, p.y);
-        });
-
         // Draw Player Snake
-        player.body.forEach((p, i) => {
-            ctx.fillStyle = i === 0 ? '#FE8200' : '#00A859';
-            ctx.beginPath(); ctx.arc(p.x, p.y, i === 0 ? 12 : 9, 0, Math.PI*2); ctx.fill();
-        });
+        if(player.alive) {
+            player.body.forEach((p, i) => {
+                ctx.fillStyle = i === 0 ? '#FE8200' : getSkinColor(player.skin);
+                ctx.beginPath(); ctx.arc(p.x, p.y, i === 0 ? 12 : 9, 0, Math.PI*2); ctx.fill();
+            });
+        }
 
         // Draw Bots
-        bots.forEach(bot => {
-            if(!bot.alive) return;
-            bot.body.forEach((bp, j) => {
-                ctx.fillStyle = j === 0 ? '#e74c3c' : '#34495e';
+        bots.forEach(b => {
+            if(!b.alive) return;
+            b.body.forEach((bp, j) => {
+                ctx.fillStyle = j === 0 ? '#e74c3c' : getSkinColor(b.skin);
                 ctx.beginPath(); ctx.arc(bp.x, bp.y, j === 0 ? 11 : 8, 0, Math.PI*2); ctx.fill();
             });
         });
 
         ctx.restore();
 
-        // Draw Radar (Shows Bots + Garages ONLY, Player Hidden)
+        // Update Radar (Player shown with flag color)
         radarCtx.clearRect(0, 0, 85, 85);
-        
-        // Garages on radar
-        garages.forEach(g => {
-            radarCtx.fillStyle = '#f39c12';
-            radarCtx.fillRect((g.x/MAP_SIZE)*85 - 2, (g.y/MAP_SIZE)*85 - 2, 5, 5);
-        });
-
-        // Bots on radar
-        bots.forEach(bot => {
-            if(!bot.alive) return;
+        if(player.alive) {
+            radarCtx.fillStyle = getSkinColor(player.skin);
+            radarCtx.beginPath();
+            radarCtx.arc((player.x/MAP_SIZE)*85, (player.y/MAP_SIZE)*85, 3.5, 0, Math.PI*2);
+            radarCtx.fill();
+        }
+        bots.forEach(b => {
+            if(!b.alive) return;
             radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
-            radarCtx.arc((bot.x/MAP_SIZE)*85, (bot.y/MAP_SIZE)*85, 2, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc((b.x/MAP_SIZE)*85, (b.y/MAP_SIZE)*85, 2, 0, Math.PI*2); radarCtx.fill();
         });
 
+        updateLeaderboard();
         requestAnimationFrame(gameLoop);
     }
 </script>
