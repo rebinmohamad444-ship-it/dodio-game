@@ -13,7 +13,7 @@
             touch-action: none;
         }
         html, body {
-            width: 100vw; height: 100vh;
+            width: 100%; height: 100%;
             background-color: #0b0d12;
             color: #fff;
             font-family: Arial, sans-serif;
@@ -44,7 +44,7 @@
             font-size: 10px; cursor: pointer; width: 70px; text-align: center; margin-top: 4px;
         }
 
-        /* Controls */
+        /* Dynamic Floating Joystick */
         #joystick-zone {
             position: absolute; width: 90px; height: 90px;
             background: rgba(255, 255, 255, 0.15);
@@ -71,9 +71,9 @@
 
         #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.85); padding: 6px 10px;
-            border-radius: 8px; border: 1.5px solid #f1c40f;
-            font-size: 9px; z-index: 5; min-width: 120px; pointer-events: none;
+            background: rgba(0,0,0,0.8); padding: 4px 8px;
+            border-radius: 6px; border: 1px solid #f1c40f;
+            font-size: 9px; z-index: 5; min-width: 110px; pointer-events: none;
         }
 
         #active-powers-container {
@@ -145,7 +145,7 @@
 <div id="active-powers-container"></div>
 
 <div id="leaderboard-box">
-    <h4 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 TOP 10 PLAYERS</h4>
+    <h4 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 TOP 10</h4>
     <div id="topList"></div>
 </div>
 
@@ -159,7 +159,6 @@
 <div id="ingame-garage-btn" onclick="openShop()">🚗 Garage</div>
 <div id="boost-btn">BOOST 🚀</div>
 
-<!-- Menu Overlay -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
     <div style="font-size:30px; margin-bottom:8px;">🐍</div>
@@ -177,30 +176,27 @@
     </div>
 </div>
 
-<!-- Settings Modal -->
 <div id="settings-modal">
     <h3 style="color:#e67e22; margin-bottom:10px;">Control Settings ⚙️</h3>
     <div class="btn-group">
         <label style="font-size:11px;">Control Style:</label>
         <select id="controlTypeSelect" onchange="changeControlType()">
             <option value="touch">Touch Pointer Target</option>
-            <option value="joystick">Floating Joystick Anywhere</option>
+            <option value="joystick">Floating Anywhere Joystick</option>
             <option value="buttons">4-Direction Buttons</option>
         </select>
         <button onclick="closeSettings()">Save & Back</button>
     </div>
 </div>
 
-<!-- History Modal -->
 <div id="history-modal">
     <h3 style="color:#9b59b6; margin-bottom:5px;">Match History 📜</h3>
     <div class="history-list" id="historyContainer"></div>
     <button onclick="closeHistory()" style="width:120px;">Close</button>
 </div>
 
-<!-- Shop Modal -->
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Flags Shop 🛒</h3>
+    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Flag Skins 🛒</h3>
     <div style="font-size:12px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
     <div class="shop-list" id="shopItemsContainer"></div>
     <button onclick="closeShop()" style="width:120px;">Close</button>
@@ -231,30 +227,21 @@
     let activePowers = [];
     let deadRemains = [];
 
-    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 18 };
+    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 16 };
     let bots = [];
     let fruits = [];
     let coinItems = [];
     let powerups = [];
 
-    // Full Database with Flag Skins
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', price: 0, color: '#2ecc71' },
         { id: 'free2', name: '🔵 Sky Blue', price: 0, color: '#3498db' },
         { id: 'free3', name: '🔴 Ruby Red', price: 0, color: '#e74c3c' },
         { id: 'free4', name: '🟡 Bright Yellow', price: 0, color: '#f1c40f' },
         { id: 'free5', name: '🟣 Royal Purple', price: 0, color: '#9b59b6' },
-        { id: 'free6', name: '🟠 Sunset Orange', price: 0, color: '#e67e22' },
-        { id: 'free7', name: '⚪ Pure White', price: 0, color: '#ffffff' },
         { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, color: '#00A859' },
         { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, color: '#FFDF00' },
-        { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, color: '#74ACDF' },
-        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, color: '#DD0000' },
-        { id: 'france', name: '🇫🇷 France Flag', price: 100, color: '#002395' },
-        { id: 'spain', name: '🇪🇸 Spain Flag', price: 100, color: '#AA152B' },
-        { id: 'italy', name: '🇮🇹 Italy Flag', price: 100, color: '#009246' },
-        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', price: 100, color: '#ffffff' },
-        { id: 'portugal', name: '🇵🇹 Portugal Flag', price: 100, color: '#e74c3c' }
+        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, color: '#DD0000' }
     ];
 
     let ownedSkins = skinsDatabase.filter(s => s.price === 0).map(s => s.id);
@@ -307,7 +294,7 @@
 
     function renderShop() {
         let container = document.getElementById('shopItemsContainer');
-        container.innerHTML = "<h4 style='color:#2ecc71;'>Free & Flag Skins (100 🪙)</h4>";
+        container.innerHTML = "<h4 style='color:#2ecc71;'>Free Skins & Flag Skins (100 🪙)</h4>";
         skinsDatabase.forEach(s => {
             let isOwned = ownedSkins.includes(s.id);
             let isSelected = player.skin === s.id;
@@ -355,10 +342,9 @@
         document.getElementById('scoreVal').innerText = score;
         
         player.alive = true; player.x = MAP_SIZE/2; player.y = MAP_SIZE/2;
-        player.sizeRadius = 18; player.body = [];
+        player.sizeRadius = 16; player.body = [];
         for(let i=0; i<30; i++) player.body.push({x: player.x - i*6, y: player.y});
 
-        // Always 10 Bots Spawned
         bots = [];
         for(let i=0; i<10; i++) spawnBot(i);
 
@@ -382,9 +368,9 @@
         let bx = Math.random() * (MAP_SIZE - 4000) + 2000;
         let by = Math.random() * (MAP_SIZE - 4000) + 2000;
         let body = [];
-        for(let j=0; j<60; j++) body.push({x: bx - j*10, y: by});
+        for(let j=0; j<80; j++) body.push({x: bx - j*10, y: by});
         const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X'];
-        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 1800, alive: true, sizeRadius: 25 };
+        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 2000, alive: true, sizeRadius: 28 };
     }
 
     function explodeSnake(body) {
@@ -392,7 +378,7 @@
         body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
     }
 
-    // Dynamic Floating Joystick
+    // FLOATING JOYSTICK Anywhere on Screen
     const joyZone = document.getElementById('joystick-zone');
     const joyKnob = document.getElementById('joystick-knob');
     let joyActive = false, joyCenterX = 0, joyCenterY = 0;
@@ -400,7 +386,7 @@
     window.addEventListener('touchstart', (e) => {
         if(!gameRunning || !player.alive || controlType !== 'joystick') return;
         const touch = e.touches[0];
-        if(touch.clientX < 100 && touch.clientY < 100) return;
+        if(touch.clientX < 100 && touch.clientY < 100) return; // Ignore HUD top left
 
         joyCenterX = touch.clientX; joyCenterY = touch.clientY;
         joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
@@ -506,10 +492,12 @@
             player.y += Math.sin(player.angle) * currentSpeed;
             player.body.unshift({x: player.x, y: player.y});
             
-            let maxAllowedSegments = Math.min(65, 30 + Math.floor(score / 200));
+            // DYNAMIC LIMITED LENGTH (Max 70 Segments)
+            let maxAllowedSegments = Math.min(75, 30 + Math.floor(score / 150));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
-            cameraScale = Math.max(0.40, 0.65 - (player.sizeRadius - 18) * 0.012);
+            // DYNAMIC CAMERA ZOOM OUT WITH SNAKE GROWTH
+            cameraScale = Math.max(0.38, 0.65 - (player.sizeRadius - 16) * 0.015);
 
             if(player.x <= 20 || player.x >= MAP_SIZE - 20 || player.y <= 20 || player.y >= MAP_SIZE - 20) {
                 player.alive = false; recordMatchEnd(); alert("Game Over! You hit the Red Zone!"); location.reload();
@@ -524,9 +512,8 @@
                 });
             });
 
-            // INSTANT EATING LOGIC (Fixed Distance Radius)
             fruits.forEach((f, i) => {
-                if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
+                if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 10) {
                     score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     fruits[i].x = Math.random() * MAP_SIZE; fruits[i].y = Math.random() * MAP_SIZE;
@@ -534,18 +521,9 @@
                 }
             });
 
-            deadRemains.forEach((r, i) => {
-                if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
-                    score += 15 * currentMultiplier;
-                    document.getElementById('scoreVal').innerText = score;
-                    deadRemains.splice(i, 1);
-                    if(player.sizeRadius < 28) player.sizeRadius += 0.06;
-                }
-            });
-
             powerups.forEach((p, i) => {
-                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
-                    if(p.icon.includes('x')) {
+                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 12) {
+                    if(p.icon.includes('x')) { // WORKING MULTIPLIERS!
                         let val = parseInt(p.icon.replace('x', '')) || 2;
                         currentMultiplier = val;
                         addPowerupTimer(`Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
@@ -565,14 +543,15 @@
             });
         }
 
-        // CRAZY SMART AGGRESSIVE BOTS
+        // AGGRESSIVE CRAZY BOTS INTERCEPTING PLAYER
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
             
-            if(distToPlayer < 1100 && player.alive) {
-                let futurePlayerX = player.x + Math.cos(player.angle) * 140;
-                let futurePlayerY = player.y + Math.sin(player.angle) * 140;
+            if(distToPlayer < 1000 && player.alive) {
+                // Intercept Player Path!
+                let futurePlayerX = player.x + Math.cos(player.angle) * 120;
+                let futurePlayerY = player.y + Math.sin(player.angle) * 120;
                 b.angle = Math.atan2(futurePlayerY - b.y, futurePlayerX - b.x);
             } else {
                 b.angle += (Math.random() - 0.5) * 0.1;
@@ -583,7 +562,7 @@
 
             player.body.forEach((pSeg, idx) => {
                 if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
-                    b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 400); // Fast Respawn!
+                    b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 500);
                 }
             });
         });
@@ -639,3 +618,145 @@
 </script>
 </body>
 </html>
+
+extends Node2D
+
+# --- Variables ---
+var score = 0
+var speed = 200
+var rotation_speed = 3.0
+var snake_parts = []
+var base_thickness = 20.0
+var zoom_level = 1.0
+
+var country_skins = {
+  "kurdistan": [Color.RED, Color.WHITE, Color.GREEN, Color.YELLOW],
+  "iraq": [Color.RED, Color.WHITE, Color.BLACK],
+  "usa": [Color.BLUE, Color.RED, Color.WHITE]
+}
+var current_skin = "default"
+
+# Items status
+var has_magnet = false
+var magnet_timer = 0.0
+
+@onready var camera = $Camera2D
+@onready var map_boundary = $MapBoundary
+@onready var exit_dialog = $CanvasLayer/ExitDialog
+
+func _ready():
+  # دروستکردنی نەخشەی خڕ
+  setup_circular_map(1500)
+  
+  # ئامادەکردنی دیالۆگی چوونە دەرەوە
+  setup_exit_dialog()
+  
+  # شاردنەوەی مەترسی ڕێد بۆن (Red Zone Risk)
+  if has_node("RedZone"):
+    $RedZone.visible = false
+
+func _process(delta):
+  # جوڵەی مارەکە
+  move_snake(delta)
+  
+  # کارکردنی موگناتیس
+  if has_magnet:
+    magnet_timer -= delta
+    if magnet_timer <= 0:
+      has_magnet = false
+      
+  # نوێکردنەوەی کامێرا (بەشێوەی ڕەسەدی سنایپەر)
+  update_sniper_camera()
+
+# --- 1. درێژبوون و ئەستووربوونی مارەکە ---
+func eat_fruit(fruit_type):
+  var growth_amount = 1
+  
+  if fruit_type == "X2":
+    growth_amount = 2
+  elif fruit_type == "X5":
+    growth_amount = 5
+    
+  for i in range(growth_amount):
+    add_snake_segment()
+    
+  # زیadbوونی ئەستووری بربرەی مارەکە بەپێی خواردن
+  base_thickness += 0.5 * growth_amount
+  update_snake_thickness()
+
+func add_snake_segment():
+  var new_part = Sprite2D.new()
+  # لێرەدا وێنەی بەشی مارەکە دادەنرێت
+  add_child(new_part)
+  snake_parts.append(new_part)
+
+func update_snake_thickness():
+  for part in snake_parts:
+    part.scale = Vector2(base_thickness / 20.0, base_thickness / 20.0)
+
+# --- 2. چارەسەری خێرایی یاریەکە لای هاوڕێکانت (Delta Sync) ---
+func move_snake(delta):
+  # بەکارهێنانی delta بۆ ئەوەی خێرایی لەسەر هەموو مۆبایلەکان وەک یەک بێت
+  var current_speed = speed
+  
+  # ئەگەر دوگمەی خێراکردن داگیرابێت
+  if Input.is_action_pressed("boost"):
+    current_speed *= 1.8
+    
+  position += Vector2.UP.rotated(rotation) * current_speed * delta
+
+# --- 3. ئایکۆنی خێرا پێچکردنەوە (ستێرنی تەیارە) ---
+func _on_steering_wheel_input(steer_direction, delta):
+  # بەکارهێنانی ستێرنی تەیارە بۆ پێچکردنەوە
+  rotation += steer_direction * rotation_speed * delta
+
+# --- 4. کامێرا بە شێوازی ڕەسەدی سنایپەر (Sniper Scope Zoom) ---
+func update_sniper_camera():
+  # هێمای دوورکردنەوە/نزیککردنەوە وەک دووربینی سنایپەر
+  camera.zoom = Vector2(zoom_level, zoom_level)
+
+# --- 5. نەخشەی خڕ (Circular Map) ---
+func setup_circular_map(radius):
+  # گۆڕینی نەخشەکە لە چوارگۆشەوە بۆ خڕ
+  var shape = CircleShape2D.new()
+  shape.radius = radius
+  if map_boundary:
+    map_boundary.shape = shape
+
+# --- 6. سکینی وڵاتان بۆ تەواوی لاشەی مارەکە ---
+func apply_country_skin(country_name):
+  if country_skins.has(country_name):
+    current_skin = country_name
+    var colors = country_skins[country_name]
+    
+    for i in range(snake_parts.size()):
+      var color_index = i % colors.size()
+      snake_parts[i].modulate = colors[color_index]
+
+# --- 7. دیالۆگی چوونە دەرەوە (دوو ئۆپشن) ---
+func setup_exit_dialog():
+  if exit_dialog:
+    exit_dialog.hide()
+
+func _on_exit_button_pressed():
+  get_tree().paused = true
+  exit_dialog.show()
+
+func _on_resume_button_pressed():
+  exit_dialog.hide()
+  get_tree().paused = false
+
+func _on_main_menu_button_pressed():
+  get_tree().paused = false
+  get_tree().change_scene_to_file("res://MainMenu.tscn")
+
+# --- 8. کارکردنی ئایکۆنەکان (X2, X5, موگناتیس) ---
+func _on_magnet_powerup_collected():
+  has_magnet = true
+  magnet_timer = 10.0 # بۆ ماوەی ۱۰ چرکە کار دەکات
+
+func _on_item_x2_collected():
+  eat_fruit("X2")
+
+func _on_item_x5_collected():
+  eat_fruit("X5")
