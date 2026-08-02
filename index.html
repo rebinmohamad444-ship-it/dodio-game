@@ -45,12 +45,12 @@
         #ingame-garage-btn {
             background: rgba(243, 156, 18, 0.9); border: 1.5px solid #fff;
             color: #fff; padding: 6px 12px; border-radius: 10px;
-            font-size: 11px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
+            font-size: 11px; font-weight: bold; cursor: pointer; text-align: center; width: 80px;
         }
         #exit-btn {
             background: #e74c3c; color: #fff; font-weight: bold;
             border: 1.5px solid #fff; padding: 6px 12px; border-radius: 10px;
-            font-size: 11px; cursor: pointer; text-align: center; width: 75px;
+            font-size: 11px; cursor: pointer; text-align: center; width: 80px;
         }
 
         #red-zone-alert {
@@ -182,7 +182,7 @@
 
     const MAP_RADIUS = 6000;
     const MAP_CENTER = 7000;
-    let cameraScale = 0.55; // Wider Camera View
+    let cameraScale = 0.55;
     let gameRunning = false;
 
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
@@ -202,7 +202,7 @@
     let coinItems = [];
     let powerups = [];
 
-    // Full Skins & Country Flags Database
+    // Complete Flag Skins List
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', price: 0, colors: ['#2ecc71', '#27ae60'] },
         { id: 'free2', name: '🔵 Sky Blue', price: 0, colors: ['#3498db', '#2980b9'] },
@@ -304,7 +304,7 @@
         }
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🎯', '🏎️']; // 🏎️ Steering Wheel Icon
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🎯', '🏎️'];
         for(let i=0; i<80; i++) {
             let angle = Math.random() * Math.PI * 2;
             let r = Math.random() * (MAP_RADIUS - 100);
@@ -423,7 +423,7 @@
                 });
             });
 
-            // WORKING MAGNET PULL LOGIC
+            // MAGNET PULL WORKING
             if(isMagnetActive) {
                 [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
@@ -436,7 +436,7 @@
                 });
             }
 
-            // EATING FRUITS (Balanced Growth)
+            // EATING FRUITS
             fruits.forEach((f, i) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
                     score += 5 * currentMultiplier;
