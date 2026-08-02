@@ -1,223 +1,302 @@
 <!DOCTYPE html>
-<html lang="km">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D Tank Battle Strategy</title>
+    <title>dod.io - Realtime Multiplayer Anaconda</title>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
+        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Segoe UI', Tahoma, sans-serif; touch-action: none; user-select: none; }
+        #gameCanvas { display: block; background: #0b0e14; }
+
+        /* MAIN MENU SCREEN */
+        #mainMenu {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 50; color: white; text-align: center;
         }
-        body {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            background-color: #050508;
-            font-family: Arial, sans-serif;
+
+        .lang-picker { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 10px; border-radius: 8px; outline: none; }
+        .game-title { font-size: 48px; font-weight: 900; color: #f1c40f; text-shadow: 0 4px 20px rgba(241, 196, 15, 0.5); margin-bottom: 5px; }
+        
+        .menu-box {
+            background: rgba(0, 0, 0, 0.75); border: 2px solid rgba(255, 255, 255, 0.15);
+            padding: 22px; border-radius: 20px; width: 330px; box-shadow: 0 10px 30px rgba(0,0,0,0.7);
         }
-        #game-container {
-            width: 100%;
-            height: 100%;
+
+        .profile-card {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            background: rgba(255, 255, 255, 0.08); padding: 12px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15); margin-bottom: 12px;
         }
-        #ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 15px;
+
+        .mascot-avatar {
+            width: 55px; height: 55px; background: radial-gradient(circle, #2ecc71, #1e8449);
+            border: 2px solid #f1c40f; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 30px; box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
         }
-        .hud-header {
-            background: rgba(10, 15, 30, 0.75);
-            border: 1px solid rgba(0, 255, 200, 0.3);
-            padding: 10px 15px;
-            border-radius: 8px;
-            color: #00ffcc;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            backdrop-filter: blur(5px);
+
+        .input-field {
+            width: 100%; padding: 10px; border: none; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15); color: white; text-align: center; font-size: 15px; outline: none; box-sizing: border-box;
         }
-        .controls-hint {
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            align-self: center;
-            text-align: center;
+
+        .btn-play {
+            width: 100%; padding: 13px; margin-top: 10px; background: #2ecc71; color: white;
+            border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        /* IN-GAME HUD */
+        #ui { position: absolute; top: 10px; left: 10px; color: #fff; font-size: 13px; pointer-events: none; z-index: 10; display: none; }
+        #minimap { position: absolute; top: 10px; right: 10px; width: 130px; height: 95px; background: #000; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 8px; z-index: 10; display: none; }
+
+        /* 360 ANALOG JOYSTICK */
+        #joystickZone {
+            position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.12); border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%; z-index: 20; display: none; touch-action: none;
+        }
+        #joystickKnob {
+            position: absolute; top: 50%; left: 50%; width: 50px; height: 50px;
+            background: rgba(255, 255, 255, 0.6); border: 2px solid #fff; border-radius: 50%;
+            transform: translate(-50%, -50%); pointer-events: none;
         }
     </style>
-    <!-- Loading Three.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="game-container"></div>
+<!-- MAIN MENU -->
+<div id="mainMenu">
+    <div class="game-title">dod.io</div>
+    <div class="menu-box">
+        <div class="profile-card">
+            <div class="mascot-avatar">🐍</div>
+            <div style="flex-grow: 1;">
+                <input type="text" id="playerNameInput" class="input-field" placeholder="Username..." value="Shafeeq">
+            </div>
+        </div>
 
-    <div id="ui-layer">
-        <div class="hud-header">
-            <span>🎮 STATUS: ONLINE</span>
-            <span>🚀 3D ENGINE: READY</span>
-        </div>
-        <div class="controls-hint">
-            📱 پەنجە بەردە سەر شاشەکە بۆ بەڕێوەبردنی تانک و جوڵاندنی کامێرا
-        </div>
+        <button class="btn-play" id="btnPlay" onclick="startGame()">PLAY ONLINE 🌐</button>
     </div>
+</div>
 
-    <script>
-        // --- 1. SETUP SCENE, CAMERA, & RENDERER ---
-        const container = document.getElementById('game-container');
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a14);
-        scene.fog = new THREE.FogExp2(0x0a0a14, 0.015);
+<!-- IN-GAME HUD -->
+<div id="ui">
+    <div>Score: <span id="scoreText" style="color:#2ecc71; font-weight:bold;">0</span></div>
+    <div>Online Players: <span id="onlineCount" style="color:#3498db; font-weight:bold;">1</span></div>
+</div>
 
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 25, 25);
-        camera.lookAt(0, 0, 0);
+<canvas id="minimap"></canvas>
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        container.appendChild(renderer.domElement);
+<!-- 360 JOYSTICK -->
+<div id="joystickZone">
+    <div id="joystickKnob"></div>
+</div>
 
-        // --- 2. LIGHTING ---
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(ambientLight);
+<canvas id="gameCanvas"></canvas>
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(20, 40, 20);
-        dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 1024;
-        dirLight.shadow.mapSize.height = 1024;
-        scene.add(dirLight);
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const mCanvas = document.getElementById('minimap');
+const mCtx = mCanvas.getContext('2d');
 
-        // --- 3. GROUND / BATTLEFIELD GRID ---
-        const gridHelper = new THREE.GridHelper(60, 30, 0x00ffcc, 0x1f293d);
-        gridHelper.position.y = 0.01;
-        scene.add(gridHelper);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+mCanvas.width = 130;
+mCanvas.height = 95;
 
-        const groundGeo = new THREE.PlaneGeometry(60, 60);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x111625, roughness: 0.8 });
-        const ground = new THREE.Mesh(groundGeo, groundMat);
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        scene.add(ground);
+const MAP_WIDTH = 20000;
+const MAP_HEIGHT = 15000;
+let cameraZoom = 0.50;
 
-        // --- 4. TANK CREATION (3D OBJECT) ---
-        function createTank(colorHex) {
-            const tankGroup = new THREE.Group();
+let socket;
+let myId = null;
+let gameStarted = false;
+let playerName = "Shafeeq";
 
-            // Tank Body
-            const bodyGeo = new THREE.BoxGeometry(2.2, 0.8, 3);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.5, roughness: 0.3 });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 0.5;
-            body.castShadow = true;
-            tankGroup.add(body);
+let mySnake = { x: MAP_WIDTH/2, y: MAP_HEIGHT/2, body: [], score: 0 };
+let otherPlayers = {};
+let foods = [];
+let coins = [];
 
-            // Tank Turret
-            const turretGeo = new THREE.BoxGeometry(1.4, 0.6, 1.4);
-            const turretMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.7 });
-            const turret = new THREE.Mesh(turretGeo, turretMat);
-            turret.position.set(0, 1.1, -0.2);
-            turret.castShadow = true;
-            tankGroup.add(turret);
+let angle = 0;
+let targetAngle = 0;
+let baseSpeed = 5.2;
 
-            // Tank Cannon
-            const cannonGeo = new THREE.CylinderGeometry(0.12, 0.12, 1.8);
-            const cannonMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-            const cannon = new THREE.Mesh(cannonGeo, cannonMat);
-            cannon.rotation.x = Math.PI / 2;
-            cannon.position.set(0, 1.1, 0.8);
-            cannon.castShadow = true;
-            tankGroup.add(cannon);
+function startGame() {
+    let inputName = document.getElementById('playerNameInput').value;
+    if(inputName.trim() !== "") playerName = inputName;
 
-            return tankGroup;
+    document.getElementById('mainMenu').style.display = 'none';
+    document.getElementById('ui').style.display = 'block';
+    document.getElementById('minimap').style.display = 'block';
+    document.getElementById('joystickZone').style.display = 'block';
+
+    // Connect to Backend Multiplayer Server
+    socket = io();
+
+    socket.on('connect', () => {
+        socket.emit('joinGame', { name: playerName, skin: 'anaconda' });
+    });
+
+    socket.on('init', (data) => {
+        myId = data.id;
+        otherPlayers = data.players;
+        delete otherPlayers[myId];
+        foods = data.foods;
+        coins = data.coins;
+        gameStarted = true;
+    });
+
+    socket.on('newPlayer', (player) => {
+        otherPlayers[player.id] = player;
+        updateOnlineCount();
+    });
+
+    socket.on('playerMoved', (player) => {
+        if(otherPlayers[player.id]) {
+            otherPlayers[player.id] = player;
         }
+    });
 
-        // Add Player Tank
-        const playerTank = createTank(0x00ffaa);
-        playerTank.position.set(0, 0, 0);
-        scene.add(playerTank);
+    socket.on('foodSpawn', (data) => {
+        foods = foods.filter(f => f.id !== data.eatenId);
+        foods.push(data.newFood);
+    });
 
-        // Add Target Marker
-        const markerGeo = new THREE.RingGeometry(0.5, 0.7, 32);
-        const markerMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, side: THREE.DoubleSide });
-        const targetMarker = new THREE.Mesh(markerGeo, markerMat);
-        targetMarker.rotation.x = -Math.PI / 2;
-        targetMarker.position.y = 0.02;
-        targetMarker.visible = false;
-        scene.add(targetMarker);
+    socket.on('playerLeft', (id) => {
+        delete otherPlayers[id];
+        updateOnlineCount();
+    });
+}
 
-        // --- 5. CONTROLS & INTERACTION ---
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        let targetPosition = null;
-        const speed = 0.12;
+function updateOnlineCount() {
+    let count = Object.keys(otherPlayers).length + 1;
+    document.getElementById('onlineCount').innerText = count;
+}
 
-        function handlePointer(event) {
-            let clientX = event.clientX || (event.touches && event.touches[0].clientX);
-            let clientY = event.clientY || (event.touches && event.touches[0].clientY);
+// JOYSTICK LOGIC
+const joystickZone = document.getElementById('joystickZone');
+const joystickKnob = document.getElementById('joystickKnob');
+let isJoystickActive = false;
 
-            if (!clientX || !clientY) return;
+joystickZone.addEventListener('touchstart', e => { isJoystickActive = true; handleJoystickMove(e.touches[0]); });
+joystickZone.addEventListener('touchmove', e => { if(isJoystickActive) handleJoystickMove(e.touches[0]); });
+joystickZone.addEventListener('touchend', () => {
+    isJoystickActive = false;
+    joystickKnob.style.top = '50%';
+    joystickKnob.style.left = '50%';
+});
 
-            mouse.x = (clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+function handleJoystickMove(touch) {
+    let rect = joystickZone.getBoundingClientRect();
+    let centerX = rect.left + rect.width / 2;
+    let centerY = rect.top + rect.height / 2;
 
-            raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObject(ground);
+    let deltaX = touch.clientX - centerX;
+    let deltaY = touch.clientY - centerY;
+    let distance = Math.hypot(deltaX, deltaY);
+    let maxRadius = rect.width / 2;
 
-            if (intersects.length > 0) {
-                targetPosition = intersects[0].point;
-                targetMarker.position.set(targetPosition.x, 0.02, targetPosition.z);
-                targetMarker.visible = true;
-            }
+    if(distance > maxRadius) {
+        deltaX = (deltaX / distance) * maxRadius;
+        deltaY = (deltaY / distance) * maxRadius;
+    }
+
+    joystickKnob.style.left = `${50 + (deltaX / rect.width) * 100}%`;
+    joystickKnob.style.top = `${50 + (deltaY / rect.height) * 100}%`;
+
+    targetAngle = Math.atan2(deltaY, deltaX);
+}
+
+function update() {
+    if(!gameStarted) return;
+
+    let diff = targetAngle - angle;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    angle += diff * 0.18;
+
+    mySnake.x += Math.cos(angle) * baseSpeed;
+    mySnake.y += Math.sin(angle) * baseSpeed;
+
+    mySnake.body.unshift({ x: mySnake.x, y: mySnake.y });
+    while(mySnake.body.length > 20 + Math.floor(mySnake.score * 0.05)) mySnake.body.pop();
+
+    // Check food eat
+    foods.forEach(f => {
+        if(Math.hypot(mySnake.x - f.x, mySnake.y - f.y) < 30) {
+            mySnake.score += 10;
+            document.getElementById('scoreText').innerText = mySnake.score;
+            socket.emit('eatFood', f.id);
         }
+    });
 
-        window.addEventListener('click', handlePointer);
-        window.addEventListener('touchstart', handlePointer);
+    // Send position to Server
+    socket.emit('updatePos', {
+        x: mySnake.x,
+        y: mySnake.y,
+        angle: angle,
+        body: mySnake.body,
+        score: mySnake.score
+    });
+}
 
-        // --- 6. GAME LOOP & ANIMATION ---
-        function animate() {
-            requestAnimationFrame(animate);
+function drawGridBackground() {
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.lineWidth = 1.8;
+    for(let x = 0; x < MAP_WIDTH; x += 140) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_HEIGHT); ctx.stroke(); }
+    for(let y = 0; y < MAP_HEIGHT; y += 140) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_WIDTH, y); ctx.stroke(); }
+}
 
-            // Move Tank smoothly towards target position
-            if (targetPosition) {
-                const distance = playerTank.position.distanceTo(targetPosition);
-                if (distance > 0.3) {
-                    const dir = new THREE.Vector3().subVectors(targetPosition, playerTank.position).normalize();
-                    playerTank.position.addScaledVector(dir, speed);
-                    playerTank.lookAt(targetPosition.x, playerTank.position.y, targetPosition.z);
-                } else {
-                    targetMarker.visible = false;
-                }
-            }
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if(!gameStarted) return;
 
-            // Smoothly move camera with player tank
-            camera.position.x = THREE.MathUtils.lerp(camera.position.x, playerTank.position.x, 0.05);
-            camera.position.z = THREE.MathUtils.lerp(camera.position.z, playerTank.position.z + 25, 0.05);
+    ctx.save();
+    ctx.translate(canvas.width/2, canvas.height/2);
+    ctx.scale(cameraZoom, cameraZoom);
+    ctx.translate(-canvas.width/2, -canvas.height/2);
+    ctx.translate(canvas.width/2 - mySnake.x, canvas.height/2 - mySnake.y);
 
-            renderer.render(scene, camera);
+    drawGridBackground();
+
+    // Draw Foods
+    foods.forEach(f => {
+        ctx.fillStyle = "#2ecc71";
+        ctx.beginPath(); ctx.arc(f.x, f.y, 8, 0, Math.PI * 2); ctx.fill();
+    });
+
+    // Draw Other Online Real Players
+    Object.values(otherPlayers).forEach(p => {
+        ctx.fillStyle = "#e74c3c";
+        if(p.body) {
+            p.body.forEach(b => {
+                ctx.beginPath(); ctx.arc(b.x, b.y, 22, 0, Math.PI * 2); ctx.fill();
+            });
         }
+        ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif";
+        ctx.fillText(p.name, p.x - 20, p.y - 30);
+    });
 
-        animate();
+    // Draw My Snake
+    mySnake.body.forEach(b => {
+        ctx.fillStyle = "#27ae60";
+        ctx.beginPath(); ctx.arc(b.x, b.y, 22, 0, Math.PI * 2); ctx.fill();
+    });
 
-        // --- 7. RESPONSIVE RESIZE ---
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    </script>
+    ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif";
+    ctx.fillText(playerName, mySnake.x - 20, mySnake.y - 35);
+
+    ctx.restore();
+}
+
+function loop() { update(); draw(); requestAnimationFrame(loop); }
+loop();
+</script>
+
 </body>
 </html>
