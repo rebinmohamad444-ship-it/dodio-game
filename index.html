@@ -20,137 +20,108 @@
         }
         canvas { display: block; width: 100vw; height: 100vh; background: #12161f; }
 
-        /* Top HUD */
-        #hud-top-left {
-            position: absolute; top: 10px; left: 10px;
-            background: rgba(0,0,0,0.75); padding: 8px 12px;
-            border-radius: 8px; border: 1px solid #2ecc71;
-            font-size: 11px; z-index: 5; pointer-events: none;
-        }
-
-        /* Danger Indicator */
-        #danger-warning {
-            position: absolute; top: 15px; left: 50%;
-            transform: translateX(-50%);
-            background: rgba(231, 76, 60, 0.9); color: #fff;
-            padding: 6px 15px; border-radius: 20px;
-            font-weight: bold; font-size: 13px; z-index: 10;
-            display: none; animation: flash 0.6s infinite alternate;
-        }
-        @keyframes flash {
-            from { opacity: 1; box-shadow: 0 0 10px #e74c3c; }
-            to { opacity: 0.2; box-shadow: none; }
-        }
-
-        /* Leaderboard Top Right */
-        #leaderboard-box {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.8); padding: 6px 10px;
-            border-radius: 8px; border: 1px solid #f1c40f;
-            font-size: 10px; z-index: 5; min-width: 110px; pointer-events: none;
-        }
-
-        /* Radar Bottom Right */
+        /* Radar Top Left */
         #radar-wrapper {
-            position: absolute; bottom: 10px; right: 10px;
+            position: absolute; top: 10px; left: 10px;
             display: flex; flex-direction: column; align-items: center;
             gap: 4px; z-index: 5;
         }
         #radar-canvas {
-            width: 85px; height: 85px;
+            width: 75px; height: 75px;
             background: rgba(0, 0, 0, 0.85);
             border: 2px solid #2ecc71; border-radius: 50%;
         }
+        #hud-stats {
+            background: rgba(0,0,0,0.75); padding: 4px 8px;
+            border-radius: 6px; border: 1px solid #2ecc71;
+            font-size: 10px; margin-top: 4px; text-align: center;
+        }
 
-        /* Menu Overlay */
-        #menu-overlay, #settings-modal {
+        /* Leaderboard Top Right (Small & Compact) */
+        #leaderboard-box {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.8); padding: 5px 8px;
+            border-radius: 6px; border: 1px solid #f1c40f;
+            font-size: 9px; z-index: 5; width: 100px; pointer-events: none;
+        }
+
+        /* Active Multiplier & Powerup Status */
+        #multiplier-badge {
+            position: absolute; top: 95px; left: 10px;
+            background: rgba(241, 196, 15, 0.9); color: #111;
+            padding: 3px 8px; border-radius: 12px; font-weight: bold;
+            font-size: 11px; z-index: 5; display: none;
+        }
+
+        /* Menus and Modals */
+        #menu-overlay, #shop-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 12, 16, 0.95); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
-        #settings-modal { display: none; z-index: 30; }
+        #shop-modal { display: none; z-index: 30; }
 
-        .lang-switch { position: absolute; top: 15px; display: flex; gap: 8px; }
-        .lang-btn { padding: 4px 10px; font-size: 11px; background: #222; border: 1px solid #2ecc71; color: #fff; border-radius: 10px; cursor: pointer; }
-
-        h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
-        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 260px; }
+        h1 { font-size: 36px; color: #2ecc71; margin-bottom: 5px; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 250px; }
         button, select, input {
             padding: 9px; font-size: 12px; border-radius: 12px;
             border: 1.5px solid #2ecc71; background: #181c24; color: #fff; text-align: center; outline: none;
         }
         button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; border: none; }
-        button.set-btn { background: #e67e22; color: #fff; }
+        button.fb-btn { background: #1877f2; color: #fff; }
+        button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
+        button.shop-btn { background: #f39c12; color: #fff; }
+
+        .shop-list {
+            display: flex; flex-direction: column; gap: 8px;
+            max-height: 250px; overflow-y: auto; width: 85%; max-width: 280px; margin: 15px 0;
+        }
+        .shop-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #181c24; padding: 8px 12px; border-radius: 8px; border: 1px solid #333;
+        }
     </style>
 </head>
 <body>
 
-<div id="danger-warning">⚠️ DANGER ZONE ⚠️</div>
-
-<div id="hud-top-left">
-    <div><span id="lbl-score">Score</span>: <span id="scoreVal" style="color:#2ecc71; font-weight:bold;">0</span></div>
-    <div><span id="lbl-coins">Coins</span>: <span id="coinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+<div id="radar-wrapper">
+    <canvas id="radar-canvas" width="75" height="75"></canvas>
+    <div id="hud-stats">
+        <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
+        <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
+    </div>
 </div>
+
+<div id="multiplier-badge">⚡ 1X</div>
 
 <div id="leaderboard-box">
-    <h5 style="color:#f1c40f; text-align:center; margin-bottom:3px;">🏆 Top 10</h5>
+    <h5 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 Top 10</h5>
     <div id="topList"></div>
-</div>
-
-<div id="radar-wrapper">
-    <canvas id="radar-canvas" width="85" height="85"></canvas>
 </div>
 
 <!-- Main Menu -->
 <div id="menu-overlay">
-    <div class="lang-switch">
-        <button class="lang-btn" onclick="setLanguage('en')">English</button>
-        <button class="lang-btn" onclick="setLanguage('ku')">کوردی</button>
-        <button class="lang-btn" onclick="setLanguage('ar')">العربية</button>
-    </div>
-
     <h1>dod.io</h1>
-    <div style="font-size:32px; margin-bottom:10px;">🐍</div>
+    <div style="font-size:30px; margin-bottom:8px;">🐍</div>
     
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name">
         
-        <select id="skinSelect">
-            <optgroup label="Regions / هەرێمەکان">
-                <option value="kurdish">✌️ Kurdistan (کوردستان)</option>
-                <option value="catalonia">🟡🔴 Catalonia</option>
-                <option value="scotland">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland</option>
-            </optgroup>
-            <optgroup label="Countries / وڵاتان">
-                <option value="brazil">🇧🇷 Brazil</option>
-                <option value="argentina">🇦🇷 Argentina</option>
-                <option value="germany">🇩🇪 Germany</option>
-                <option value="france">🇫🇷 France</option>
-                <option value="spain">🇪🇸 Spain</option>
-                <option value="italy">🇮🇹 Italy</option>
-                <option value="ukraine">🇺🇦 Ukraine</option>
-                <option value="japan">🇯🇵 Japan</option>
-                <option value="usa">🇺🇸 USA</option>
-                <option value="iraq">🇮🇶 Iraq</option>
-            </optgroup>
-        </select>
-
-        <button id="btn-play" onclick="startGame()">PLAY GAME 🎮</button>
-        <button id="btn-settings" class="set-btn" onclick="openSettings()">SETTINGS ⚙️</button>
+        <button onclick="startGame()">Play as Guest 🎮</button>
+        <button class="guest-btn" onclick="startGame()">Email Login ✉️</button>
+        <button class="fb-btn" onclick="startGame()">Connect Facebook 📘</button>
+        <button class="shop-btn" onclick="openShop()">Skins & Shop 🛒</button>
     </div>
 </div>
 
-<!-- Settings Modal -->
-<div id="settings-modal">
-    <h3 style="color:#2ecc71; margin-bottom:15px;" id="lbl-settings-title">Settings</h3>
-    <div class="btn-group">
-        <label id="lbl-ctrl-type">Control Type:</label>
-        <select id="controlType">
-            <option value="touch">Touch / Joystick</option>
-            <option value="buttons">Buttons</option>
-        </select>
-        <button onclick="closeSettings()" id="btn-save">Save & Close</button>
-    </div>
+<!-- Shop Modal -->
+<div id="shop-modal">
+    <h3 style="color:#f39c12; margin-bottom:10px;">Skin Shop 🛒</h3>
+    <div>Your Balance: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    
+    <div class="shop-list" id="shopItemsContainer"></div>
+
+    <button onclick="closeShop()" style="width:120px;">Close</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -161,34 +132,28 @@
     const radarCanvas = document.getElementById('radar-canvas');
     const radarCtx = radarCanvas.getContext('2d');
 
-    const MAP_SIZE = 20000; // Giant Map
+    const MAP_SIZE = 20000;
     let gameRunning = false;
     let score = 0, coins = 0;
-    let lang = 'en';
+    
+    let currentMultiplier = 1;
+    let multiplierTimer = null;
 
-    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true };
+    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'default', body: [], alive: true };
     let bots = [];
     let fruits = [];
-    let redZoneRadius = MAP_SIZE / 2;
+    let coinItems = [];
+    let powerups = [];
 
-    const langData = {
-        en: { play: "PLAY GAME 🎮", settings: "SETTINGS ⚙️", score: "Score", coins: "Coins", namePh: "Enter Player Name", setT: "Settings", ctrl: "Control Type:", save: "Save & Close" },
-        ku: { play: "یاری بکە 🎮", settings: "سێتینگ ⚙️", score: "خاڵ", coins: "کۆین", namePh: "ناوت بنووسە", setT: "ڕێکخستنەکان", ctrl: "جۆری کۆنتڕۆڵ:", save: "پاشەکەوتکردن" },
-        ar: { play: "ابدأ اللعب 🎮", settings: "الإعدادات ⚙️", score: "النقاط", coins: "العملات", namePh: "أدخل اسم اللاعب", setT: "الإعدادات", ctrl: "نوع التحكم:", save: "حفظ وإغلاق" }
-    };
-
-    function setLanguage(l) {
-        lang = l;
-        const d = langData[l];
-        document.getElementById('btn-play').innerText = d.play;
-        document.getElementById('btn-settings').innerText = d.settings;
-        document.getElementById('lbl-score').innerText = d.score;
-        document.getElementById('lbl-coins').innerText = d.coins;
-        document.getElementById('playerName').placeholder = d.namePh;
-        document.getElementById('lbl-settings-title').innerText = d.setT;
-        document.getElementById('lbl-ctrl-type').innerText = d.ctrl;
-        document.getElementById('btn-save').innerText = d.save;
-    }
+    // Skins Database
+    const skinsData = [
+        { id: 'default', name: '🟢 Green Classic', type: 'free', color: '#2ecc71', owned: true },
+        { id: 'blue', name: '🔵 Blue Wave', type: 'free', color: '#3498db', owned: true },
+        { id: 'kurdish', name: '✌️ Kurdistan Flag', type: 'paid', price: 100, color: '#00A859', owned: false },
+        { id: 'brazil', name: '🇧🇷 Brazil Flag', type: 'paid', price: 100, color: '#FFDF00', owned: false },
+        { id: 'germany', name: '🇩🇪 Germany Flag', type: 'paid', price: 100, color: '#DD0000', owned: false },
+        { id: 'argentina', name: '🇦🇷 Argentina Flag', type: 'paid', price: 100, color: '#74ACDF', owned: false }
+    ];
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -197,11 +162,48 @@
     window.addEventListener('resize', resize);
     resize();
 
-    function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
-    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+    function openShop() {
+        document.getElementById('shopCoinVal').innerText = `🪙 ${coins}`;
+        renderShop();
+        document.getElementById('shop-modal').style.display = 'flex';
+    }
+    function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
+
+    function renderShop() {
+        let container = document.getElementById('shopItemsContainer');
+        container.innerHTML = "";
+        skinsData.forEach(s => {
+            let itemHtml = `<div class="shop-item">
+                <span>${s.name}</span>`;
+            if(s.owned) {
+                itemHtml += `<button onclick="selectSkin('${s.id}')" style="padding:4px 8px; font-size:10px;">Equip</button>`;
+            } else {
+                itemHtml += `<button onclick="buySkin('${s.id}')" class="shop-btn" style="padding:4px 8px; font-size:10px;">Buy 🪙100</button>`;
+            }
+            itemHtml += `</div>`;
+            container.innerHTML += itemHtml;
+        });
+    }
+
+    function buySkin(id) {
+        let skin = skinsData.find(s => s.id === id);
+        if(coins >= 100) {
+            coins -= 100;
+            skin.owned = true;
+            document.getElementById('coinVal').innerText = `🪙 ${coins}`;
+            renderShop();
+            alert("Skin Unlocked!");
+        } else {
+            alert("Not enough coins! Collect more in game.");
+        }
+    }
+
+    function selectSkin(id) {
+        player.skin = id;
+        closeShop();
+    }
 
     function startGame() {
-        player.skin = document.getElementById('skinSelect').value;
         document.getElementById('menu-overlay').style.display = 'none';
         gameRunning = true;
         initGame();
@@ -214,29 +216,48 @@
         player.body = [];
         for(let i=0; i<25; i++) player.body.push({x: player.x - i*6, y: player.y});
 
-        // Spawn Bots
+        // 10 Aggressive Bots
         bots = [];
         for(let i=0; i<10; i++) spawnBot(i);
 
-        // Spawn Fruits (🍌 🍉 🍒 🍎 🍓)
+        // 2X Fruits (1600 Items)
         fruits = [];
-        const fruitTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<800; i++) {
-            fruits.push({
-                x: Math.random() * MAP_SIZE,
-                y: Math.random() * MAP_SIZE,
-                type: fruitTypes[Math.floor(Math.random() * fruitTypes.length)]
-            });
+        const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
+        for(let i=0; i<1600; i++) {
+            fruits.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, type: fTypes[Math.floor(Math.random()*fTypes.length)] });
+        }
+
+        // 2X Coins (400 Items)
+        coinItems = [];
+        for(let i=0; i<400; i++) coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
+
+        // 2X Power-ups & Multipliers (2X, 4X, 6X, 10X)
+        powerups = [];
+        const pTypes = ['2x', '4x', '6x', '10x', 'magnet'];
+        for(let i=0; i<80; i++) {
+            powerups.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, type: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
     }
 
     function spawnBot(id) {
-        let bx = Math.random() * (MAP_SIZE - 2000) + 1000;
-        let by = Math.random() * (MAP_SIZE - 2000) + 1000;
+        let bx = Math.random() * MAP_SIZE;
+        let by = Math.random() * MAP_SIZE;
         let body = [];
         for(let j=0; j<20; j++) body.push({x: bx - j*6, y: by});
-        const skins = ['brazil', 'germany', 'france', 'argentina', 'spain'];
-        bots[id] = { id, name: "Bot_" + (id+1), x: bx, y: by, angle: Math.random()*Math.PI*2, body, skin: skins[id%skins.length], score: Math.floor(Math.random()*500+100), alive: true };
+        bots[id] = { id, name: "Bot_" + (id+1), x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: Math.floor(Math.random()*400+100), alive: true };
+    }
+
+    function activateMultiplier(val, durationSec) {
+        currentMultiplier = val;
+        let badge = document.getElementById('multiplier-badge');
+        badge.innerText = `⚡ ${val}X Multiplier!`;
+        badge.style.display = 'block';
+
+        if(multiplierTimer) clearTimeout(multiplierTimer);
+        multiplierTimer = setTimeout(() => {
+            currentMultiplier = 1;
+            badge.style.display = 'none';
+        }, durationSec * 1000);
     }
 
     function handlePointer(e) {
@@ -248,70 +269,70 @@
     window.addEventListener('touchmove', handlePointer);
     window.addEventListener('mousemove', handlePointer);
 
-    function getSkinColor(skin) {
-        switch(skin) {
-            case 'kurdish': return '#00A859';
-            case 'brazil': return '#FFDF00';
-            case 'argentina': return '#74ACDF';
-            case 'germany': return '#DD0000';
-            default: return '#2ecc71';
-        }
-    }
-
-    function updateLeaderboard() {
-        let list = [{ name: document.getElementById('playerName').value || "Player", score: score, skin: player.skin }];
-        bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score, skin: b.skin }); });
-        list.sort((a, b) => b.score - a.score);
-
-        let html = "";
-        list.slice(0, 10).forEach((item, idx) => {
-            let color = getSkinColor(item.skin);
-            html += `<div style="color:${color};">${idx+1}. ${item.name} - ${item.score}</div>`;
-        });
-        document.getElementById('topList').innerHTML = html;
-    }
-
     function gameLoop() {
         if(!gameRunning) return;
 
         if(player.alive) {
-            // Player movement
             let diff = player.targetAngle - player.angle;
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
             player.angle += diff * 0.1;
 
-            player.x += Math.cos(player.angle) * 3.5;
-            player.y += Math.sin(player.angle) * 3.5;
+            player.x += Math.cos(player.angle) * 3.6;
+            player.y += Math.sin(player.angle) * 3.6;
             player.body.unshift({x: player.x, y: player.y});
             player.body.pop();
 
-            // Check Red Zone Danger & Collision
-            let distFromCenter = Math.hypot(player.x - MAP_SIZE/2, player.y - MAP_SIZE/2);
-            if(distFromCenter > redZoneRadius - 300) {
-                document.getElementById('danger-warning').style.display = 'block';
-            } else {
-                document.getElementById('danger-warning').style.display = 'none';
-            }
-
-            if(distFromCenter >= redZoneRadius) {
-                player.alive = false;
-                alert("Game Over! You hit the Danger Red Zone!");
-                location.reload();
-            }
-
             // Eat Fruits
             fruits.forEach((f, i) => {
-                let d = Math.hypot(player.x - f.x, player.y - f.y);
-                if(d < 25) {
-                    score += 10;
+                if(Math.hypot(player.x - f.x, player.y - f.y) < 25) {
+                    score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     fruits[i].x = Math.random() * MAP_SIZE;
                     fruits[i].y = Math.random() * MAP_SIZE;
                     player.body.push({...player.body[player.body.length-1]});
                 }
             });
+
+            // Eat Coins
+            coinItems.forEach((c, i) => {
+                if(Math.hypot(player.x - c.x, player.y - c.y) < 22) {
+                    coins += 1;
+                    document.getElementById('coinVal').innerText = `🪙 ${coins}`;
+                    coinItems[i].x = Math.random() * MAP_SIZE;
+                    coinItems[i].y = Math.random() * MAP_SIZE;
+                }
+            });
+
+            // Eat Power-ups & Multipliers
+            powerups.forEach((p, i) => {
+                if(Math.hypot(player.x - p.x, player.y - p.y) < 25) {
+                    if(p.type === '2x') activateMultiplier(2, 20);
+                    else if(p.type === '4x') activateMultiplier(4, 15);
+                    else if(p.type === '6x') activateMultiplier(6, 15);
+                    else if(p.type === '10x') activateMultiplier(10, 10);
+
+                    powerups[i].x = Math.random() * MAP_SIZE;
+                    powerups[i].y = Math.random() * MAP_SIZE;
+                }
+            });
         }
+
+        // Aggressive Bots Logic
+        bots.forEach(b => {
+            if(!b.alive) return;
+            // Aim at player if nearby to cut off!
+            let distToP = Math.hypot(player.x - b.x, player.y - b.y);
+            if(distToP < 800) {
+                b.angle = Math.atan2(player.y - b.y, player.x - b.x);
+            } else {
+                b.angle += (Math.random() - 0.5) * 0.15;
+            }
+            b.x += Math.cos(b.angle) * 3.4;
+            b.y += Math.sin(b.angle) * 3.4;
+            b.body.unshift({x: b.x, y: b.y});
+            b.body.pop();
+        });
 
         // Camera Follow
         const camX = canvas.width / 2 - player.x;
@@ -323,26 +344,38 @@
         ctx.save();
         ctx.translate(camX, camY);
 
-        // Map Border & Red Zone
+        // Map Outer Grid
         ctx.strokeStyle = '#1e2532'; ctx.lineWidth = 10;
         ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-        ctx.strokeStyle = 'rgba(231, 76, 60, 0.5)'; ctx.lineWidth = 15;
+        // RED CENTER CROSSHAIR LINES (Horizontal & Vertical Center Lines)
+        ctx.strokeStyle = 'rgba(231, 76, 60, 0.8)'; ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.arc(MAP_SIZE/2, MAP_SIZE/2, redZoneRadius, 0, Math.PI*2);
+        // Horizontal Line
+        ctx.moveTo(0, MAP_SIZE/2); ctx.lineTo(MAP_SIZE, MAP_SIZE/2);
+        // Vertical Line
+        ctx.moveTo(MAP_SIZE/2, 0); ctx.lineTo(MAP_SIZE/2, MAP_SIZE);
         ctx.stroke();
 
         // Draw Fruits
-        fruits.forEach(f => {
-            ctx.font = "24px Arial";
-            ctx.fillText(f.type, f.x, f.y);
+        fruits.forEach(f => { ctx.font = "20px Arial"; ctx.fillText(f.type, f.x, f.y); });
+
+        // Draw Coins
+        coinItems.forEach(c => { ctx.font = "18px Arial"; ctx.fillText("🪙", c.x, c.y); });
+
+        // Draw Power-ups
+        powerups.forEach(p => {
+            ctx.font = "18px Arial";
+            let label = p.type.toUpperCase();
+            ctx.fillText(label, p.x, p.y);
         });
 
         // Draw Player Snake
         if(player.alive) {
+            let activeSkin = skinsData.find(s => s.id === player.skin) || skinsData[0];
             player.body.forEach((p, i) => {
-                ctx.fillStyle = i === 0 ? '#FE8200' : getSkinColor(player.skin);
-                ctx.beginPath(); ctx.arc(p.x, p.y, i === 0 ? 12 : 9, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = i === 0 ? '#FE8200' : activeSkin.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, i === 0 ? 11 : 8, 0, Math.PI*2); ctx.fill();
             });
         }
 
@@ -350,28 +383,25 @@
         bots.forEach(b => {
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
-                ctx.fillStyle = j === 0 ? '#e74c3c' : getSkinColor(b.skin);
-                ctx.beginPath(); ctx.arc(bp.x, bp.y, j === 0 ? 11 : 8, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = j === 0 ? '#e74c3c' : '#95a5a6';
+                ctx.beginPath(); ctx.arc(bp.x, bp.y, j === 0 ? 10 : 7, 0, Math.PI*2); ctx.fill();
             });
         });
 
         ctx.restore();
 
-        // Update Radar (Player shown with flag color)
-        radarCtx.clearRect(0, 0, 85, 85);
+        // Update Radar (Top Left)
+        radarCtx.clearRect(0, 0, 75, 75);
         if(player.alive) {
-            radarCtx.fillStyle = getSkinColor(player.skin);
-            radarCtx.beginPath();
-            radarCtx.arc((player.x/MAP_SIZE)*85, (player.y/MAP_SIZE)*85, 3.5, 0, Math.PI*2);
-            radarCtx.fill();
+            radarCtx.fillStyle = '#2ecc71'; radarCtx.beginPath();
+            radarCtx.arc((player.x/MAP_SIZE)*75, (player.y/MAP_SIZE)*75, 3, 0, Math.PI*2); radarCtx.fill();
         }
         bots.forEach(b => {
             if(!b.alive) return;
             radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
-            radarCtx.arc((b.x/MAP_SIZE)*85, (b.y/MAP_SIZE)*85, 2, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc((b.x/MAP_SIZE)*75, (b.y/MAP_SIZE)*75, 2, 0, Math.PI*2); radarCtx.fill();
         });
 
-        updateLeaderboard();
         requestAnimationFrame(gameLoop);
     }
 </script>
