@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>dod.io</title>
+    <meta name="theme-color" content="#2ecc71">
+    <link rel="icon" type="image/png" href="https://emojiisland.com/cdn/shop/products/Snake_Emoji_1024x1024.png">
     <style>
         * {
             box-sizing: border-box;
@@ -13,13 +15,10 @@
             -webkit-user-select: none;
         }
         body {
-            background-color: #1a1a1a;
+            background-color: #111;
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
             width: 100vw;
         }
@@ -27,15 +26,10 @@
             position: relative;
             width: 100%;
             height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #111;
         }
         canvas {
-            background: #222;
+            background: #1a1a1a;
             display: block;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
         #ui-layer {
             position: absolute;
@@ -45,18 +39,31 @@
             height: 100%;
             pointer-events: none;
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-            padding: 15px;
+            padding: 10px;
         }
         .stats {
-            background: rgba(0,0,0,0.6);
-            padding: 10px 15px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #4CAF50;
-            width: fit-content;
+            font-size: 14px;
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+            height: fit-content;
+        }
+        .leaderboard-hud {
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #fff;
+            border: 1px solid #f1c40f;
+            width: 140px;
+        }
+        .leaderboard-hud h4 {
+            color: #f1c40f;
+            text-align: center;
+            margin-bottom: 5px;
         }
         #menu-overlay {
             position: absolute;
@@ -64,51 +71,46 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10;
-            pointer-events: auto;
         }
         h1 {
-            font-size: 42px;
-            color: #4CAF50;
+            font-size: 40px;
+            color: #2ecc71;
             margin-bottom: 5px;
-            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
         }
-        .snake-icon {
-            font-size: 50px;
-            margin-bottom: 15px;
+        .skin-box {
+            margin: 15px 0;
+            text-align: center;
         }
-        input[type="text"] {
-            padding: 12px 20px;
-            font-size: 18px;
-            border: 2px solid #4CAF50;
-            border-radius: 25px;
-            outline: none;
+        select, input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #2ecc71;
+            border-radius: 20px;
             background: #222;
             color: #fff;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             width: 80%;
-            max-width: 280px;
+            max-width: 250px;
+            outline: none;
         }
         button {
-            padding: 12px 30px;
+            padding: 12px 35px;
             font-size: 18px;
             font-weight: bold;
             color: #fff;
-            background: #4CAF50;
+            background: #2ecc71;
             border: none;
             border-radius: 25px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-            transition: all 0.2s ease;
-        }
-        button:active {
-            transform: scale(0.95);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
         }
     </style>
 </head>
@@ -120,15 +122,38 @@
     <div id="ui-layer">
         <div class="stats">
             <div>Score: <span id="scoreVal">0</span></div>
-            <div>Online Players: <span id="playersVal">1</span></div>
+            <div>Players: <span id="playersVal">1</span></div>
+        </div>
+
+        <div class="leaderboard-hud">
+            <h4>🏆 Top World Cup</h4>
+            <div id="topList">
+                1. 👑 Shafeeq - 1200<br>
+                2. 🇧🇷 Silva - 850<br>
+                3. 🇦🇷 Leo - 640
+            </div>
         </div>
     </div>
 
     <div id="menu-overlay">
-        <h1>dod.io</h1>
-        <div class="snake-icon">🐍</div>
-        <input type="text" id="playerName" value="Shafeeq" placeholder="Enter Nickname">
-        <button id="startBtn">PLAY ONLINE 🌐</button>
+        <h1>doda</h1>
+        <div style="font-size: 50px; margin: 10px;">🐍</div>
+        
+        <input type="text" id="playerName" value="Shafeeq" placeholder="Enter Name">
+        
+        <div class="skin-box">
+            <label style="display:block; margin-bottom:5px; color:#aaa;">Select Flag Skin 🌍:</label>
+            <select id="flagSkin">
+                <option value="kurdish">✌️ Kurdistan</option>
+                <option value="brazil">🇧🇷 Brazil</option>
+                <option value="argentina">🇦🇷 Argentina</option>
+                <option value="germany">🇩🇪 Germany</option>
+                <option value="france">🇫🇷 France</option>
+                <option value="spain">🇪🇸 Spain</option>
+            </select>
+        </div>
+
+        <button id="startBtn">PLAY NOW 🎮</button>
     </div>
 </div>
 
@@ -138,6 +163,7 @@
     const menuOverlay = document.getElementById('menu-overlay');
     const startBtn = document.getElementById('startBtn');
     const scoreVal = document.getElementById('scoreVal');
+    const flagSkinSelect = document.getElementById('flagSkin');
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -148,23 +174,32 @@
 
     let gameRunning = false;
     let score = 0;
-    let snake = [{x: canvas.width/2, y: canvas.height/2}];
+    let snake = [];
     let food = {x: 100, y: 100};
-    let dir = {x: 2, y: 0};
+    let dir = {x: 3, y: 0};
+    let currentSkin = 'kurdish';
+
+    function initSnake() {
+        snake = [];
+        for(let i = 0; i < 15; i++) {
+            snake.push({x: canvas.width/2 - i*8, y: canvas.height/2});
+        }
+    }
 
     function spawnFood() {
-        food.x = Math.random() * (canvas.width - 40) + 20;
-        food.y = Math.random() * (canvas.height - 40) + 20;
+        food.x = Math.random() * (canvas.width - 60) + 30;
+        food.y = Math.random() * (canvas.height - 60) + 30;
     }
 
     startBtn.addEventListener('click', () => {
+        currentSkin = flagSkinSelect.value;
         menuOverlay.style.display = 'none';
         gameRunning = true;
+        initSnake();
         spawnFood();
         gameLoop();
     });
 
-    // Touch control for mobile
     window.addEventListener('touchmove', (e) => {
         if(!gameRunning) return;
         let touch = e.touches[0];
@@ -172,21 +207,44 @@
         let dx = touch.clientX - head.x;
         let dy = touch.clientY - head.y;
         let angle = Math.atan2(dy, dx);
-        dir.x = Math.cos(angle) * 3;
-        dir.y = Math.sin(angle) * 3;
+        dir.x = Math.cos(angle) * 3.5;
+        dir.y = Math.sin(angle) * 3.5;
     });
+
+    function getSegmentColor(index) {
+        if (currentSkin === 'kurdish') {
+            const colors = ['#EE2324', '#FFFFFF', '#00A859']; // Red, White, Green
+            return colors[index % colors.length];
+        } else if (currentSkin === 'brazil') {
+            const colors = ['#009C3B', '#FFDF00']; // Green, Yellow
+            return colors[index % colors.length];
+        } else if (currentSkin === 'argentina') {
+            const colors = ['#74ACDF', '#FFFFFF']; // Sky Blue, White
+            return colors[index % colors.length];
+        } else if (currentSkin === 'germany') {
+            const colors = ['#000000', '#DD0000', '#FFCE00']; // Black, Red, Yellow
+            return colors[index % colors.length];
+        } else if (currentSkin === 'france') {
+            const colors = ['#002395', '#FFFFFF', '#ED2939']; // Blue, White, Red
+            return colors[index % colors.length];
+        } else if (currentSkin === 'spain') {
+            const colors = ['#AA152B', '#F1BF00']; // Red, Yellow
+            return colors[index % colors.length];
+        }
+        return '#2ecc71';
+    }
 
     function gameLoop() {
         if(!gameRunning) return;
 
-        ctx.fillStyle = '#1a1a1a';
+        ctx.fillStyle = '#111111';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Move head
+        // Move Snake
         let head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
         snake.unshift(head);
 
-        // Eat food
+        // Eat Food
         let dist = Math.hypot(head.x - food.x, head.y - food.y);
         if(dist < 20) {
             score += 10;
@@ -196,15 +254,15 @@
             snake.pop();
         }
 
-        // Draw food
-        ctx.fillStyle = '#FF5722';
+        // Draw Food
+        ctx.fillStyle = '#e74c3c';
         ctx.beginPath();
         ctx.arc(food.x, food.y, 8, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw snake
-        ctx.fillStyle = '#4CAF50';
+        // Draw Snake Body with Flag Colors
         snake.forEach((part, index) => {
+            ctx.fillStyle = getSegmentColor(index);
             ctx.beginPath();
             ctx.arc(part.x, part.y, index === 0 ? 12 : 10, 0, Math.PI * 2);
             ctx.fill();
