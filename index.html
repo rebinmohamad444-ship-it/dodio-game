@@ -18,7 +18,7 @@
             overflow: hidden;
             width: 100vw; height: 100vh;
         }
-        canvas { display: block; width: 100vw; height: 100vh; background: #12161f; }
+        canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
         /* Radar Top Left */
         #radar-wrapper {
@@ -27,7 +27,7 @@
             gap: 4px; z-index: 5;
         }
         #radar-canvas {
-            width: 75px; height: 75px;
+            width: 80px; height: 80px;
             background: rgba(0, 0, 0, 0.85);
             border: 2px solid #2ecc71; border-radius: 50%;
         }
@@ -37,17 +37,17 @@
             font-size: 10px; margin-top: 4px; text-align: center;
         }
 
-        /* Leaderboard Top Right (Small & Compact) */
+        /* Leaderboard Top Right */
         #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
             background: rgba(0,0,0,0.8); padding: 5px 8px;
             border-radius: 6px; border: 1px solid #f1c40f;
-            font-size: 9px; z-index: 5; width: 100px; pointer-events: none;
+            font-size: 9px; z-index: 5; width: 105px; pointer-events: none;
         }
 
-        /* Active Multiplier & Powerup Status */
+        /* Active Multiplier Badge */
         #multiplier-badge {
-            position: absolute; top: 95px; left: 10px;
+            position: absolute; top: 100px; left: 10px;
             background: rgba(241, 196, 15, 0.9); color: #111;
             padding: 3px 8px; border-radius: 12px; font-weight: bold;
             font-size: 11px; z-index: 5; display: none;
@@ -61,7 +61,7 @@
         }
         #shop-modal { display: none; z-index: 30; }
 
-        h1 { font-size: 36px; color: #2ecc71; margin-bottom: 5px; }
+        h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
         .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 250px; }
         button, select, input {
             padding: 9px; font-size: 12px; border-radius: 12px;
@@ -74,18 +74,19 @@
 
         .shop-list {
             display: flex; flex-direction: column; gap: 8px;
-            max-height: 250px; overflow-y: auto; width: 85%; max-width: 280px; margin: 15px 0;
+            max-height: 260px; overflow-y: auto; width: 85%; max-width: 300px; margin: 12px 0;
         }
         .shop-item {
             display: flex; justify-content: space-between; align-items: center;
             background: #181c24; padding: 8px 12px; border-radius: 8px; border: 1px solid #333;
+            font-size: 11px;
         }
     </style>
 </head>
 <body>
 
 <div id="radar-wrapper">
-    <canvas id="radar-canvas" width="75" height="75"></canvas>
+    <canvas id="radar-canvas" width="80" height="80"></canvas>
     <div id="hud-stats">
         <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
         <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
@@ -110,14 +111,14 @@
         <button onclick="startGame()">Play as Guest 🎮</button>
         <button class="guest-btn" onclick="startGame()">Email Login ✉️</button>
         <button class="fb-btn" onclick="startGame()">Connect Facebook 📘</button>
-        <button class="shop-btn" onclick="openShop()">Skins & Shop 🛒</button>
+        <button class="shop-btn" onclick="openShop()">Shop & Garage 🛒</button>
     </div>
 </div>
 
 <!-- Shop Modal -->
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:10px;">Skin Shop 🛒</h3>
-    <div>Your Balance: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    <h3 style="color:#f39c12; margin-bottom:5px;">Shop & Garage 🛒</h3>
+    <div style="font-size:12px;">Balance: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
     
     <div class="shop-list" id="shopItemsContainer"></div>
 
@@ -132,27 +133,34 @@
     const radarCanvas = document.getElementById('radar-canvas');
     const radarCtx = radarCanvas.getContext('2d');
 
-    const MAP_SIZE = 20000;
+    const MAP_SIZE = 12000;
+    const CAMERA_SCALE = 0.65; // Zoom out to see map, garages, and boundaries
     let gameRunning = false;
     let score = 0, coins = 0;
     
     let currentMultiplier = 1;
     let multiplierTimer = null;
 
-    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'default', body: [], alive: true };
+    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, body: [], alive: true };
     let bots = [];
     let fruits = [];
     let coinItems = [];
     let powerups = [];
 
-    // Skins Database
-    const skinsData = [
-        { id: 'default', name: '🟢 Green Classic', type: 'free', color: '#2ecc71', owned: true },
-        { id: 'blue', name: '🔵 Blue Wave', type: 'free', color: '#3498db', owned: true },
-        { id: 'kurdish', name: '✌️ Kurdistan Flag', type: 'paid', price: 100, color: '#00A859', owned: false },
-        { id: 'brazil', name: '🇧🇷 Brazil Flag', type: 'paid', price: 100, color: '#FFDF00', owned: false },
-        { id: 'germany', name: '🇩🇪 Germany Flag', type: 'paid', price: 100, color: '#DD0000', owned: false },
-        { id: 'argentina', name: '🇦🇷 Argentina Flag', type: 'paid', price: 100, color: '#74ACDF', owned: false }
+    // Corner Garages
+    const garages = [
+        { x: 500, y: 500, name: "NW Garage" },
+        { x: MAP_SIZE - 500, y: 500, name: "NE Garage" },
+        { x: 500, y: MAP_SIZE - 500, name: "SW Garage" },
+        { x: MAP_SIZE - 500, y: MAP_SIZE - 500, name: "SE Garage" }
+    ];
+
+    // Garage Shop Rental Items
+    const garageRentals = [
+        { duration: "10 Minutes", price: 50 },
+        { duration: "20 Minutes", price: 100 },
+        { duration: "40 Minutes", price: 180 },
+        { duration: "1 Hour", price: 200 }
     ];
 
     function resize() {
@@ -171,36 +179,26 @@
 
     function renderShop() {
         let container = document.getElementById('shopItemsContainer');
-        container.innerHTML = "";
-        skinsData.forEach(s => {
-            let itemHtml = `<div class="shop-item">
-                <span>${s.name}</span>`;
-            if(s.owned) {
-                itemHtml += `<button onclick="selectSkin('${s.id}')" style="padding:4px 8px; font-size:10px;">Equip</button>`;
-            } else {
-                itemHtml += `<button onclick="buySkin('${s.id}')" class="shop-btn" style="padding:4px 8px; font-size:10px;">Buy 🪙100</button>`;
-            }
-            itemHtml += `</div>`;
-            container.innerHTML += itemHtml;
+        container.innerHTML = "<h4 style='color:#2ecc71; margin-top:5px;'>Rent Garage 🚗</h4>";
+        garageRentals.forEach(g => {
+            container.innerHTML += `
+                <div class="shop-item">
+                    <span>Garage (${g.duration})</span>
+                    <button class="shop-btn" onclick="buyGarage('${g.duration}', ${g.price})" style="padding:4px 8px; font-size:10px;">Rent 🪙${g.price}</button>
+                </div>
+            `;
         });
     }
 
-    function buySkin(id) {
-        let skin = skinsData.find(s => s.id === id);
-        if(coins >= 100) {
-            coins -= 100;
-            skin.owned = true;
+    function buyGarage(duration, price) {
+        if(coins >= price) {
+            coins -= price;
             document.getElementById('coinVal').innerText = `🪙 ${coins}`;
-            renderShop();
-            alert("Skin Unlocked!");
+            openShop();
+            alert(`Garage Rented for ${duration}!`);
         } else {
-            alert("Not enough coins! Collect more in game.");
+            alert("Not enough coins!");
         }
-    }
-
-    function selectSkin(id) {
-        player.skin = id;
-        closeShop();
     }
 
     function startGame() {
@@ -214,36 +212,36 @@
         player.alive = true;
         player.x = MAP_SIZE/2; player.y = MAP_SIZE/2;
         player.body = [];
-        for(let i=0; i<25; i++) player.body.push({x: player.x - i*6, y: player.y});
+        for(let i=0; i<30; i++) player.body.push({x: player.x - i*6, y: player.y});
 
-        // 10 Aggressive Bots
+        // Spawn Bots
         bots = [];
-        for(let i=0; i<10; i++) spawnBot(i);
+        for(let i=0; i<12; i++) spawnBot(i);
 
-        // 2X Fruits (1600 Items)
+        // 3X Fruits (2400 Fruits)
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<1600; i++) {
+        for(let i=0; i<2400; i++) {
             fruits.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, type: fTypes[Math.floor(Math.random()*fTypes.length)] });
         }
 
-        // 2X Coins (400 Items)
+        // 2X Coins (400 Coins)
         coinItems = [];
         for(let i=0; i<400; i++) coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
 
-        // 2X Power-ups & Multipliers (2X, 4X, 6X, 10X)
+        // 2X Power-ups & Multipliers
         powerups = [];
         const pTypes = ['2x', '4x', '6x', '10x', 'magnet'];
-        for(let i=0; i<80; i++) {
+        for(let i=0; i<120; i++) {
             powerups.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, type: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
     }
 
     function spawnBot(id) {
-        let bx = Math.random() * MAP_SIZE;
-        let by = Math.random() * MAP_SIZE;
+        let bx = Math.random() * (MAP_SIZE - 2000) + 1000;
+        let by = Math.random() * (MAP_SIZE - 2000) + 1000;
         let body = [];
-        for(let j=0; j<20; j++) body.push({x: bx - j*6, y: by});
+        for(let j=0; j<25; j++) body.push({x: bx - j*6, y: by});
         bots[id] = { id, name: "Bot_" + (id+1), x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: Math.floor(Math.random()*400+100), alive: true };
     }
 
@@ -276,12 +274,24 @@
             let diff = player.targetAngle - player.angle;
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
-            player.angle += diff * 0.1;
+            player.angle += diff * 0.12;
 
-            player.x += Math.cos(player.angle) * 3.6;
-            player.y += Math.sin(player.angle) * 3.6;
+            player.x += Math.cos(player.angle) * 3.8;
+            player.y += Math.sin(player.angle) * 3.8;
             player.body.unshift({x: player.x, y: player.y});
             player.body.pop();
+
+            // Check Player Death by hitting Bots
+            bots.forEach(b => {
+                if(!b.alive) return;
+                b.body.forEach((seg, idx) => {
+                    if(idx > 2 && Math.hypot(player.x - seg.x, player.y - seg.y) < 12) {
+                        player.alive = false;
+                        alert("Game Over! You crashed into a snake!");
+                        location.reload();
+                    }
+                });
+            });
 
             // Eat Fruits
             fruits.forEach((f, i) => {
@@ -304,7 +314,7 @@
                 }
             });
 
-            // Eat Power-ups & Multipliers
+            // Eat Power-ups
             powerups.forEach((p, i) => {
                 if(Math.hypot(player.x - p.x, player.y - p.y) < 25) {
                     if(p.type === '2x') activateMultiplier(2, 20);
@@ -318,64 +328,106 @@
             });
         }
 
-        // Aggressive Bots Logic
+        // Bots Logic & Death Collision with Player Body
         bots.forEach(b => {
             if(!b.alive) return;
-            // Aim at player if nearby to cut off!
-            let distToP = Math.hypot(player.x - b.x, player.y - b.y);
-            if(distToP < 800) {
-                b.angle = Math.atan2(player.y - b.y, player.x - b.x);
-            } else {
-                b.angle += (Math.random() - 0.5) * 0.15;
-            }
-            b.x += Math.cos(b.angle) * 3.4;
-            b.y += Math.sin(b.angle) * 3.4;
+            b.angle += (Math.random() - 0.5) * 0.12;
+            b.x += Math.cos(b.angle) * 3.5;
+            b.y += Math.sin(b.angle) * 3.5;
             b.body.unshift({x: b.x, y: b.y});
             b.body.pop();
+
+            // Check Bot Death if hits player body
+            player.body.forEach((pSeg, idx) => {
+                if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < 12) {
+                    b.alive = false;
+                    setTimeout(() => spawnBot(b.id), 15000);
+                }
+            });
         });
 
-        // Camera Follow
-        const camX = canvas.width / 2 - player.x;
-        const camY = canvas.height / 2 - player.y;
+        // Camera Transformation
+        const camX = canvas.width / 2 - player.x * CAMERA_SCALE;
+        const camY = canvas.height / 2 - player.y * CAMERA_SCALE;
 
-        ctx.fillStyle = '#12161f';
+        ctx.fillStyle = '#0f131a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.save();
         ctx.translate(camX, camY);
+        ctx.scale(CAMERA_SCALE, CAMERA_SCALE);
 
-        // Map Outer Grid
-        ctx.strokeStyle = '#1e2532'; ctx.lineWidth = 10;
+        // Map Border & Red Zone Outer Wall
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 15;
         ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-        // RED CENTER CROSSHAIR LINES (Horizontal & Vertical Center Lines)
-        ctx.strokeStyle = 'rgba(231, 76, 60, 0.8)'; ctx.lineWidth = 4;
+        // Red Center Lines
+        ctx.strokeStyle = 'rgba(231, 76, 60, 0.6)'; ctx.lineWidth = 4;
         ctx.beginPath();
-        // Horizontal Line
         ctx.moveTo(0, MAP_SIZE/2); ctx.lineTo(MAP_SIZE, MAP_SIZE/2);
-        // Vertical Line
         ctx.moveTo(MAP_SIZE/2, 0); ctx.lineTo(MAP_SIZE/2, MAP_SIZE);
         ctx.stroke();
 
+        // Draw Garages
+        garages.forEach(g => {
+            ctx.fillStyle = '#f39c12';
+            ctx.fillRect(g.x - 120, g.y - 120, 240, 240);
+            ctx.fillStyle = '#fff'; ctx.font = "24px Arial";
+            ctx.fillText("GARAGE 🚗", g.x - 65, g.y + 10);
+        });
+
         // Draw Fruits
-        fruits.forEach(f => { ctx.font = "20px Arial"; ctx.fillText(f.type, f.x, f.y); });
+        fruits.forEach(f => { ctx.font = "22px Arial"; ctx.fillText(f.type, f.x, f.y); });
 
         // Draw Coins
-        coinItems.forEach(c => { ctx.font = "18px Arial"; ctx.fillText("🪙", c.x, c.y); });
+        coinItems.forEach(c => { ctx.font = "20px Arial"; ctx.fillText("🪙", c.x, c.y); });
 
         // Draw Power-ups
         powerups.forEach(p => {
-            ctx.font = "18px Arial";
-            let label = p.type.toUpperCase();
-            ctx.fillText(label, p.x, p.y);
+            ctx.font = "20px Arial";
+            ctx.fillText(p.type === 'magnet' ? '🧲' : p.type.toUpperCase(), p.x, p.y);
         });
 
-        // Draw Player Snake
+        // Draw Player Snake with Chinese Anaconda Head
         if(player.alive) {
-            let activeSkin = skinsData.find(s => s.id === player.skin) || skinsData[0];
             player.body.forEach((p, i) => {
-                ctx.fillStyle = i === 0 ? '#FE8200' : activeSkin.color;
-                ctx.beginPath(); ctx.arc(p.x, p.y, i === 0 ? 11 : 8, 0, Math.PI*2); ctx.fill();
+                if(i === 0) {
+                    // Chinese Anaconda Snake Head
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(player.angle);
+                    
+                    // Head Body Oval
+                    ctx.fillStyle = '#00A859';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 16, 12, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Slanted Chinese eyes
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(6, -6, 3, 0, Math.PI * 2);
+                    ctx.arc(6, 6, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(7, -6, 1.5, 0, Math.PI * 2);
+                    ctx.arc(7, 6, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Forked Red Tongue
+                    ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(16, 0); ctx.lineTo(24, 0);
+                    ctx.lineTo(27, -3); ctx.moveTo(24, 0); ctx.lineTo(27, 3);
+                    ctx.stroke();
+
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = i % 2 === 0 ? '#00A859' : '#ffffff';
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 9, 0, Math.PI*2); ctx.fill();
+                }
             });
         }
 
@@ -383,23 +435,23 @@
         bots.forEach(b => {
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
-                ctx.fillStyle = j === 0 ? '#e74c3c' : '#95a5a6';
-                ctx.beginPath(); ctx.arc(bp.x, bp.y, j === 0 ? 10 : 7, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = j === 0 ? '#e74c3c' : '#34495e';
+                ctx.beginPath(); ctx.arc(bp.x, bp.y, j === 0 ? 11 : 8, 0, Math.PI*2); ctx.fill();
             });
         });
 
         ctx.restore();
 
         // Update Radar (Top Left)
-        radarCtx.clearRect(0, 0, 75, 75);
+        radarCtx.clearRect(0, 0, 80, 80);
         if(player.alive) {
             radarCtx.fillStyle = '#2ecc71'; radarCtx.beginPath();
-            radarCtx.arc((player.x/MAP_SIZE)*75, (player.y/MAP_SIZE)*75, 3, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc((player.x/MAP_SIZE)*80, (player.y/MAP_SIZE)*80, 3.5, 0, Math.PI*2); radarCtx.fill();
         }
         bots.forEach(b => {
             if(!b.alive) return;
             radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
-            radarCtx.arc((b.x/MAP_SIZE)*75, (b.y/MAP_SIZE)*75, 2, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc((b.x/MAP_SIZE)*80, (b.y/MAP_SIZE)*80, 2, 0, Math.PI*2); radarCtx.fill();
         });
 
         requestAnimationFrame(gameLoop);
