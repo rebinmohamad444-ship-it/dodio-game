@@ -44,7 +44,6 @@
             font-size: 10px; z-index: 5; min-width: 130px; pointer-events: none;
         }
 
-        /* Smaller Active Power Badges */
         #active-powers-container {
             position: absolute; top: 90px; left: 10px;
             display: flex; flex-direction: column; gap: 3px; z-index: 5;
@@ -54,14 +53,9 @@
             padding: 2px 6px; border-radius: 8px; font-weight: bold;
             font-size: 9px; box-shadow: 0 0 6px #f1c40f; width: fit-content;
         }
-        .blinking {
-            animation: blinker 0.5s linear infinite;
-        }
-        @keyframes blinker {
-            50% { opacity: 0.2; }
-        }
+        .blinking { animation: blinker 0.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.2; } }
 
-        /* In-Game Garage Button */
         #ingame-garage-btn {
             position: absolute; bottom: 15px; left: 15px;
             background: rgba(243, 156, 18, 0.85); border: 1.5px solid #fff;
@@ -69,7 +63,6 @@
             font-size: 11px; font-weight: bold; z-index: 10; cursor: pointer;
         }
 
-        /* Boost Button */
         #boost-btn {
             position: absolute; bottom: 20px; right: 20px;
             width: 60px; height: 60px;
@@ -80,7 +73,6 @@
             box-shadow: 0 0 10px #e74c3c; cursor: pointer;
         }
 
-        /* Menus and Modals */
         #menu-overlay, #shop-modal, #history-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 12, 16, 0.95); display: flex;
@@ -129,7 +121,6 @@
 <div id="ingame-garage-btn" onclick="openShop()">🚗 Garage</div>
 <div id="boost-btn">BOOST 🚀</div>
 
-<!-- Main Menu Overlay -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
     <div style="font-size:30px; margin-bottom:8px;">🐍</div>
@@ -148,20 +139,16 @@
     </div>
 </div>
 
-<!-- Match History Modal -->
 <div id="history-modal">
     <h3 style="color:#9b59b6; margin-bottom:5px;">Match History 📜</h3>
     <div class="history-list" id="historyContainer"></div>
     <button onclick="closeHistory()" style="width:120px;">Close</button>
 </div>
 
-<!-- Shop Modal -->
 <div id="shop-modal">
     <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Garages 🛒</h3>
     <div style="font-size:12px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
-    
     <div class="shop-list" id="shopItemsContainer"></div>
-
     <button onclick="closeShop()" style="width:120px;">Close</button>
 </div>
 
@@ -336,7 +323,7 @@
         for(let i=0; i<200; i++) coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
 
         powerups = [];
-        const pTypes = ['🧲', '⚡2X', '⚡4X', '⚡6X', '⚡10X', '🚀', '📷', '☸️'];
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '📷', '☸️'];
         for(let i=0; i<250; i++) {
             powerups.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
@@ -352,7 +339,8 @@
     }
 
     function explodeSnake(body) {
-        const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#e67e22'];
+        // NO WHITE COLOR IN REMAINS (Only vibrant colors)
+        const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#e67e22', '#00ffcc'];
         body.forEach(p => {
             deadRemains.push({
                 x: p.x, y: p.y,
@@ -362,7 +350,6 @@
         });
     }
 
-    // Boost Button Touch Controls
     const boostBtn = document.getElementById('boost-btn');
     boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
     boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); manualSpeedBoost = false; });
@@ -403,41 +390,46 @@
         container.innerHTML = html;
     }
 
-    function drawAnacondaHead(p, angle, mainColor, radius) {
+    // COBRA / ANACONDA HEAD DRAWING
+    function drawCobraHead(p, angle, mainColor, radius) {
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(angle);
         
+        // Cobra Hood / Head Shape
         ctx.fillStyle = mainColor;
         ctx.beginPath();
-        ctx.ellipse(0, 0, radius * 1.6, radius * 1.2, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, radius * 1.7, radius * 1.4, 0, 0, Math.PI * 2);
         ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
 
-        ctx.fillStyle = '#fff';
+        // Fierce Eyes
+        ctx.fillStyle = '#f1c40f';
         ctx.beginPath();
-        ctx.arc(radius*0.5, -radius*0.4, radius*0.25, 0, Math.PI * 2);
-        ctx.arc(radius*0.5, radius*0.4, radius*0.25, 0, Math.PI * 2);
+        ctx.arc(radius*0.5, -radius*0.5, radius*0.28, 0, Math.PI * 2);
+        ctx.arc(radius*0.5, radius*0.5, radius*0.28, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(radius*0.6, -radius*0.4, radius*0.12, 0, Math.PI * 2);
-        ctx.arc(radius*0.6, radius*0.4, radius*0.12, 0, Math.PI * 2);
+        ctx.arc(radius*0.6, -radius*0.5, radius*0.12, 0, Math.PI * 2);
+        ctx.arc(radius*0.6, radius*0.5, radius*0.12, 0, Math.PI * 2);
         ctx.fill();
 
+        // Forked Tongue
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.moveTo(radius*1.6, 0); ctx.lineTo(radius*2.3, 0);
-        ctx.lineTo(radius*2.6, -4); ctx.moveTo(radius*2.3, 0); ctx.lineTo(radius*2.6, 4);
+        ctx.moveTo(radius*1.7, 0); ctx.lineTo(radius*2.5, 0);
+        ctx.lineTo(radius*2.9, -5); ctx.moveTo(radius*2.5, 0); ctx.lineTo(radius*2.9, 5);
         ctx.stroke();
 
-        // 5 Vertical Magnet Lines
+        // 5 Vertical Red Magnet Lines
         if(isMagnetActive) {
             ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
             for(let i = -2; i <= 2; i += 1) {
                 ctx.beginPath();
-                ctx.moveTo(radius * 2.0, i * 8);
-                ctx.lineTo(radius * 2.0, (i * 8) + 14);
+                ctx.moveTo(radius * 2.1, i * 8);
+                ctx.lineTo(radius * 2.1, (i * 8) + 14);
                 ctx.stroke();
             }
         }
@@ -469,8 +461,7 @@
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
 
-            // Smoother and easier steering
-            let baseAgility = 0.22; // Much easier to turn!
+            let baseAgility = 0.22;
             if(isSteeringActive) baseAgility = 0.38;
 
             player.angle += diff * baseAgility;
@@ -481,7 +472,6 @@
             player.body.unshift({x: player.x, y: player.y});
             player.body.pop();
 
-            // Red Zone Death
             if(player.x <= 20 || player.x >= MAP_SIZE - 20 || player.y <= 20 || player.y >= MAP_SIZE - 20) {
                 player.alive = false;
                 recordMatchEnd();
@@ -489,7 +479,6 @@
                 location.reload();
             }
 
-            // Crash into Bots
             bots.forEach(b => {
                 if(!b.alive) return;
                 b.body.forEach((seg, idx) => {
@@ -502,7 +491,6 @@
                 });
             });
 
-            // MAGNET ATTRACTS ALL ITEMS
             if(isMagnetActive) {
                 [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
@@ -515,7 +503,6 @@
                 });
             }
 
-            // Eat Fruits & Grow Snake
             fruits.forEach((f, i) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 10) {
                     score += 5;
@@ -523,11 +510,10 @@
                     fruits[i].x = Math.random() * MAP_SIZE;
                     fruits[i].y = Math.random() * MAP_SIZE;
                     player.body.push({...player.body[player.body.length-1]});
-                    if(player.body.length % 10 === 0) player.sizeRadius += 0.6; // Noticeable thickness growth
+                    if(player.body.length % 10 === 0) player.sizeRadius += 0.6;
                 }
             });
 
-            // Eat Dead Remains (Multi-colored)
             deadRemains.forEach((r, i) => {
                 if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 10) {
                     score += 15;
@@ -537,7 +523,6 @@
                 }
             });
 
-            // Eat Coins
             coinItems.forEach((c, i) => {
                 if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 8) {
                     coins += 1;
@@ -548,7 +533,6 @@
                 }
             });
 
-            // Eat Power-ups
             powerups.forEach((p, i) => {
                 if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 12) {
                     if(p.icon === '🧲') {
@@ -580,7 +564,7 @@
             });
         }
 
-        // BOTS LOGIC
+        // BOTS LOGIC + AUTO RESPAWN
         bots.forEach(b => {
             if(!b.alive) return;
 
@@ -618,7 +602,6 @@
             });
         });
 
-        // CAMERA RENDERING
         const camX = canvas.width / 2 - player.x * cameraScale;
         const camY = canvas.height / 2 - player.y * cameraScale;
 
@@ -629,7 +612,6 @@
         ctx.translate(camX, camY);
         ctx.scale(cameraScale, cameraScale);
 
-        // GRID LINES
         ctx.strokeStyle = '#18202d'; ctx.lineWidth = 2;
         for(let x = 0; x < MAP_SIZE; x += 150) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); ctx.stroke();
@@ -638,11 +620,9 @@
             ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); ctx.stroke();
         }
 
-        // RED ZONE BORDER
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 20;
         ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-        // GARAGES
         garages.forEach(g => {
             ctx.fillStyle = '#2ecc71';
             ctx.fillRect(g.x - 120, g.y - 120, 240, 240);
@@ -650,34 +630,53 @@
             ctx.fillText("GARAGE 🚗", g.x - 60, g.y + 8);
         });
 
-        // Draw Fruits & Coins
         fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
         coinItems.forEach(c => { ctx.font = "20px Arial"; ctx.fillText("🪙", c.x, c.y); });
 
-        // Draw Multi-color Blinking Dead Remains (20 Seconds)
+        // Draw Multi-color Dead Remains (No White, Blinking)
         deadRemains.forEach(r => {
             let isBlinking = (Math.floor(Date.now() / 250) % 2 === 0);
             ctx.shadowColor = r.color; ctx.shadowBlur = isBlinking ? 14 : 2;
-            ctx.fillStyle = isBlinking ? r.color : '#ffffff';
+            ctx.fillStyle = r.color;
             ctx.beginPath(); ctx.arc(r.x, r.y, 9, 0, Math.PI*2); ctx.fill();
             ctx.shadowBlur = 0;
         });
 
-        // Draw Power-ups
+        // Draw Power-ups (X items have Dark Blue Dot Background)
         powerups.forEach(p => {
-            ctx.shadowColor = "#f1c40f"; ctx.shadowBlur = 12;
-            ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y);
-            ctx.shadowBlur = 0;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            if(p.icon.includes('X')) {
+                ctx.fillStyle = '#1b365d'; // Dark Blue Dot Background
+                ctx.beginPath();
+                ctx.arc(0, 0, 18, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 2; ctx.stroke();
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = "bold 13px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(p.icon, 0, 0);
+            } else {
+                ctx.shadowColor = "#f1c40f"; ctx.shadowBlur = 12;
+                ctx.font = "bold 28px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(p.icon, 0, 0);
+                ctx.shadowBlur = 0;
+            }
+            ctx.restore();
         });
 
-        // Draw Player Snake
+        // Draw Player Snake with Cobra Head
         if(player.alive) {
             let activeSkinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             player.body.forEach((p, i) => {
                 if(i === 0) {
-                    drawAnacondaHead(p, player.angle, activeSkinObj.color, player.sizeRadius);
+                    drawCobraHead(p, player.angle, activeSkinObj.color, player.sizeRadius);
                 } else {
-                    ctx.fillStyle = i % 2 === 0 ? activeSkinObj.color : '#ffffff';
+                    ctx.fillStyle = i % 2 === 0 ? activeSkinObj.color : '#f1c40f';
                     ctx.beginPath(); ctx.arc(p.x, p.y, player.sizeRadius * 0.7, 0, Math.PI*2); ctx.fill();
                 }
             });
@@ -688,9 +687,9 @@
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
                 if(j === 0) {
-                    drawAnacondaHead(bp, b.angle, '#e74c3c', b.sizeRadius);
+                    drawCobraHead(bp, b.angle, '#e74c3c', b.sizeRadius);
                 } else {
-                    ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#f39c12';
+                    ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#3498db';
                     ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.65, 0, Math.PI*2); ctx.fill();
                 }
             });
@@ -698,7 +697,6 @@
 
         ctx.restore();
 
-        // Update Radar
         radarCtx.clearRect(0, 0, 70, 70);
         if(player.alive) {
             radarCtx.fillStyle = '#2ecc71'; radarCtx.beginPath();
