@@ -7,8 +7,7 @@
     <style>
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             user-select: none;
             -webkit-user-select: none;
         }
@@ -17,188 +16,97 @@
             color: #fff;
             font-family: Arial, sans-serif;
             overflow: hidden;
-            width: 100vw;
-            height: 100vh;
+            width: 100vw; height: 100vh;
         }
-        canvas {
-            display: block;
-            width: 100vw;
-            height: 100vh;
-            background: #12161f;
-        }
+        canvas { display: block; width: 100vw; height: 100vh; background: #12161f; }
 
-        /* Compact Top Left Stats */
+        /* Top HUD */
         #hud-top-left {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(0, 0, 0, 0.65);
-            padding: 5px 10px;
-            border-radius: 6px;
-            border: 1px solid #2ecc71;
-            font-size: 11px;
-            z-index: 5;
-            pointer-events: none;
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(0,0,0,0.7); padding: 8px 12px;
+            border-radius: 8px; border: 1px solid #2ecc71;
+            font-size: 12px; z-index: 5; pointer-events: none;
         }
 
-        /* Ultra Compact Top Right Leaderboard */
-        #hud-top-right {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.65);
-            padding: 5px 8px;
-            border-radius: 6px;
-            border: 1px solid #f1c40f;
-            font-size: 10px;
-            min-width: 95px;
-            z-index: 5;
-            pointer-events: none;
-        }
-        #hud-top-right h5 {
-            color: #f1c40f;
-            text-align: center;
-            font-size: 10px;
-            margin-bottom: 2px;
-        }
-
-        /* Bottom Right Radar & Champ Tag */
+        /* Radar Top Right */
         #radar-wrapper {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-            z-index: 5;
-            pointer-events: none;
-        }
-        #champ-tag {
-            background: rgba(0, 0, 0, 0.75);
-            border: 1px solid #f1c40f;
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 9px;
-            color: #f1c40f;
-            display: flex;
-            align-items: center;
-            gap: 3px;
+            position: absolute; top: 10px; right: 10px;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 6px; z-index: 5;
         }
         #radar-canvas {
-            width: 65px;
-            height: 65px;
-            background: rgba(0, 0, 0, 0.75);
-            border: 1px solid #2ecc71;
-            border-radius: 50%;
+            width: 85px; height: 85px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #2ecc71; border-radius: 50%;
         }
 
-        /* Power-up Status Indicators */
-        #powerup-bar {
-            position: absolute;
-            top: 45px;
-            left: 8px;
-            display: flex;
-            gap: 5px;
-            z-index: 5;
-            pointer-events: none;
+        /* Reaction Emojis below Radar */
+        #emoji-bar {
+            display: flex; gap: 4px; background: rgba(0,0,0,0.7);
+            padding: 4px; border-radius: 12px; border: 1px solid #444;
         }
-        .power-icon {
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 50%;
-            padding: 4px;
-            font-size: 12px;
-            border: 1px solid #fff;
-            display: none;
+        .emoji-btn {
+            font-size: 16px; cursor: pointer; transition: transform 0.1s;
+        }
+        .emoji-btn:active { transform: scale(1.3); }
+
+        /* Go to Garage Button */
+        #garage-btn {
+            position: absolute; bottom: 20px; right: 15px;
+            background: #f39c12; color: #111; font-weight: bold;
+            padding: 10px 14px; border-radius: 20px; border: none;
+            font-size: 12px; z-index: 5; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.4);
         }
 
-        /* Main Menu Overlay */
+        /* Menu Overlay */
         #menu-overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(10, 12, 16, 0.92);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 20;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 12, 16, 0.94); display: flex;
+            flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
-
-        h1 { font-size: 36px; color: #2ecc71; margin-bottom: 10px; letter-spacing: 1px; }
-        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 80%; max-width: 240px; }
-        
+        h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 80%; max-width: 250px; }
         button, select, input {
-            padding: 10px;
-            font-size: 13px;
-            border-radius: 15px;
-            border: 1.5px solid #2ecc71;
-            background: #181c24;
-            color: #fff;
-            text-align: center;
-            outline: none;
+            padding: 10px; font-size: 13px; border-radius: 15px;
+            border: 1.5px solid #2ecc71; background: #181c24; color: #fff; text-align: center; outline: none;
         }
-        button {
-            background: #2ecc71;
-            color: #111;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-        }
-        button.fb-btn { background: #1877f2; color: #fff; }
-        button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
+        button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; border: none; }
     </style>
 </head>
 <body>
 
 <div id="hud-top-left">
     <div>Score: <span id="scoreVal" style="color:#2ecc71; font-weight:bold;">0</span></div>
-    <div>Players: <span id="playersVal">1</span></div>
-</div>
-
-<div id="powerup-bar">
-    <div id="magnet-status" class="power-icon" style="border-color:#3498db;">🧲</div>
-    <div id="2x-status" class="power-icon" style="border-color:#e74c3c;">⚡2X</div>
-</div>
-
-<div id="hud-top-right">
-    <h5>🏆 Top Players</h5>
-    <div>1. 🥇 Shafeeq - 1200</div>
-    <div>2. 🥈 Silva - 850</div>
-    <div>3. 🥉 Leo - 640</div>
+    <div>Coins: <span id="coinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
 </div>
 
 <div id="radar-wrapper">
-    <div id="champ-tag">🏆 24h: <strong>Shafeeq</strong></div>
-    <canvas id="radar-canvas" width="65" height="65"></canvas>
+    <canvas id="radar-canvas" width="85" height="85"></canvas>
+    <div id="emoji-bar">
+        <span class="emoji-btn" onclick="triggerEmoji('😂')">😂</span>
+        <span class="emoji-btn" onclick="triggerEmoji('😭')">😭</span>
+        <span class="emoji-btn" onclick="triggerEmoji('👍')">👍</span>
+        <span class="emoji-btn" onclick="triggerEmoji('💪')">💪</span>
+        <span class="emoji-btn" onclick="triggerEmoji('✌️')">✌️</span>
+    </div>
 </div>
 
-<!-- Menu -->
+<button id="garage-btn" onclick="navigateToGarage()">🚗 Go To Garage</button>
+
+<!-- Menu Overlay -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
     <div style="font-size:35px; margin-bottom:10px;">🐍</div>
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name">
-        
         <select id="skinSelect">
-            <optgroup label="Regions & Nations ☀️">
-                <option value="kurdish">✌️ Kurdistan</option>
-                <option value="catalonia">🟡🔴 Catalonia</option>
-                <option value="scotland">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland</option>
-            </optgroup>
-            <optgroup label="World Countries 🌍">
-                <option value="brazil">🇧🇷 Brazil</option>
-                <option value="argentina">🇦🇷 Argentina</option>
-                <option value="germany">🇩🇪 Germany</option>
-                <option value="france">🇫🇷 France</option>
-                <option value="spain">🇪🇸 Spain</option>
-                <option value="italy">🇮🇹 Italy</option>
-            </optgroup>
+            <option value="kurdish">✌️ Kurdistan</option>
+            <option value="brazil">🇧🇷 Brazil</option>
+            <option value="argentina">🇦🇷 Argentina</option>
+            <option value="germany">🇩🇪 Germany</option>
         </select>
-
         <button onclick="startGame()">Play Game 🎮</button>
-        <button class="guest-btn" onclick="startGame()">Email Login ✉️</button>
-        <button class="fb-btn" onclick="startGame()">Connect Facebook 📘</button>
     </div>
 </div>
 
@@ -209,17 +117,30 @@
     const ctx = canvas.getContext('2d');
     const radarCanvas = document.getElementById('radar-canvas');
     const radarCtx = radarCanvas.getContext('2d');
-    
-    const MAP_SIZE = 2500;
-    let gameRunning = false;
-    let score = 0;
-    let currentSkin = 'kurdish';
-    let targetAngle = 0;
-    let currentAngle = 0;
 
-    let snake = [];
-    let foods = [];
+    const MAP_SIZE = 10000; // 4x Bigger Map
+    let gameRunning = false;
+    let score = 0, coins = 0;
+    let cameraScale = 1;
+    let turnAgility = 0.1;
+
+    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [] };
+    let bots = [];
+    let fruits = [];
+    let coinItems = [];
     let powerups = [];
+    let deadRemains = []; // Food remains after snake explosion
+
+    // 4 Corner Garages
+    const garages = [
+        { x: 400, y: 400 },
+        { x: MAP_SIZE - 400, y: 400 },
+        { x: 400, y: MAP_SIZE - 400 },
+        { x: MAP_SIZE - 400, y: MAP_SIZE - 400 }
+    ];
+
+    // Red Zone
+    let redZoneRadius = MAP_SIZE / 2;
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -229,7 +150,6 @@
     resize();
 
     function startGame() {
-        currentSkin = document.getElementById('skinSelect').value;
         document.getElementById('menu-overlay').style.display = 'none';
         gameRunning = true;
         initGame();
@@ -237,156 +157,207 @@
     }
 
     function initGame() {
-        snake = [];
-        const startX = MAP_SIZE / 2;
-        const startY = MAP_SIZE / 2;
-        for(let i = 0; i < 20; i++) {
-            snake.push({x: startX - i * 6, y: startY});
-        }
+        player.body = [];
+        for(let i=0; i<25; i++) player.body.push({x: player.x - i*6, y: player.y});
 
-        // Spawn Foods
-        foods = [];
-        for(let i = 0; i < 300; i++) {
-            foods.push({
+        // Spawn 10 Bots
+        bots = [];
+        for(let i=0; i<10; i++) spawnBot(i);
+
+        // Spawn Fruits (🍌 🍉 🍒 🍎 🍓)
+        fruits = [];
+        const fruitTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
+        for(let i=0; i<600; i++) {
+            fruits.push({
                 x: Math.random() * MAP_SIZE,
                 y: Math.random() * MAP_SIZE,
-                size: Math.random() * 3 + 3,
-                color: ['#2ecc71', '#e74c3c', '#f1c40f', '#3498db', '#e67e22'][Math.floor(Math.random()*5)]
+                type: fruitTypes[Math.floor(Math.random() * fruitTypes.length)]
             });
         }
 
-        // Spawn Power-ups (🧲 Magnet & ⚡ 2X)
+        // Spawn Coins
+        coinItems = [];
+        for(let i=0; i<200; i++) {
+            coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
+        }
+
+        // Power-ups (🧲, ⚡, 📷, ☸️)
         powerups = [];
-        for(let i = 0; i < 15; i++) {
+        const pTypes = ['magnet', 'speed', 'camera', 'wheel'];
+        for(let i=0; i<40; i++) {
             powerups.push({
                 x: Math.random() * MAP_SIZE,
                 y: Math.random() * MAP_SIZE,
-                type: Math.random() > 0.5 ? 'magnet' : '2x'
+                type: pTypes[Math.floor(Math.random() * pTypes.length)]
             });
         }
     }
 
-    // Controls: Touch/Mouse direction relative to screen center
+    function spawnBot(id) {
+        let bx = Math.random() * (MAP_SIZE - 1000) + 500;
+        let by = Math.random() * (MAP_SIZE - 1000) + 500;
+        let body = [];
+        for(let j=0; j<20; j++) body.push({x: bx - j*6, y: by});
+        bots[id] = { id, x: bx, y: by, angle: Math.random()*Math.PI*2, body, alive: true };
+    }
+
+    // Touch / Mouse Direction
     function handlePointer(e) {
         if(!gameRunning) return;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const dx = clientX - canvas.width / 2;
-        const dy = clientY - canvas.height / 2;
-        targetAngle = Math.atan2(dy, dx);
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        player.targetAngle = Math.atan2(cy - canvas.height/2, cx - canvas.width/2);
     }
     window.addEventListener('touchmove', handlePointer);
     window.addEventListener('mousemove', handlePointer);
 
-    function getSkinColors(skin) {
-        switch(skin) {
-            case 'kurdish': return ['#EE2324', '#FFFFFF', '#00A859', '#FE8200'];
-            case 'catalonia': return ['#F1BF00', '#AA152B'];
-            case 'scotland': return ['#0065BD', '#FFFFFF'];
-            case 'brazil': return ['#009C3B', '#FFDF00', '#002776'];
-            case 'argentina': return ['#74ACDF', '#FFFFFF'];
-            case 'germany': return ['#000000', '#DD0000', '#FFCE00'];
-            case 'france': return ['#002395', '#FFFFFF', '#ED2939'];
-            case 'spain': return ['#AA152B', '#F1BF00'];
-            case 'italy': return ['#009246', '#FFFFFF', '#CE2B37'];
-            default: return ['#2ecc71'];
-        }
+    function triggerEmoji(emoji) {
+        // Visual emoji display overhead
     }
 
-    function drawRadar(head) {
-        radarCtx.clearRect(0, 0, 65, 65);
-        
-        // Draw player dot on radar
-        const rx = (head.x / MAP_SIZE) * 65;
-        const ry = (head.y / MAP_SIZE) * 65;
-        radarCtx.fillStyle = '#2ecc71';
-        radarCtx.beginPath();
-        radarCtx.arc(rx, ry, 2.5, 0, Math.PI * 2);
-        radarCtx.fill();
+    function navigateToGarage() {
+        // Point direction to nearest garage
+        let minD = Infinity, targetG = garages[0];
+        garages.forEach(g => {
+            let d = Math.hypot(player.x - g.x, player.y - g.y);
+            if(d < minD) { minD = d; targetG = g; }
+        });
+        player.targetAngle = Math.atan2(targetG.y - player.y, targetG.x - player.x);
+    }
+
+    function explodeSnake(body) {
+        body.forEach(p => {
+            deadRemains.push({ x: p.x, y: p.y, spawnTime: Date.now() });
+        });
     }
 
     function gameLoop() {
         if(!gameRunning) return;
 
-        // Smooth Turn
-        let diff = targetAngle - currentAngle;
+        // Shrink Red Zone
+        if(redZoneRadius > 1000) redZoneRadius -= 0.1;
+
+        // Player Turn Smoothness
+        let diff = player.targetAngle - player.angle;
         while (diff < -Math.PI) diff += Math.PI * 2;
         while (diff > Math.PI) diff -= Math.PI * 2;
-        currentAngle += diff * 0.1;
+        player.angle += diff * turnAgility;
 
-        // Move Snake Head
-        const speed = 3.2;
-        let head = {
-            x: snake[0].x + Math.cos(currentAngle) * speed,
-            y: snake[0].y + Math.sin(currentAngle) * speed
-        };
+        // Move Player
+        let speed = 3.5;
+        player.x += Math.cos(player.angle) * speed;
+        player.y += Math.sin(player.angle) * speed;
+        player.body.unshift({x: player.x, y: player.y});
+        player.body.pop();
 
-        // Keep inside bounds
-        head.x = Math.max(10, Math.min(MAP_SIZE - 10, head.x));
-        head.y = Math.max(10, Math.min(MAP_SIZE - 10, head.y));
+        // Move Bots
+        bots.forEach(bot => {
+            if(!bot.alive) return;
+            bot.angle += (Math.random() - 0.5) * 0.2;
+            bot.x += Math.cos(bot.angle) * 3;
+            bot.y += Math.sin(bot.angle) * 3;
+            bot.body.unshift({x: bot.x, y: bot.y});
+            bot.body.pop();
 
-        snake.unshift(head);
-        snake.pop();
-
-        // Check Food Collision
-        foods.forEach((food, index) => {
-            let dist = Math.hypot(head.x - food.x, head.y - food.y);
-            if(dist < 15) {
-                score += 5;
-                document.getElementById('scoreVal').innerText = score;
-                foods[index] = {
-                    x: Math.random() * MAP_SIZE,
-                    y: Math.random() * MAP_SIZE,
-                    size: Math.random() * 3 + 3,
-                    color: food.color
-                };
-                // Grow snake
-                snake.push({...snake[snake.length - 1]});
+            // Collision check with player
+            let distToPlayer = Math.hypot(bot.x - player.x, bot.y - player.y);
+            if(distToPlayer < 20) {
+                // Explode Bot
+                bot.alive = false;
+                explodeSnake(bot.body);
+                setTimeout(() => spawnBot(bot.id), 20000); // Respawn after 20s
             }
         });
 
-        // CAMERA FOLLOW: Offset world by head position
-        const camX = canvas.width / 2 - head.x;
-        const camY = canvas.height / 2 - head.y;
+        // Filter dead remains older than 20s
+        let now = Date.now();
+        deadRemains = deadRemains.filter(r => now - r.spawnTime < 20000);
+
+        // CAMERA FOLLOW & SCALE
+        const camX = canvas.width / 2 - player.x * cameraScale;
+        const camY = canvas.height / 2 - player.y * cameraScale;
 
         ctx.fillStyle = '#12161f';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.save();
         ctx.translate(camX, camY);
+        ctx.scale(cameraScale, cameraScale);
 
-        // Draw Map Grid/Border
-        ctx.strokeStyle = '#1e2532';
-        ctx.lineWidth = 4;
+        // Draw Map Grid & Red Zone
+        ctx.strokeStyle = '#1e2532'; ctx.lineWidth = 10;
         ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-        // Draw Foods
-        foods.forEach(food => {
-            ctx.fillStyle = food.color;
-            ctx.beginPath();
-            ctx.arc(food.x, food.y, food.size, 0, Math.PI * 2);
-            ctx.fill();
+        ctx.strokeStyle = 'rgba(231, 76, 60, 0.4)'; ctx.lineWidth = 20;
+        ctx.beginPath();
+        ctx.arc(MAP_SIZE/2, MAP_SIZE/2, redZoneRadius, 0, Math.PI*2);
+        ctx.stroke();
+
+        // Draw Garages
+        garages.forEach(g => {
+            ctx.fillStyle = '#f39c12';
+            ctx.fillRect(g.x - 100, g.y - 100, 200, 200);
+            ctx.fillStyle = '#fff'; ctx.font = "20px Arial";
+            ctx.fillText("GARAGE 🚗", g.x - 55, g.y + 10);
         });
 
-        // Draw Power-ups (🧲 & ⚡)
+        // Draw Fruits
+        fruits.forEach(f => {
+            ctx.font = "22px Arial";
+            ctx.fillText(f.type, f.x, f.y);
+        });
+
+        // Draw Coins
+        coinItems.forEach(c => {
+            ctx.font = "18px Arial";
+            ctx.fillText("🪙", c.x, c.y);
+        });
+
+        // Draw Dead Remains
+        deadRemains.forEach(r => {
+            ctx.fillStyle = '#e74c3c'; ctx.beginPath();
+            ctx.arc(r.x, r.y, 6, 0, Math.PI*2); ctx.fill();
+        });
+
+        // Draw Power-ups
         powerups.forEach(p => {
-            ctx.font = "14px Arial";
-            ctx.fillText(p.type === 'magnet' ? '🧲' : '⚡', p.x, p.y);
+            ctx.font = "20px Arial";
+            let icon = p.type === 'magnet' ? '🧲' : p.type === 'speed' ? '⚡' : p.type === 'camera' ? '📷' : '☸️';
+            ctx.fillText(icon, p.x, p.y);
         });
 
-        // Draw Snake Body
-        const colors = getSkinColors(currentSkin);
-        for(let i = snake.length - 1; i >= 0; i--) {
-            ctx.fillStyle = colors[i % colors.length];
-            ctx.beginPath();
-            ctx.arc(snake[i].x, snake[i].y, i === 0 ? 10 : 8, 0, Math.PI * 2);
-            ctx.fill();
-        }
+        // Draw Player Snake
+        player.body.forEach((p, i) => {
+            ctx.fillStyle = i === 0 ? '#FE8200' : '#00A859';
+            ctx.beginPath(); ctx.arc(p.x, p.y, i === 0 ? 12 : 9, 0, Math.PI*2); ctx.fill();
+        });
+
+        // Draw Bots
+        bots.forEach(bot => {
+            if(!bot.alive) return;
+            bot.body.forEach((bp, j) => {
+                ctx.fillStyle = j === 0 ? '#e74c3c' : '#34495e';
+                ctx.beginPath(); ctx.arc(bp.x, bp.y, j === 0 ? 11 : 8, 0, Math.PI*2); ctx.fill();
+            });
+        });
 
         ctx.restore();
 
-        // Update Radar
-        drawRadar(head);
+        // Draw Radar (Shows Bots + Garages ONLY, Player Hidden)
+        radarCtx.clearRect(0, 0, 85, 85);
+        
+        // Garages on radar
+        garages.forEach(g => {
+            radarCtx.fillStyle = '#f39c12';
+            radarCtx.fillRect((g.x/MAP_SIZE)*85 - 2, (g.y/MAP_SIZE)*85 - 2, 5, 5);
+        });
+
+        // Bots on radar
+        bots.forEach(bot => {
+            if(!bot.alive) return;
+            radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
+            radarCtx.arc((bot.x/MAP_SIZE)*85, (bot.y/MAP_SIZE)*85, 2, 0, Math.PI*2); radarCtx.fill();
+        });
 
         requestAnimationFrame(gameLoop);
     }
