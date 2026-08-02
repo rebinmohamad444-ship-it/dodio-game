@@ -13,7 +13,7 @@
             touch-action: none;
         }
         html, body {
-            width: 100%; height: 100%;
+            width: 100vw; height: 100vh;
             background-color: #0b0d12;
             color: #fff;
             font-family: Arial, sans-serif;
@@ -44,7 +44,7 @@
             font-size: 10px; cursor: pointer; width: 70px; text-align: center; margin-top: 4px;
         }
 
-        /* Dynamic Floating Joystick */
+        /* Controls */
         #joystick-zone {
             position: absolute; width: 90px; height: 90px;
             background: rgba(255, 255, 255, 0.15);
@@ -71,9 +71,9 @@
 
         #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.8); padding: 4px 8px;
-            border-radius: 6px; border: 1px solid #f1c40f;
-            font-size: 9px; z-index: 5; min-width: 110px; pointer-events: none;
+            background: rgba(0,0,0,0.85); padding: 6px 10px;
+            border-radius: 8px; border: 1.5px solid #f1c40f;
+            font-size: 9px; z-index: 5; min-width: 120px; pointer-events: none;
         }
 
         #active-powers-container {
@@ -145,7 +145,7 @@
 <div id="active-powers-container"></div>
 
 <div id="leaderboard-box">
-    <h4 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 TOP 10</h4>
+    <h4 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 TOP 10 PLAYERS</h4>
     <div id="topList"></div>
 </div>
 
@@ -159,6 +159,7 @@
 <div id="ingame-garage-btn" onclick="openShop()">🚗 Garage</div>
 <div id="boost-btn">BOOST 🚀</div>
 
+<!-- Menu Overlay -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
     <div style="font-size:30px; margin-bottom:8px;">🐍</div>
@@ -176,27 +177,30 @@
     </div>
 </div>
 
+<!-- Settings Modal -->
 <div id="settings-modal">
     <h3 style="color:#e67e22; margin-bottom:10px;">Control Settings ⚙️</h3>
     <div class="btn-group">
         <label style="font-size:11px;">Control Style:</label>
         <select id="controlTypeSelect" onchange="changeControlType()">
             <option value="touch">Touch Pointer Target</option>
-            <option value="joystick">Floating Anywhere Joystick</option>
+            <option value="joystick">Floating Joystick Anywhere</option>
             <option value="buttons">4-Direction Buttons</option>
         </select>
         <button onclick="closeSettings()">Save & Back</button>
     </div>
 </div>
 
+<!-- History Modal -->
 <div id="history-modal">
     <h3 style="color:#9b59b6; margin-bottom:5px;">Match History 📜</h3>
     <div class="history-list" id="historyContainer"></div>
     <button onclick="closeHistory()" style="width:120px;">Close</button>
 </div>
 
+<!-- Shop Modal -->
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Flag Skins 🛒</h3>
+    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Flags Shop 🛒</h3>
     <div style="font-size:12px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
     <div class="shop-list" id="shopItemsContainer"></div>
     <button onclick="closeShop()" style="width:120px;">Close</button>
@@ -227,21 +231,30 @@
     let activePowers = [];
     let deadRemains = [];
 
-    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 16 };
+    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 18 };
     let bots = [];
     let fruits = [];
     let coinItems = [];
     let powerups = [];
 
+    // Full Database with Flag Skins
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', price: 0, color: '#2ecc71' },
         { id: 'free2', name: '🔵 Sky Blue', price: 0, color: '#3498db' },
         { id: 'free3', name: '🔴 Ruby Red', price: 0, color: '#e74c3c' },
         { id: 'free4', name: '🟡 Bright Yellow', price: 0, color: '#f1c40f' },
         { id: 'free5', name: '🟣 Royal Purple', price: 0, color: '#9b59b6' },
+        { id: 'free6', name: '🟠 Sunset Orange', price: 0, color: '#e67e22' },
+        { id: 'free7', name: '⚪ Pure White', price: 0, color: '#ffffff' },
         { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, color: '#00A859' },
         { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, color: '#FFDF00' },
-        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, color: '#DD0000' }
+        { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, color: '#74ACDF' },
+        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, color: '#DD0000' },
+        { id: 'france', name: '🇫🇷 France Flag', price: 100, color: '#002395' },
+        { id: 'spain', name: '🇪🇸 Spain Flag', price: 100, color: '#AA152B' },
+        { id: 'italy', name: '🇮🇹 Italy Flag', price: 100, color: '#009246' },
+        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', price: 100, color: '#ffffff' },
+        { id: 'portugal', name: '🇵🇹 Portugal Flag', price: 100, color: '#e74c3c' }
     ];
 
     let ownedSkins = skinsDatabase.filter(s => s.price === 0).map(s => s.id);
@@ -294,7 +307,7 @@
 
     function renderShop() {
         let container = document.getElementById('shopItemsContainer');
-        container.innerHTML = "<h4 style='color:#2ecc71;'>Free Skins & Flag Skins (100 🪙)</h4>";
+        container.innerHTML = "<h4 style='color:#2ecc71;'>Free & Flag Skins (100 🪙)</h4>";
         skinsDatabase.forEach(s => {
             let isOwned = ownedSkins.includes(s.id);
             let isSelected = player.skin === s.id;
@@ -342,9 +355,10 @@
         document.getElementById('scoreVal').innerText = score;
         
         player.alive = true; player.x = MAP_SIZE/2; player.y = MAP_SIZE/2;
-        player.sizeRadius = 16; player.body = [];
+        player.sizeRadius = 18; player.body = [];
         for(let i=0; i<30; i++) player.body.push({x: player.x - i*6, y: player.y});
 
+        // Always 10 Bots Spawned
         bots = [];
         for(let i=0; i<10; i++) spawnBot(i);
 
@@ -368,9 +382,9 @@
         let bx = Math.random() * (MAP_SIZE - 4000) + 2000;
         let by = Math.random() * (MAP_SIZE - 4000) + 2000;
         let body = [];
-        for(let j=0; j<80; j++) body.push({x: bx - j*10, y: by});
+        for(let j=0; j<60; j++) body.push({x: bx - j*10, y: by});
         const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X'];
-        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 2000, alive: true, sizeRadius: 28 };
+        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 1800, alive: true, sizeRadius: 25 };
     }
 
     function explodeSnake(body) {
@@ -378,7 +392,7 @@
         body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
     }
 
-    // FLOATING JOYSTICK Anywhere on Screen
+    // Dynamic Floating Joystick
     const joyZone = document.getElementById('joystick-zone');
     const joyKnob = document.getElementById('joystick-knob');
     let joyActive = false, joyCenterX = 0, joyCenterY = 0;
@@ -386,7 +400,7 @@
     window.addEventListener('touchstart', (e) => {
         if(!gameRunning || !player.alive || controlType !== 'joystick') return;
         const touch = e.touches[0];
-        if(touch.clientX < 100 && touch.clientY < 100) return; // Ignore HUD top left
+        if(touch.clientX < 100 && touch.clientY < 100) return;
 
         joyCenterX = touch.clientX; joyCenterY = touch.clientY;
         joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
@@ -492,12 +506,10 @@
             player.y += Math.sin(player.angle) * currentSpeed;
             player.body.unshift({x: player.x, y: player.y});
             
-            // DYNAMIC LIMITED LENGTH (Max 70 Segments)
-            let maxAllowedSegments = Math.min(75, 30 + Math.floor(score / 150));
+            let maxAllowedSegments = Math.min(65, 30 + Math.floor(score / 200));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
-            // DYNAMIC CAMERA ZOOM OUT WITH SNAKE GROWTH
-            cameraScale = Math.max(0.38, 0.65 - (player.sizeRadius - 16) * 0.015);
+            cameraScale = Math.max(0.40, 0.65 - (player.sizeRadius - 18) * 0.012);
 
             if(player.x <= 20 || player.x >= MAP_SIZE - 20 || player.y <= 20 || player.y >= MAP_SIZE - 20) {
                 player.alive = false; recordMatchEnd(); alert("Game Over! You hit the Red Zone!"); location.reload();
@@ -512,8 +524,9 @@
                 });
             });
 
+            // INSTANT EATING LOGIC (Fixed Distance Radius)
             fruits.forEach((f, i) => {
-                if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 10) {
+                if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
                     score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     fruits[i].x = Math.random() * MAP_SIZE; fruits[i].y = Math.random() * MAP_SIZE;
@@ -521,9 +534,18 @@
                 }
             });
 
+            deadRemains.forEach((r, i) => {
+                if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
+                    score += 15 * currentMultiplier;
+                    document.getElementById('scoreVal').innerText = score;
+                    deadRemains.splice(i, 1);
+                    if(player.sizeRadius < 28) player.sizeRadius += 0.06;
+                }
+            });
+
             powerups.forEach((p, i) => {
-                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 12) {
-                    if(p.icon.includes('x')) { // WORKING MULTIPLIERS!
+                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
+                    if(p.icon.includes('x')) {
                         let val = parseInt(p.icon.replace('x', '')) || 2;
                         currentMultiplier = val;
                         addPowerupTimer(`Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
@@ -543,15 +565,14 @@
             });
         }
 
-        // AGGRESSIVE CRAZY BOTS INTERCEPTING PLAYER
+        // CRAZY SMART AGGRESSIVE BOTS
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
             
-            if(distToPlayer < 1000 && player.alive) {
-                // Intercept Player Path!
-                let futurePlayerX = player.x + Math.cos(player.angle) * 120;
-                let futurePlayerY = player.y + Math.sin(player.angle) * 120;
+            if(distToPlayer < 1100 && player.alive) {
+                let futurePlayerX = player.x + Math.cos(player.angle) * 140;
+                let futurePlayerY = player.y + Math.sin(player.angle) * 140;
                 b.angle = Math.atan2(futurePlayerY - b.y, futurePlayerX - b.x);
             } else {
                 b.angle += (Math.random() - 0.5) * 0.1;
@@ -562,7 +583,7 @@
 
             player.body.forEach((pSeg, idx) => {
                 if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
-                    b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 500);
+                    b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 400); // Fast Respawn!
                 }
             });
         });
