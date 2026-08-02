@@ -37,11 +37,12 @@
             font-size: 10px; margin-top: 4px; text-align: center;
         }
 
+        /* Smaller Top 10 Leaderboard */
         #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.85); padding: 6px 10px;
-            border-radius: 8px; border: 1.5px solid #f1c40f;
-            font-size: 10px; z-index: 5; min-width: 130px; pointer-events: none;
+            background: rgba(0,0,0,0.8); padding: 4px 8px;
+            border-radius: 6px; border: 1px solid #f1c40f;
+            font-size: 9px; z-index: 5; min-width: 110px; pointer-events: none;
         }
 
         #active-powers-container {
@@ -114,7 +115,7 @@
 <div id="active-powers-container"></div>
 
 <div id="leaderboard-box">
-    <h4 style="color:#f1c40f; text-align:center; margin-bottom:4px; font-size:10px;">🏆 TOP 10 PLAYERS</h4>
+    <h4 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 TOP 10</h4>
     <div id="topList"></div>
 </div>
 
@@ -323,7 +324,7 @@
         for(let i=0; i<200; i++) coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '📷', '☸️'];
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '📷', '✈️']; // ✈️ Airplane Steering Wheel
         for(let i=0; i<250; i++) {
             powerups.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
@@ -332,14 +333,14 @@
     function spawnBot(id) {
         let bx = Math.random() * (MAP_SIZE - 2000) + 1000;
         let by = Math.random() * (MAP_SIZE - 2000) + 1000;
+        let startLen = Math.floor(Math.random() * 40) + 30; // Spawn larger & aggressive!
         let body = [];
-        for(let j=0; j<25; j++) body.push({x: bx - j*6, y: by});
+        for(let j=0; j<startLen; j++) body.push({x: bx - j*6, y: by});
         const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X'];
-        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: Math.floor(Math.random()*300+50), alive: true, circleAngle: 0, sizeRadius: 14 };
+        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: startLen * 10, alive: true, circleAngle: 0, sizeRadius: 18 };
     }
 
     function explodeSnake(body) {
-        // NO WHITE COLOR IN REMAINS (Only vibrant colors)
         const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#e67e22', '#00ffcc'];
         body.forEach(p => {
             deadRemains.push({
@@ -390,46 +391,45 @@
         container.innerHTML = html;
     }
 
-    // COBRA / ANACONDA HEAD DRAWING
-    function drawCobraHead(p, angle, mainColor, radius) {
+    // BEAUTIFUL FIERCE ANACONDA HEAD
+    function drawSnakeHead(p, angle, mainColor, radius) {
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(angle);
         
-        // Cobra Hood / Head Shape
         ctx.fillStyle = mainColor;
         ctx.beginPath();
-        ctx.ellipse(0, 0, radius * 1.7, radius * 1.4, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, radius * 1.8, radius * 1.3, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
 
-        // Fierce Eyes
-        ctx.fillStyle = '#f1c40f';
+        // Glowing fierce eyes
+        ctx.fillStyle = '#ff3838';
         ctx.beginPath();
-        ctx.arc(radius*0.5, -radius*0.5, radius*0.28, 0, Math.PI * 2);
-        ctx.arc(radius*0.5, radius*0.5, radius*0.28, 0, Math.PI * 2);
+        ctx.arc(radius*0.6, -radius*0.45, radius*0.3, 0, Math.PI * 2);
+        ctx.arc(radius*0.6, radius*0.45, radius*0.3, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(radius*0.6, -radius*0.5, radius*0.12, 0, Math.PI * 2);
-        ctx.arc(radius*0.6, radius*0.5, radius*0.12, 0, Math.PI * 2);
+        ctx.arc(radius*0.7, -radius*0.45, radius*0.12, 0, Math.PI * 2);
+        ctx.arc(radius*0.7, radius*0.45, radius*0.12, 0, Math.PI * 2);
         ctx.fill();
 
-        // Forked Tongue
-        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2.5;
+        // Forked tongue
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(radius*1.7, 0); ctx.lineTo(radius*2.5, 0);
-        ctx.lineTo(radius*2.9, -5); ctx.moveTo(radius*2.5, 0); ctx.lineTo(radius*2.9, 5);
+        ctx.moveTo(radius*1.8, 0); ctx.lineTo(radius*2.6, 0);
+        ctx.lineTo(radius*3.0, -5); ctx.moveTo(radius*2.6, 0); ctx.lineTo(radius*3.0, 5);
         ctx.stroke();
 
-        // 5 Vertical Red Magnet Lines
+        // 5 Vertical Magnet Lines
         if(isMagnetActive) {
             ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
             for(let i = -2; i <= 2; i += 1) {
                 ctx.beginPath();
-                ctx.moveTo(radius * 2.1, i * 8);
-                ctx.lineTo(radius * 2.1, (i * 8) + 14);
+                ctx.moveTo(radius * 2.2, i * 8);
+                ctx.lineTo(radius * 2.2, (i * 8) + 14);
                 ctx.stroke();
             }
         }
@@ -462,7 +462,7 @@
             while (diff > Math.PI) diff -= Math.PI * 2;
 
             let baseAgility = 0.22;
-            if(isSteeringActive) baseAgility = 0.38;
+            if(isSteeringActive) baseAgility = 0.42;
 
             player.angle += diff * baseAgility;
 
@@ -546,9 +546,9 @@
                             manualSpeedBoost = false;
                         });
                     }
-                    if(p.icon === '☸️') {
+                    if(p.icon === '✈️') { // Airplane Steering
                         isSteeringActive = true;
-                        addPowerupTimer('Steering Wheel', '☸️', 15000, () => isSteeringActive = false);
+                        addPowerupTimer('Airplane Steering', '✈️', 15000, () => isSteeringActive = false);
                     }
                     if(p.icon === '📷') {
                         cameraScale = 0.42;
@@ -564,32 +564,32 @@
             });
         }
 
-        // BOTS LOGIC + AUTO RESPAWN
+        // BOTS AGGRESSIVE LOGIC + AUTO RESPAWN
         bots.forEach(b => {
             if(!b.alive) return;
 
             fruits.forEach((f, fi) => {
                 if(Math.hypot(b.x - f.x, b.y - f.y) < b.sizeRadius + 8) {
                     b.score += 5;
+                    b.body.push({...b.body[b.body.length-1]});
                     fruits[fi].x = Math.random() * MAP_SIZE;
                     fruits[fi].y = Math.random() * MAP_SIZE;
-                    b.body.push({...b.body[b.body.length-1]});
                     if(b.body.length % 10 === 0) b.sizeRadius += 0.5;
                 }
             });
 
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
-            if(distToPlayer < 850 && player.alive) {
+            if(distToPlayer < 900 && player.alive) {
                 b.circleAngle += 0.05;
-                let targetX = player.x + Math.cos(b.circleAngle) * 170;
-                let targetY = player.y + Math.sin(b.circleAngle) * 170;
+                let targetX = player.x + Math.cos(b.circleAngle) * 180;
+                let targetY = player.y + Math.sin(b.circleAngle) * 180;
                 b.angle = Math.atan2(targetY - b.y, targetX - b.x);
             } else {
                 b.angle += (Math.random() - 0.5) * 0.12;
             }
 
-            b.x += Math.cos(b.angle) * 4.2;
-            b.y += Math.sin(b.angle) * 4.2;
+            b.x += Math.cos(b.angle) * 4.5;
+            b.y += Math.sin(b.angle) * 4.5;
             b.body.unshift({x: b.x, y: b.y});
             b.body.pop();
 
@@ -597,7 +597,7 @@
                 if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius + 2) {
                     b.alive = false;
                     explodeSnake(b.body);
-                    setTimeout(() => spawnBot(b.id), 3000);
+                    setTimeout(() => spawnBot(b.id), 2000); // Quick respawn
                 }
             });
         });
@@ -612,11 +612,12 @@
         ctx.translate(camX, camY);
         ctx.scale(cameraScale, cameraScale);
 
-        ctx.strokeStyle = '#18202d'; ctx.lineWidth = 2;
-        for(let x = 0; x < MAP_SIZE; x += 150) {
+        // RED RED GRID LINES (Vertical & Horizontal Red Lines)
+        ctx.strokeStyle = 'rgba(231, 76, 60, 0.25)'; ctx.lineWidth = 2;
+        for(let x = 0; x < MAP_SIZE; x += 200) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); ctx.stroke();
         }
-        for(let y = 0; y < MAP_SIZE; y += 150) {
+        for(let y = 0; y < MAP_SIZE; y += 200) {
             ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); ctx.stroke();
         }
 
@@ -633,7 +634,6 @@
         fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
         coinItems.forEach(c => { ctx.font = "20px Arial"; ctx.fillText("🪙", c.x, c.y); });
 
-        // Draw Multi-color Dead Remains (No White, Blinking)
         deadRemains.forEach(r => {
             let isBlinking = (Math.floor(Date.now() / 250) % 2 === 0);
             ctx.shadowColor = r.color; ctx.shadowBlur = isBlinking ? 14 : 2;
@@ -642,39 +642,33 @@
             ctx.shadowBlur = 0;
         });
 
-        // Draw Power-ups (X items have Dark Blue Dot Background)
         powerups.forEach(p => {
             ctx.save();
             ctx.translate(p.x, p.y);
             if(p.icon.includes('X')) {
-                ctx.fillStyle = '#1b365d'; // Dark Blue Dot Background
-                ctx.beginPath();
-                ctx.arc(0, 0, 18, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.fillStyle = '#1b365d';
+                ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
                 ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 2; ctx.stroke();
                 
                 ctx.fillStyle = '#fff';
                 ctx.font = "bold 13px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 ctx.fillText(p.icon, 0, 0);
             } else {
                 ctx.shadowColor = "#f1c40f"; ctx.shadowBlur = 12;
                 ctx.font = "bold 28px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
+                ctx.textAlign = "center"; ctx.textBaseline = "middle";
                 ctx.fillText(p.icon, 0, 0);
                 ctx.shadowBlur = 0;
             }
             ctx.restore();
         });
 
-        // Draw Player Snake with Cobra Head
         if(player.alive) {
             let activeSkinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             player.body.forEach((p, i) => {
                 if(i === 0) {
-                    drawCobraHead(p, player.angle, activeSkinObj.color, player.sizeRadius);
+                    drawSnakeHead(p, player.angle, activeSkinObj.color, player.sizeRadius);
                 } else {
                     ctx.fillStyle = i % 2 === 0 ? activeSkinObj.color : '#f1c40f';
                     ctx.beginPath(); ctx.arc(p.x, p.y, player.sizeRadius * 0.7, 0, Math.PI*2); ctx.fill();
@@ -682,12 +676,11 @@
             });
         }
 
-        // Draw Bots
         bots.forEach(b => {
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
                 if(j === 0) {
-                    drawCobraHead(bp, b.angle, '#e74c3c', b.sizeRadius);
+                    drawSnakeHead(bp, b.angle, '#e74c3c', b.sizeRadius);
                 } else {
                     ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#3498db';
                     ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.65, 0, Math.PI*2); ctx.fill();
