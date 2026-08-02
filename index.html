@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>dod.io</title>
     <style>
         * {
@@ -12,12 +12,12 @@
             -webkit-user-select: none;
             touch-action: none;
         }
-        body {
+        html, body {
+            width: 100%; height: 100%;
             background-color: #0b0d12;
             color: #fff;
             font-family: Arial, sans-serif;
             overflow: hidden;
-            width: 100vw; height: 100vh;
         }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
@@ -44,20 +44,21 @@
             font-size: 10px; cursor: pointer; width: 70px; text-align: center; margin-top: 4px;
         }
 
-        /* Controls Options */
+        /* Dynamic Floating Joystick */
         #joystick-zone {
-            position: absolute; bottom: 25px; right: 25px;
-            width: 100px; height: 100px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 2px solid rgba(46, 204, 113, 0.7);
+            position: absolute; width: 90px; height: 90px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(46, 204, 113, 0.8);
             border-radius: 50%; z-index: 10; display: none;
+            pointer-events: none; transform: translate(-50%, -50%);
         }
         #joystick-knob {
-            position: absolute; top: 25px; left: 25px;
-            width: 50px; height: 50px;
+            position: absolute; top: 22px; left: 22px;
+            width: 45px; height: 45px;
             background: #2ecc71; border-radius: 50%;
             box-shadow: 0 0 10px #2ecc71; pointer-events: none;
         }
+
         #btn-controls {
             position: absolute; bottom: 20px; right: 20px;
             display: none; grid-template-columns: repeat(3, 40px);
@@ -105,7 +106,7 @@
         }
 
         #menu-overlay, #shop-modal, #history-modal, #settings-modal {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.95); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
@@ -118,8 +119,6 @@
             border: 1.5px solid #2ecc71; background: #181c24; color: #fff; text-align: center; outline: none;
         }
         button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; border: none; }
-        button.fb-btn { background: #1877f2; color: #fff; }
-        button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
         button.shop-btn { background: #f39c12; color: #fff; }
 
         .shop-list, .history-list {
@@ -183,7 +182,7 @@
         <label style="font-size:11px;">Control Style:</label>
         <select id="controlTypeSelect" onchange="changeControlType()">
             <option value="touch">Touch Pointer Target</option>
-            <option value="joystick">Joystick 360°</option>
+            <option value="joystick">Floating Anywhere Joystick</option>
             <option value="buttons">4-Direction Buttons</option>
         </select>
         <button onclick="closeSettings()">Save & Back</button>
@@ -221,6 +220,7 @@
     let matchHistory = JSON.parse(localStorage.getItem('dodio_history') || '[]');
     let score = 0;
 
+    let currentMultiplier = 1;
     let manualSpeedBoost = false;
     let isMagnetActive = false;
     let isSteeringActive = false;
@@ -239,38 +239,20 @@
         { id: 'free3', name: '🔴 Ruby Red', price: 0, color: '#e74c3c' },
         { id: 'free4', name: '🟡 Bright Yellow', price: 0, color: '#f1c40f' },
         { id: 'free5', name: '🟣 Royal Purple', price: 0, color: '#9b59b6' },
-        { id: 'free6', name: '🟠 Sunset Orange', price: 0, color: '#e67e22' },
-        { id: 'free7', name: '⚪ Pure White', price: 0, color: '#ffffff' },
-        { id: 'free8', name: '⚫ Dark Shadow', price: 0, color: '#34495e' },
-        { id: 'free9', name: '💖 Neon Pink', price: 0, color: '#ff6b81' },
-        { id: 'free10', name: '🌊 Cyan Ocean', price: 0, color: '#1abc9c' },
         { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, color: '#00A859' },
         { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, color: '#FFDF00' },
-        { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, color: '#74ACDF' },
-        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, color: '#DD0000' },
-        { id: 'france', name: '🇫🇷 France Flag', price: 100, color: '#002395' },
-        { id: 'spain', name: '🇪🇸 Spain Flag', price: 100, color: '#AA152B' },
-        { id: 'italy', name: '🇮🇹 Italy Flag', price: 100, color: '#009246' },
-        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', price: 100, color: '#ffffff' },
-        { id: 'belgium', name: '🇧🇪 Belgium Flag', price: 100, color: '#f1c40f' },
-        { id: 'portugal', name: '🇵🇹 Portugal Flag', price: 100, color: '#e74c3c' }
+        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, color: '#DD0000' }
     ];
 
     let ownedSkins = skinsDatabase.filter(s => s.price === 0).map(s => s.id);
     ownedSkins.push('kurdish');
-
-    const garages = [
-        { x: 500, y: 500 },
-        { x: MAP_SIZE - 500, y: 500 },
-        { x: 500, y: MAP_SIZE - 500 },
-        { x: MAP_SIZE - 500, y: MAP_SIZE - 500 }
-    ];
 
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
 
     updateMenuStats();
@@ -281,34 +263,21 @@
         document.getElementById('menuHighScore').innerText = highScore;
     }
 
-    function openShop() {
-        document.getElementById('shopCoinVal').innerText = `🪙 ${coins}`;
-        renderShop();
-        document.getElementById('shop-modal').style.display = 'flex';
-    }
+    function openShop() { renderShop(); document.getElementById('shop-modal').style.display = 'flex'; }
     function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
-    function openHistory() {
-        renderHistory();
-        document.getElementById('history-modal').style.display = 'flex';
-    }
+    function openHistory() { renderHistory(); document.getElementById('history-modal').style.display = 'flex'; }
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
     function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
     function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
 
     function changeControlType() {
         controlType = document.getElementById('controlTypeSelect').value;
-        document.getElementById('joystick-zone').style.display = controlType === 'joystick' ? 'block' : 'none';
         document.getElementById('btn-controls').style.display = controlType === 'buttons' ? 'grid' : 'none';
+        document.getElementById('joystick-zone').style.display = 'none';
     }
 
-    function setDir(x, y) {
-        player.targetAngle = Math.atan2(y, x);
-    }
-
-    function returnToMenu() {
-        gameRunning = false;
-        document.getElementById('menu-overlay').style.display = 'flex';
-    }
+    function setDir(x, y) { player.targetAngle = Math.atan2(y, x); }
+    function returnToMenu() { gameRunning = false; document.getElementById('menu-overlay').style.display = 'flex'; }
 
     function renderHistory() {
         let container = document.getElementById('historyContainer');
@@ -343,35 +312,21 @@
 
     function buySkin(id, price) {
         if(coins >= price) {
-            coins -= price;
-            ownedSkins.push(id);
-            player.skin = id;
-            updateMenuStats();
-            saveStats();
-            renderShop();
-        } else {
-            alert("Not enough coins!");
-        }
+            coins -= price; ownedSkins.push(id); player.skin = id;
+            updateMenuStats(); saveStats(); renderShop();
+        } else alert("Not enough coins!");
     }
 
-    function selectSkin(id) {
-        player.skin = id;
-        renderShop();
-    }
+    function selectSkin(id) { player.skin = id; renderShop(); }
 
     function startGame() {
         document.getElementById('menu-overlay').style.display = 'none';
-        gameRunning = true;
-        initGame();
-        gameLoop();
+        gameRunning = true; initGame(); gameLoop();
     }
 
     function saveStats() {
         localStorage.setItem('dodio_coins', coins.toString());
-        if(score > highScore) {
-            highScore = score;
-            localStorage.setItem('dodio_highscore', highScore.toString());
-        }
+        if(score > highScore) { highScore = score; localStorage.setItem('dodio_highscore', highScore.toString()); }
         updateMenuStats();
     }
 
@@ -383,13 +338,11 @@
     }
 
     function initGame() {
-        score = 0;
+        score = 0; currentMultiplier = 1;
         document.getElementById('scoreVal').innerText = score;
         
-        player.alive = true;
-        player.x = MAP_SIZE/2; player.y = MAP_SIZE/2;
-        player.sizeRadius = 16;
-        player.body = [];
+        player.alive = true; player.x = MAP_SIZE/2; player.y = MAP_SIZE/2;
+        player.sizeRadius = 16; player.body = [];
         for(let i=0; i<30; i++) player.body.push({x: player.x - i*6, y: player.y});
 
         bots = [];
@@ -414,58 +367,44 @@
     function spawnBot(id) {
         let bx = Math.random() * (MAP_SIZE - 4000) + 2000;
         let by = Math.random() * (MAP_SIZE - 4000) + 2000;
-        let botRadius = 35;
-        let bodyLength = 120;
         let body = [];
-        for(let j=0; j<bodyLength; j++) body.push({x: bx - j*12, y: by});
-        
+        for(let j=0; j<80; j++) body.push({x: bx - j*10, y: by});
         const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X'];
-        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 2500, alive: true, circleAngle: 0, sizeRadius: botRadius };
+        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 2000, alive: true, sizeRadius: 28 };
     }
 
     function explodeSnake(body) {
-        const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#e67e22', '#00ffcc'];
-        body.forEach(p => {
-            deadRemains.push({
-                x: p.x, y: p.y,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                spawnTime: Date.now()
-            });
-        });
+        const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#e67e22'];
+        body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
     }
 
+    // FLOATING JOYSTICK Anywhere on Screen
     const joyZone = document.getElementById('joystick-zone');
     const joyKnob = document.getElementById('joystick-knob');
-    let joyActive = false;
+    let joyActive = false, joyCenterX = 0, joyCenterY = 0;
 
-    function handleJoyMove(e) {
-        if(!joyActive) return;
-        const rect = joyZone.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+    window.addEventListener('touchstart', (e) => {
+        if(!gameRunning || !player.alive || controlType !== 'joystick') return;
+        const touch = e.touches[0];
+        if(touch.clientX < 100 && touch.clientY < 100) return; // Ignore HUD top left
 
-        const touchX = e.touches ? e.touches[0].clientX : e.clientX;
-        const touchY = e.touches ? e.touches[0].clientY : e.clientY;
+        joyCenterX = touch.clientX; joyCenterY = touch.clientY;
+        joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
+        joyZone.style.display = 'block'; joyActive = true;
+    });
 
-        const dx = touchX - centerX;
-        const dy = touchY - centerY;
-        const dist = Math.hypot(dx, dy);
-        const maxDist = 30;
-
-        let knobX = dx;
-        let knobY = dy;
-        if(dist > maxDist) {
-            knobX = (dx / dist) * maxDist;
-            knobY = (dy / dist) * maxDist;
-        }
-
+    window.addEventListener('touchmove', (e) => {
+        if(!joyActive || controlType !== 'joystick') return;
+        const touch = e.touches[0];
+        const dx = touch.clientX - joyCenterX; const dy = touch.clientY - joyCenterY;
+        const dist = Math.hypot(dx, dy); const maxDist = 28;
+        let knobX = dx, knobY = dy;
+        if(dist > maxDist) { knobX = (dx / dist) * maxDist; knobY = (dy / dist) * maxDist; }
         joyKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
         player.targetAngle = Math.atan2(dy, dx);
-    }
+    });
 
-    joyZone.addEventListener('touchstart', (e) => { joyActive = true; handleJoyMove(e); });
-    joyZone.addEventListener('touchmove', handleJoyMove);
-    joyZone.addEventListener('touchend', () => { joyActive = false; joyKnob.style.transform = 'translate(0px, 0px)'; });
+    window.addEventListener('touchend', () => { joyActive = false; joyZone.style.display = 'none'; });
 
     const boostBtn = document.getElementById('boost-btn');
     boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
@@ -494,56 +433,31 @@
 
     function renderPowerBadges() {
         let container = document.getElementById('active-powers-container');
-        let html = "";
-        let now = Date.now();
-
+        let html = ""; let now = Date.now();
         activePowers.forEach(p => {
             let timeLeft = Math.max(0, Math.ceil((p.expireTime - now) / 1000));
-            let isBlinking = timeLeft <= 5;
-            html += `<div class="power-badge ${isBlinking ? 'blinking' : ''}">${p.icon} ${p.name} (${timeLeft}s)</div>`;
+            html += `<div class="power-badge ${timeLeft <= 5 ? 'blinking' : ''}">${p.icon} ${p.name} (${timeLeft}s)</div>`;
         });
         container.innerHTML = html;
     }
 
     function drawSnakeHead(p, angle, mainColor, radius) {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(angle);
-        
-        ctx.fillStyle = mainColor;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, radius * 1.7, radius * 1.25, 0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
+        ctx.fillStyle = mainColor; ctx.beginPath();
+        ctx.ellipse(0, 0, radius * 1.7, radius * 1.25, 0, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.8; ctx.stroke();
 
-        ctx.fillStyle = '#f1c40f';
-        ctx.beginPath();
+        ctx.fillStyle = '#f1c40f'; ctx.beginPath();
         ctx.ellipse(radius*0.5, -radius*0.4, radius*0.35, radius*0.2, Math.PI*0.1, 0, Math.PI * 2);
-        ctx.ellipse(radius*0.5, radius*0.4, radius*0.35, radius*0.2, -Math.PI*0.1, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.ellipse(radius*0.5, radius*0.4, radius*0.35, radius*0.2, -Math.PI*0.1, 0, Math.PI * 2); ctx.fill();
 
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
+        ctx.fillStyle = '#000'; ctx.beginPath();
         ctx.arc(radius*0.55, -radius*0.4, radius*0.12, 0, Math.PI * 2);
-        ctx.arc(radius*0.55, radius*0.4, radius*0.12, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.arc(radius*0.55, radius*0.4, radius*0.12, 0, Math.PI * 2); ctx.fill();
 
-        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
-        ctx.beginPath();
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3; ctx.beginPath();
         ctx.moveTo(radius*1.7, 0); ctx.lineTo(radius*2.5, 0);
-        ctx.lineTo(radius*2.9, -5); ctx.moveTo(radius*2.5, 0); ctx.lineTo(radius*2.9, 5);
-        ctx.stroke();
-
-        if(isMagnetActive) {
-            ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
-            for(let i = -2; i <= 2; i += 1) {
-                ctx.beginPath();
-                ctx.moveTo(radius * 2.2, i * 8);
-                ctx.lineTo(radius * 2.2, (i * 8) + 14);
-                ctx.stroke();
-            }
-        }
-
+        ctx.lineTo(radius*2.9, -5); ctx.moveTo(radius*2.5, 0); ctx.lineTo(radius*2.9, 5); ctx.stroke();
         ctx.restore();
     }
 
@@ -571,135 +485,84 @@
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
 
-            let baseAgility = 0.22;
-            if(isSteeringActive) baseAgility = 0.42;
-
-            player.angle += diff * baseAgility;
+            player.angle += diff * (isSteeringActive ? 0.42 : 0.22);
 
             let currentSpeed = manualSpeedBoost ? 8.0 : 4.8;
             player.x += Math.cos(player.angle) * currentSpeed;
             player.y += Math.sin(player.angle) * currentSpeed;
             player.body.unshift({x: player.x, y: player.y});
-            player.body.pop();
+            
+            // DYNAMIC LIMITED LENGTH (Max 70 Segments)
+            let maxAllowedSegments = Math.min(75, 30 + Math.floor(score / 150));
+            while(player.body.length > maxAllowedSegments) player.body.pop();
+
+            // DYNAMIC CAMERA ZOOM OUT WITH SNAKE GROWTH
+            cameraScale = Math.max(0.38, 0.65 - (player.sizeRadius - 16) * 0.015);
 
             if(player.x <= 20 || player.x >= MAP_SIZE - 20 || player.y <= 20 || player.y >= MAP_SIZE - 20) {
-                player.alive = false;
-                recordMatchEnd();
-                alert("Game Over! You hit the Red Zone!");
-                location.reload();
+                player.alive = false; recordMatchEnd(); alert("Game Over! You hit the Red Zone!"); location.reload();
             }
 
             bots.forEach(b => {
                 if(!b.alive) return;
                 b.body.forEach((seg, idx) => {
                     if(idx > 2 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
-                        player.alive = false;
-                        recordMatchEnd();
-                        alert("Game Over! You crashed into a giant bot!");
-                        location.reload();
+                        player.alive = false; recordMatchEnd(); alert("Game Over! You crashed into a bot!"); location.reload();
                     }
                 });
             });
 
-            if(isMagnetActive) {
-                [fruits, coinItems, powerups, deadRemains].forEach(group => {
-                    group.forEach(item => {
-                        let d = Math.hypot(player.x - item.x, player.y - item.y);
-                        if(d < 380) {
-                            item.x += (player.x - item.x) * 0.15;
-                            item.y += (player.y - item.y) * 0.15;
-                        }
-                    });
-                });
-            }
-
-            // BALANCED GROWTH WITH A MAXIMUM CAP (Max Radius: 32)
             fruits.forEach((f, i) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 10) {
-                    score += 5;
+                    score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
-                    fruits[i].x = Math.random() * MAP_SIZE;
-                    fruits[i].y = Math.random() * MAP_SIZE;
-                    player.body.push({...player.body[player.body.length-1]});
-                    if(player.sizeRadius < 32) player.sizeRadius += 0.03;
-                }
-            });
-
-            deadRemains.forEach((r, i) => {
-                if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 14) {
-                    score += 15;
-                    document.getElementById('scoreVal').innerText = score;
-                    deadRemains.splice(i, 1);
-                    player.body.push({...player.body[player.body.length-1]});
-                    if(player.sizeRadius < 32) player.sizeRadius += 0.05;
-                }
-            });
-
-            coinItems.forEach((c, i) => {
-                if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 8) {
-                    coins += 1;
-                    document.getElementById('coinVal').innerText = `🪙 ${coins}`;
-                    saveStats();
-                    coinItems[i].x = Math.random() * MAP_SIZE;
-                    coinItems[i].y = Math.random() * MAP_SIZE;
+                    fruits[i].x = Math.random() * MAP_SIZE; fruits[i].y = Math.random() * MAP_SIZE;
+                    if(player.sizeRadius < 28) player.sizeRadius += 0.04;
                 }
             });
 
             powerups.forEach((p, i) => {
                 if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 12) {
-                    if(p.icon === '🧲') {
-                        isMagnetActive = true;
-                        addPowerupTimer('Magnet', '🧲', 15000, () => isMagnetActive = false);
+                    if(p.icon.includes('x')) { // WORKING MULTIPLIERS!
+                        let val = parseInt(p.icon.replace('x', '')) || 2;
+                        currentMultiplier = val;
+                        addPowerupTimer(`Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
                     }
                     if(p.icon === '🚀') {
                         document.getElementById('boost-btn').style.display = 'flex';
                         addPowerupTimer('Boost Button', '🚀', 15000, () => {
-                            document.getElementById('boost-btn').style.display = 'none';
-                            manualSpeedBoost = false;
+                            document.getElementById('boost-btn').style.display = 'none'; manualSpeedBoost = false;
                         });
                     }
                     if(p.icon === '🎛️') {
-                        isSteeringActive = true;
-                        addPowerupTimer('Airplane Steering', '🎛️', 15000, () => isSteeringActive = false);
-                    }
-                    if(p.icon === '📷') {
-                        cameraScale = 0.42;
-                        addPowerupTimer('Camera Zoom', '📷', 15000, () => cameraScale = 0.65);
-                    }
-                    if(p.icon.includes('X')) {
-                        addPowerupTimer(`Multiplier ${p.icon}`, p.icon, 15000, null);
+                        isSteeringActive = true; addPowerupTimer('Airplane Steering', '🎛️', 15000, () => isSteeringActive = false);
                     }
 
-                    powerups[i].x = Math.random() * MAP_SIZE;
-                    powerups[i].y = Math.random() * MAP_SIZE;
+                    powerups[i].x = Math.random() * MAP_SIZE; powerups[i].y = Math.random() * MAP_SIZE;
                 }
             });
         }
 
+        // AGGRESSIVE CRAZY BOTS INTERCEPTING PLAYER
         bots.forEach(b => {
             if(!b.alive) return;
-
-            if(b.x < 1500 || b.x > MAP_SIZE - 1500 || b.y < 1500 || b.y > MAP_SIZE - 1500) {
-                b.angle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
+            let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
+            
+            if(distToPlayer < 1000 && player.alive) {
+                // Intercept Player Path!
+                let futurePlayerX = player.x + Math.cos(player.angle) * 120;
+                let futurePlayerY = player.y + Math.sin(player.angle) * 120;
+                b.angle = Math.atan2(futurePlayerY - b.y, futurePlayerX - b.x);
             } else {
-                let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
-                if(distToPlayer < 1200 && player.alive) {
-                    b.angle = Math.atan2(player.y - b.y, player.x - b.x);
-                } else {
-                    b.angle += (Math.random() - 0.5) * 0.08;
-                }
+                b.angle += (Math.random() - 0.5) * 0.1;
             }
 
-            b.x += Math.cos(b.angle) * 4.2;
-            b.y += Math.sin(b.angle) * 4.2;
-            b.body.unshift({x: b.x, y: b.y});
-            b.body.pop();
+            b.x += Math.cos(b.angle) * 4.5; b.y += Math.sin(b.angle) * 4.5;
+            b.body.unshift({x: b.x, y: b.y}); b.body.pop();
 
             player.body.forEach((pSeg, idx) => {
                 if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
-                    b.alive = false;
-                    explodeSnake(b.body);
-                    setTimeout(() => spawnBot(b.id), 500);
+                    b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 500);
                 }
             });
         });
@@ -707,70 +570,24 @@
         const camX = canvas.width / 2 - player.x * cameraScale;
         const camY = canvas.height / 2 - player.y * cameraScale;
 
-        ctx.fillStyle = '#0f131a';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.save();
-        ctx.translate(camX, camY);
-        ctx.scale(cameraScale, cameraScale);
+        ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
 
         ctx.strokeStyle = 'rgba(231, 76, 60, 0.22)'; ctx.lineWidth = 2;
-        for(let x = 0; x < MAP_SIZE; x += 200) {
-            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); ctx.stroke();
-        }
-        for(let y = 0; y < MAP_SIZE; y += 200) {
-            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); ctx.stroke();
-        }
+        for(let x = 0; x < MAP_SIZE; x += 200) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); ctx.stroke(); }
+        for(let y = 0; y < MAP_SIZE; y += 200) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); ctx.stroke(); }
 
-        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 20;
-        ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
-
-        garages.forEach(g => {
-            ctx.fillStyle = '#2ecc71';
-            ctx.fillRect(g.x - 120, g.y - 120, 240, 240);
-            ctx.fillStyle = '#fff'; ctx.font = "bold 22px Arial";
-            ctx.fillText("GARAGE 🚗", g.x - 60, g.y + 8);
-        });
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 20; ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
         fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
-        coinItems.forEach(c => { ctx.font = "20px Arial"; ctx.fillText("🪙", c.x, c.y); });
-
-        deadRemains.forEach(r => {
-            let isBlinking = (Math.floor(Date.now() / 250) % 2 === 0);
-            ctx.shadowColor = r.color; ctx.shadowBlur = isBlinking ? 18 : 4;
-            ctx.fillStyle = r.color;
-            ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill();
-            ctx.shadowBlur = 0;
-        });
-
-        powerups.forEach(p => {
-            ctx.save();
-            ctx.translate(p.x, p.y);
-            if(p.icon.includes('X')) {
-                ctx.fillStyle = '#1b365d';
-                ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 2; ctx.stroke();
-                
-                ctx.fillStyle = '#fff';
-                ctx.font = "bold 13px Arial";
-                ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText(p.icon, 0, 0);
-            } else {
-                ctx.shadowColor = "#f1c40f"; ctx.shadowBlur = 12;
-                ctx.font = "bold 28px Arial";
-                ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText(p.icon, 0, 0);
-                ctx.shadowBlur = 0;
-            }
-            ctx.restore();
-        });
+        deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 12, 0, Math.PI*2); ctx.fill(); });
+        powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
         if(player.alive) {
             let activeSkinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             player.body.forEach((p, i) => {
-                if(i === 0) {
-                    drawSnakeHead(p, player.angle, activeSkinObj.color, player.sizeRadius);
-                } else {
+                if(i === 0) drawSnakeHead(p, player.angle, activeSkinObj.color, player.sizeRadius);
+                else {
                     ctx.fillStyle = i % 2 === 0 ? activeSkinObj.color : '#f1c40f';
                     ctx.beginPath(); ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
                 }
@@ -780,9 +597,8 @@
         bots.forEach(b => {
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
-                if(j === 0) {
-                    drawSnakeHead(bp, b.angle, '#e74c3c', b.sizeRadius);
-                } else {
+                if(j === 0) drawSnakeHead(bp, b.angle, '#e74c3c', b.sizeRadius);
+                else {
                     ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#3498db';
                     ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.8, 0, Math.PI*2); ctx.fill();
                 }
@@ -796,15 +612,8 @@
             radarCtx.fillStyle = '#2ecc71'; radarCtx.beginPath();
             radarCtx.arc((player.x/MAP_SIZE)*70, (player.y/MAP_SIZE)*70, 3.5, 0, Math.PI*2); radarCtx.fill();
         }
-        bots.forEach(b => {
-            if(!b.alive) return;
-            radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
-            radarCtx.arc((b.x/MAP_SIZE)*70, (b.y/MAP_SIZE)*70, 2, 0, Math.PI*2); radarCtx.fill();
-        });
 
-        renderPowerBadges();
-        updateLeaderboard();
-        requestAnimationFrame(gameLoop);
+        renderPowerBadges(); updateLeaderboard(); requestAnimationFrame(gameLoop);
     }
 </script>
 </body>
