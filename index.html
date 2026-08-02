@@ -10,6 +10,7 @@
             margin: 0; padding: 0;
             user-select: none;
             -webkit-user-select: none;
+            touch-action: none;
         }
         body {
             background-color: #0b0d12;
@@ -34,10 +35,39 @@
         #hud-stats {
             background: rgba(0,0,0,0.75); padding: 4px 8px;
             border-radius: 6px; border: 1px solid #2ecc71;
-            font-size: 10px; margin-top: 4px; text-align: center;
+            font-size: 10px; margin-top: 4px; text-align: center; width: 70px;
         }
 
-        /* Leaderboard */
+        #exit-btn {
+            background: #e74c3c; color: #fff; font-weight: bold;
+            border: none; padding: 4px 8px; border-radius: 6px;
+            font-size: 10px; cursor: pointer; width: 70px; text-align: center; margin-top: 4px;
+        }
+
+        /* Controls Options */
+        #joystick-zone {
+            position: absolute; bottom: 25px; right: 25px;
+            width: 100px; height: 100px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px solid rgba(46, 204, 113, 0.7);
+            border-radius: 50%; z-index: 10; display: none;
+        }
+        #joystick-knob {
+            position: absolute; top: 25px; left: 25px;
+            width: 50px; height: 50px;
+            background: #2ecc71; border-radius: 50%;
+            box-shadow: 0 0 10px #2ecc71; pointer-events: none;
+        }
+        #btn-controls {
+            position: absolute; bottom: 20px; right: 20px;
+            display: none; grid-template-columns: repeat(3, 40px);
+            grid-template-rows: repeat(3, 40px); gap: 4px; z-index: 10;
+        }
+        .ctrl-btn {
+            background: rgba(46, 204, 113, 0.75); border: none;
+            color: #fff; font-weight: bold; border-radius: 6px; font-size: 15px;
+        }
+
         #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
             background: rgba(0,0,0,0.8); padding: 4px 8px;
@@ -46,7 +76,7 @@
         }
 
         #active-powers-container {
-            position: absolute; top: 90px; left: 10px;
+            position: absolute; top: 125px; left: 10px;
             display: flex; flex-direction: column; gap: 3px; z-index: 5;
         }
         .power-badge {
@@ -74,12 +104,12 @@
             box-shadow: 0 0 10px #e74c3c; cursor: pointer;
         }
 
-        #menu-overlay, #shop-modal, #history-modal {
+        #menu-overlay, #shop-modal, #history-modal, #settings-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 12, 16, 0.95); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
-        #shop-modal, #history-modal { display: none; z-index: 30; }
+        #shop-modal, #history-modal, #settings-modal { display: none; z-index: 30; }
 
         h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
         .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 280px; }
@@ -110,6 +140,7 @@
         <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
         <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
     </div>
+    <button id="exit-btn" onclick="returnToMenu()">🏠 Exit</button>
 </div>
 
 <div id="active-powers-container"></div>
@@ -117,6 +148,13 @@
 <div id="leaderboard-box">
     <h4 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 TOP 10</h4>
     <div id="topList"></div>
+</div>
+
+<div id="joystick-zone"><div id="joystick-knob"></div></div>
+<div id="btn-controls">
+    <div></div><button class="ctrl-btn" onclick="setDir(0, -1)">▲</button><div></div>
+    <button class="ctrl-btn" onclick="setDir(-1, 0)">◀</button><div></div><button class="ctrl-btn" onclick="setDir(1, 0)">▶</button>
+    <div></div><button class="ctrl-btn" onclick="setDir(0, 1)">▼</button><div></div>
 </div>
 
 <div id="ingame-garage-btn" onclick="openShop()">🚗 Garage</div>
@@ -132,11 +170,24 @@
 
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name">
-        <button onclick="startGame()">Play as Guest 🎮</button>
-        <button class="guest-btn" onclick="startGame()">Email Login ✉️</button>
-        <button class="fb-btn" onclick="startGame()">Connect Facebook 📘</button>
-        <button class="shop-btn" onclick="openShop()">Shop & Skins 🛒</button>
+        <button onclick="startGame()">Play Game 🎮</button>
+        <button class="shop-btn" onclick="openShop()">Shop & Flag Skins 🛒</button>
+        <button style="background:#e67e22; color:#fff;" onclick="openSettings()">Controls & Settings ⚙️</button>
         <button style="background:#9b59b6; color:#fff;" onclick="openHistory()">Match History 📜</button>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings-modal">
+    <h3 style="color:#e67e22; margin-bottom:10px;">Control Settings ⚙️</h3>
+    <div class="btn-group">
+        <label style="font-size:11px;">Control Style:</label>
+        <select id="controlTypeSelect" onchange="changeControlType()">
+            <option value="touch">Touch Pointer Target</option>
+            <option value="joystick">Joystick 360°</option>
+            <option value="buttons">4-Direction Buttons</option>
+        </select>
+        <button onclick="closeSettings()">Save & Back</button>
     </div>
 </div>
 
@@ -147,7 +198,7 @@
 </div>
 
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Garages 🛒</h3>
+    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Flag Skins 🛒</h3>
     <div style="font-size:12px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
     <div class="shop-list" id="shopItemsContainer"></div>
     <button onclick="closeShop()" style="width:120px;">Close</button>
@@ -164,6 +215,7 @@
     const MAP_SIZE = 14000;
     let cameraScale = 0.65;
     let gameRunning = false;
+    let controlType = 'touch';
     
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
@@ -176,7 +228,7 @@
     let activePowers = [];
     let deadRemains = [];
 
-    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 16 };
+    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 16 };
     let bots = [];
     let fruits = [];
     let coinItems = [];
@@ -188,12 +240,25 @@
         { id: 'free3', name: '🔴 Ruby Red', price: 0, color: '#e74c3c' },
         { id: 'free4', name: '🟡 Bright Yellow', price: 0, color: '#f1c40f' },
         { id: 'free5', name: '🟣 Royal Purple', price: 0, color: '#9b59b6' },
+        { id: 'free6', name: '🟠 Sunset Orange', price: 0, color: '#e67e22' },
+        { id: 'free7', name: '⚪ Pure White', price: 0, color: '#ffffff' },
+        { id: 'free8', name: '⚫ Dark Shadow', price: 0, color: '#34495e' },
+        { id: 'free9', name: '💖 Neon Pink', price: 0, color: '#ff6b81' },
+        { id: 'free10', name: '🌊 Cyan Ocean', price: 0, color: '#1abc9c' },
         { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, color: '#00A859' },
         { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, color: '#FFDF00' },
-        { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, color: '#74ACDF' }
+        { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, color: '#74ACDF' },
+        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, color: '#DD0000' },
+        { id: 'france', name: '🇫🇷 France Flag', price: 100, color: '#002395' },
+        { id: 'spain', name: '🇪🇸 Spain Flag', price: 100, color: '#AA152B' },
+        { id: 'italy', name: '🇮🇹 Italy Flag', price: 100, color: '#009246' },
+        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', price: 100, color: '#ffffff' },
+        { id: 'belgium', name: '🇧🇪 Belgium Flag', price: 100, color: '#f1c40f' },
+        { id: 'portugal', name: '🇵🇹 Portugal Flag', price: 100, color: '#e74c3c' }
     ];
 
     let ownedSkins = skinsDatabase.filter(s => s.price === 0).map(s => s.id);
+    ownedSkins.push('kurdish');
 
     const garages = [
         { x: 500, y: 500 },
@@ -228,6 +293,23 @@
         document.getElementById('history-modal').style.display = 'flex';
     }
     function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
+    function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
+    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
+    function changeControlType() {
+        controlType = document.getElementById('controlTypeSelect').value;
+        document.getElementById('joystick-zone').style.display = controlType === 'joystick' ? 'block' : 'none';
+        document.getElementById('btn-controls').style.display = controlType === 'buttons' ? 'grid' : 'none';
+    }
+
+    function setDir(x, y) {
+        player.targetAngle = Math.atan2(y, x);
+    }
+
+    function returnToMenu() {
+        gameRunning = false;
+        document.getElementById('menu-overlay').style.display = 'flex';
+    }
 
     function renderHistory() {
         let container = document.getElementById('historyContainer');
@@ -244,7 +326,7 @@
 
     function renderShop() {
         let container = document.getElementById('shopItemsContainer');
-        container.innerHTML = "<h4 style='color:#2ecc71;'>Free & Flag Skins (100 🪙)</h4>";
+        container.innerHTML = "<h4 style='color:#2ecc71;'>Free Skins & Flag Skins (100 🪙)</h4>";
         skinsDatabase.forEach(s => {
             let isOwned = ownedSkins.includes(s.id);
             let isSelected = player.skin === s.id;
@@ -324,17 +406,16 @@
         for(let i=0; i<200; i++) coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '📷', '🎛️']; // 🎛️ Airplane Yoke Steering
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '📷', '🎛️'];
         for(let i=0; i<250; i++) {
             powerups.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
     }
 
-    // SPAWN 10X BIGGER BOTS IN CENTER
     function spawnBot(id) {
         let bx = Math.random() * (MAP_SIZE - 4000) + 2000;
         let by = Math.random() * (MAP_SIZE - 4000) + 2000;
-        let botRadius = 35; // 10X Bigger than Player base
+        let botRadius = 35;
         let bodyLength = 120;
         let body = [];
         for(let j=0; j<bodyLength; j++) body.push({x: bx - j*12, y: by});
@@ -354,14 +435,46 @@
         });
     }
 
+    // Joystick Touch Controls
+    const joyZone = document.getElementById('joystick-zone');
+    const joyKnob = document.getElementById('joystick-knob');
+    let joyActive = false;
+
+    function handleJoyMove(e) {
+        if(!joyActive) return;
+        const rect = joyZone.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const touchX = e.touches ? e.touches[0].clientX : e.clientX;
+        const touchY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const dx = touchX - centerX;
+        const dy = touchY - centerY;
+        const dist = Math.hypot(dx, dy);
+        const maxDist = 30;
+
+        let knobX = dx;
+        let knobY = dy;
+        if(dist > maxDist) {
+            knobX = (dx / dist) * maxDist;
+            knobY = (dy / dist) * maxDist;
+        }
+
+        joyKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+        player.targetAngle = Math.atan2(dy, dx);
+    }
+
+    joyZone.addEventListener('touchstart', (e) => { joyActive = true; handleJoyMove(e); });
+    joyZone.addEventListener('touchmove', handleJoyMove);
+    joyZone.addEventListener('touchend', () => { joyActive = false; joyKnob.style.transform = 'translate(0px, 0px)'; });
+
     const boostBtn = document.getElementById('boost-btn');
     boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
     boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); manualSpeedBoost = false; });
-    boostBtn.addEventListener('mousedown', () => manualSpeedBoost = true);
-    boostBtn.addEventListener('mouseup', () => manualSpeedBoost = false);
 
     function handlePointer(e) {
-        if(!gameRunning || !player.alive) return;
+        if(!gameRunning || !player.alive || controlType !== 'touch') return;
         const cx = e.touches ? e.touches[0].clientX : e.clientX;
         const cy = e.touches ? e.touches[0].clientY : e.clientY;
         player.targetAngle = Math.atan2(cy - canvas.height/2, cx - canvas.width/2);
@@ -394,20 +507,17 @@
         container.innerHTML = html;
     }
 
-    // HANDSOME BEAUTIFUL ANACONDA/COBRA HEAD
     function drawSnakeHead(p, angle, mainColor, radius) {
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(angle);
         
-        // Sleek Cobra/Anaconda Head
         ctx.fillStyle = mainColor;
         ctx.beginPath();
         ctx.ellipse(0, 0, radius * 1.7, radius * 1.25, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.8; ctx.stroke();
 
-        // Sharp Handsome Eyes
         ctx.fillStyle = '#f1c40f';
         ctx.beginPath();
         ctx.ellipse(radius*0.5, -radius*0.4, radius*0.35, radius*0.2, Math.PI*0.1, 0, Math.PI * 2);
@@ -420,14 +530,12 @@
         ctx.arc(radius*0.55, radius*0.4, radius*0.12, 0, Math.PI * 2);
         ctx.fill();
 
-        // Forked Tongue
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(radius*1.7, 0); ctx.lineTo(radius*2.5, 0);
         ctx.lineTo(radius*2.9, -5); ctx.moveTo(radius*2.5, 0); ctx.lineTo(radius*2.9, 5);
         ctx.stroke();
 
-        // 5 Vertical Magnet Lines
         if(isMagnetActive) {
             ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
             for(let i = -2; i <= 2; i += 1) {
@@ -507,6 +615,7 @@
                 });
             }
 
+            // Noticeable Thickness Growth per fruit eaten
             fruits.forEach((f, i) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 10) {
                     score += 5;
@@ -514,16 +623,17 @@
                     fruits[i].x = Math.random() * MAP_SIZE;
                     fruits[i].y = Math.random() * MAP_SIZE;
                     player.body.push({...player.body[player.body.length-1]});
-                    if(player.body.length % 10 === 0) player.sizeRadius += 0.6;
+                    player.sizeRadius += 0.2; // Continuous Thickness Growth!
                 }
             });
 
             deadRemains.forEach((r, i) => {
-                if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 10) {
+                if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 14) {
                     score += 15;
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
                     player.body.push({...player.body[player.body.length-1]});
+                    player.sizeRadius += 0.3;
                 }
             });
 
@@ -550,7 +660,7 @@
                             manualSpeedBoost = false;
                         });
                     }
-                    if(p.icon === '🎛️') { // Airplane Steering
+                    if(p.icon === '🎛️') {
                         isSteeringActive = true;
                         addPowerupTimer('Airplane Steering', '🎛️', 15000, () => isSteeringActive = false);
                     }
@@ -568,17 +678,15 @@
             });
         }
 
-        // BOTS SMART MOVEMENT (STAY AWAY FROM RED ZONE, HUNT PLAYER & FRUITS)
         bots.forEach(b => {
             if(!b.alive) return;
 
-            // Keep bots inside safe area (Away from Red Zone)
             if(b.x < 1500 || b.x > MAP_SIZE - 1500 || b.y < 1500 || b.y > MAP_SIZE - 1500) {
                 b.angle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
             } else {
                 let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
                 if(distToPlayer < 1200 && player.alive) {
-                    b.angle = Math.atan2(player.y - b.y, player.x - b.x); // Aggressive Hunt
+                    b.angle = Math.atan2(player.y - b.y, player.x - b.x);
                 } else {
                     b.angle += (Math.random() - 0.5) * 0.08;
                 }
@@ -589,12 +697,11 @@
             b.body.unshift({x: b.x, y: b.y});
             b.body.pop();
 
-            // Instant Respawn on Death
             player.body.forEach((pSeg, idx) => {
                 if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
                     b.alive = false;
                     explodeSnake(b.body);
-                    setTimeout(() => spawnBot(b.id), 500); // 0.5s Fast Respawn!
+                    setTimeout(() => spawnBot(b.id), 500);
                 }
             });
         });
@@ -609,7 +716,6 @@
         ctx.translate(camX, camY);
         ctx.scale(cameraScale, cameraScale);
 
-        // GRID LINES
         ctx.strokeStyle = 'rgba(231, 76, 60, 0.22)'; ctx.lineWidth = 2;
         for(let x = 0; x < MAP_SIZE; x += 200) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); ctx.stroke();
@@ -631,11 +737,12 @@
         fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
         coinItems.forEach(c => { ctx.font = "20px Arial"; ctx.fillText("🪙", c.x, c.y); });
 
+        // Larger Glowing Dead Remains
         deadRemains.forEach(r => {
             let isBlinking = (Math.floor(Date.now() / 250) % 2 === 0);
-            ctx.shadowColor = r.color; ctx.shadowBlur = isBlinking ? 14 : 2;
+            ctx.shadowColor = r.color; ctx.shadowBlur = isBlinking ? 18 : 4;
             ctx.fillStyle = r.color;
-            ctx.beginPath(); ctx.arc(r.x, r.y, 9, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); // Bigger Size (14px)
             ctx.shadowBlur = 0;
         });
 
@@ -668,12 +775,11 @@
                     drawSnakeHead(p, player.angle, activeSkinObj.color, player.sizeRadius);
                 } else {
                     ctx.fillStyle = i % 2 === 0 ? activeSkinObj.color : '#f1c40f';
-                    ctx.beginPath(); ctx.arc(p.x, p.y, player.sizeRadius * 0.7, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
                 }
             });
         }
 
-        // Draw Big Bots
         bots.forEach(b => {
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
@@ -681,7 +787,7 @@
                     drawSnakeHead(bp, b.angle, '#e74c3c', b.sizeRadius);
                 } else {
                     ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#3498db';
-                    ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.65, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.8, 0, Math.PI*2); ctx.fill();
                 }
             });
         });
