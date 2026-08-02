@@ -13,96 +13,127 @@
             -webkit-user-select: none;
         }
         body {
-            background-color: #0d0d0d;
+            background-color: #0b0d12;
             color: #fff;
             font-family: Arial, sans-serif;
             overflow: hidden;
             width: 100vw;
             height: 100vh;
         }
-        #gameCanvas {
-            background: #181818;
+        canvas {
             display: block;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
+            background: #12161f;
         }
 
-        /* UI Overlay */
-        #hud {
+        /* Compact Top Left Stats */
+        #hud-top-left {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.65);
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid #2ecc71;
+            font-size: 11px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Ultra Compact Top Right Leaderboard */
+        #hud-top-right {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.65);
+            padding: 5px 8px;
+            border-radius: 6px;
+            border: 1px solid #f1c40f;
+            font-size: 10px;
+            min-width: 95px;
+            z-index: 5;
+            pointer-events: none;
+        }
+        #hud-top-right h5 {
+            color: #f1c40f;
+            text-align: center;
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+
+        /* Bottom Right Radar & Champ Tag */
+        #radar-wrapper {
+            position: absolute;
+            bottom: 10px;
             right: 10px;
             display: flex;
-            justify-content: space-between;
-            pointer-events: none;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
             z-index: 5;
+            pointer-events: none;
         }
-        .hud-box {
+        #champ-tag {
             background: rgba(0, 0, 0, 0.75);
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid #2ecc71;
-            font-size: 13px;
-        }
-        .leaderboard {
-            border-color: #f1c40f;
-            min-width: 130px;
-        }
-        .leaderboard h4 { color: #f1c40f; text-align: center; margin-bottom: 4px; }
-
-        /* Radar & Trophy Area */
-        #radar-container {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
-            width: 100px;
-            height: 100px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #2ecc71;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 5;
-        }
-        #trophy-tag {
-            position: absolute;
-            bottom: 120px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.85);
             border: 1px solid #f1c40f;
-            border-radius: 8px;
-            padding: 5px 8px;
-            font-size: 11px;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 9px;
             color: #f1c40f;
             display: flex;
             align-items: center;
+            gap: 3px;
+        }
+        #radar-canvas {
+            width: 65px;
+            height: 65px;
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid #2ecc71;
+            border-radius: 50%;
+        }
+
+        /* Power-up Status Indicators */
+        #powerup-bar {
+            position: absolute;
+            top: 45px;
+            left: 8px;
+            display: flex;
             gap: 5px;
             z-index: 5;
+            pointer-events: none;
+        }
+        .power-icon {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            padding: 4px;
+            font-size: 12px;
+            border: 1px solid #fff;
+            display: none;
         }
 
         /* Main Menu Overlay */
-        #menu-overlay, #settings-modal {
+        #menu-overlay {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(10, 10, 10, 0.95);
+            background: rgba(10, 12, 16, 0.92);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 20;
         }
-        #settings-modal { display: none; z-index: 30; }
 
-        h1 { font-size: 42px; color: #2ecc71; margin-bottom: 15px; letter-spacing: 2px; }
-        .btn-group { display: flex; flex-direction: column; gap: 10px; width: 80%; max-width: 260px; }
+        h1 { font-size: 36px; color: #2ecc71; margin-bottom: 10px; letter-spacing: 1px; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 80%; max-width: 240px; }
         
         button, select, input {
-            padding: 12px;
-            font-size: 15px;
-            border-radius: 20px;
-            border: 2px solid #2ecc71;
-            background: #222;
+            padding: 10px;
+            font-size: 13px;
+            border-radius: 15px;
+            border: 1.5px solid #2ecc71;
+            background: #181c24;
             color: #fff;
             text-align: center;
             outline: none;
@@ -115,80 +146,37 @@
             border: none;
         }
         button.fb-btn { background: #1877f2; color: #fff; }
-        button.guest-btn { background: #333; color: #fff; border: 1px solid #555; }
-        button.settings-btn { background: #e67e22; color: #fff; }
-
-        /* Controls */
-        #joystick-zone {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            width: 120px;
-            height: 120px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(46, 204, 113, 0.5);
-            border-radius: 50%;
-            z-index: 10;
-        }
-        #joystick-knob {
-            position: absolute;
-            top: 35px; left: 35px;
-            width: 50px; height: 50px;
-            background: #2ecc71;
-            border-radius: 50%;
-        }
-        #btn-controls {
-            position: absolute;
-            bottom: 30px;
-            left: 30px;
-            display: none;
-            grid-template-columns: repeat(3, 45px);
-            grid-template-rows: repeat(3, 45px);
-            gap: 5px;
-            z-index: 10;
-        }
-        .ctrl-btn {
-            background: rgba(46, 204, 113, 0.6);
-            border: none;
-            color: #fff;
-            font-weight: bold;
-            border-radius: 8px;
-        }
+        button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
     </style>
 </head>
 <body>
 
-<div id="hud">
-    <div class="hud-box">
-        <div>Score: <span id="scoreVal">0</span></div>
-        <div>Players: <span id="playersVal">1</span></div>
-    </div>
-    <div class="hud-box leaderboard">
-        <h4>🏆 Leaderboard</h4>
-        <div id="topList">
-            1. 🥇 Player1 - 1500<br>
-            2. 🥈 Player2 - 920<br>
-            3. 🥉 Player3 - 710
-        </div>
-    </div>
+<div id="hud-top-left">
+    <div>Score: <span id="scoreVal" style="color:#2ecc71; font-weight:bold;">0</span></div>
+    <div>Players: <span id="playersVal">1</span></div>
 </div>
 
-<div id="trophy-tag">
-    <span>🏆 24h Champ:</span> <strong id="champName">No One</strong>
-</div>
-<div id="radar-container"></div>
-
-<!-- Touch Controls -->
-<div id="joystick-zone"><div id="joystick-knob"></div></div>
-<div id="btn-controls">
-    <div></div><button class="ctrl-btn" id="btn-up">▲</button><div></div>
-    <button class="ctrl-btn" id="btn-left">◀</button><div></div><button class="ctrl-btn" id="btn-right">▶</button>
-    <div></div><button class="ctrl-btn" id="btn-down">▼</button><div></div>
+<div id="powerup-bar">
+    <div id="magnet-status" class="power-icon" style="border-color:#3498db;">🧲</div>
+    <div id="2x-status" class="power-icon" style="border-color:#e74c3c;">⚡2X</div>
 </div>
 
-<!-- Main Menu -->
+<div id="hud-top-right">
+    <h5>🏆 Top Players</h5>
+    <div>1. 🥇 Shafeeq - 1200</div>
+    <div>2. 🥈 Silva - 850</div>
+    <div>3. 🥉 Leo - 640</div>
+</div>
+
+<div id="radar-wrapper">
+    <div id="champ-tag">🏆 24h: <strong>Shafeeq</strong></div>
+    <canvas id="radar-canvas" width="65" height="65"></canvas>
+</div>
+
+<!-- Menu -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
+    <div style="font-size:35px; margin-bottom:10px;">🐍</div>
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name">
         
@@ -208,27 +196,9 @@
             </optgroup>
         </select>
 
-        <button onclick="startGame()">Play as Guest 🎮</button>
+        <button onclick="startGame()">Play Game 🎮</button>
         <button class="guest-btn" onclick="startGame()">Email Login ✉️</button>
         <button class="fb-btn" onclick="startGame()">Connect Facebook 📘</button>
-        <button class="settings-btn" onclick="openSettings()">Settings ⚙️</button>
-    </div>
-</div>
-
-<!-- Settings Modal -->
-<div id="settings-modal">
-    <h2 style="color:#2ecc71; margin-bottom:20px;">Control Settings</h2>
-    <div class="btn-group">
-        <label>Control Type:</label>
-        <select id="controlType" onchange="updateControlType()">
-            <option value="joystick">Joystick 360°</option>
-            <option value="dpad">4-Direction Buttons</option>
-        </select>
-
-        <label>Joystick Size:</label>
-        <input type="range" id="joySize" min="80" max="180" value="120" oninput="resizeJoystick()">
-
-        <button onclick="closeSettings()">Save & Close</button>
     </div>
 </div>
 
@@ -237,7 +207,20 @@
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const radarCanvas = document.getElementById('radar-canvas');
+    const radarCtx = radarCanvas.getContext('2d');
     
+    const MAP_SIZE = 2500;
+    let gameRunning = false;
+    let score = 0;
+    let currentSkin = 'kurdish';
+    let targetAngle = 0;
+    let currentAngle = 0;
+
+    let snake = [];
+    let foods = [];
+    let powerups = [];
+
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -245,48 +228,55 @@
     window.addEventListener('resize', resize);
     resize();
 
-    let gameRunning = false;
-    let score = 0;
-    let currentSkin = 'kurdish';
-    let snake = [];
-    let food = {x: 200, y: 200};
-    let dir = {x: 3, y: 0};
-
     function startGame() {
         currentSkin = document.getElementById('skinSelect').value;
         document.getElementById('menu-overlay').style.display = 'none';
         gameRunning = true;
-        initSnake();
+        initGame();
         gameLoop();
     }
 
-    function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
-    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
-
-    function updateControlType() {
-        const type = document.getElementById('controlType').value;
-        if(type === 'joystick') {
-            document.getElementById('joystick-zone').style.display = 'block';
-            document.getElementById('btn-controls').style.display = 'none';
-        } else {
-            document.getElementById('joystick-zone').style.display = 'none';
-            document.getElementById('btn-controls').style.display = 'grid';
-        }
-    }
-
-    function resizeJoystick() {
-        const size = document.getElementById('joySize').value;
-        const zone = document.getElementById('joystick-zone');
-        zone.style.width = size + 'px';
-        zone.style.height = size + 'px';
-    }
-
-    function initSnake() {
+    function initGame() {
         snake = [];
-        for(let i=0; i<18; i++) {
-            snake.push({x: canvas.width/2 - i*7, y: canvas.height/2});
+        const startX = MAP_SIZE / 2;
+        const startY = MAP_SIZE / 2;
+        for(let i = 0; i < 20; i++) {
+            snake.push({x: startX - i * 6, y: startY});
+        }
+
+        // Spawn Foods
+        foods = [];
+        for(let i = 0; i < 300; i++) {
+            foods.push({
+                x: Math.random() * MAP_SIZE,
+                y: Math.random() * MAP_SIZE,
+                size: Math.random() * 3 + 3,
+                color: ['#2ecc71', '#e74c3c', '#f1c40f', '#3498db', '#e67e22'][Math.floor(Math.random()*5)]
+            });
+        }
+
+        // Spawn Power-ups (🧲 Magnet & ⚡ 2X)
+        powerups = [];
+        for(let i = 0; i < 15; i++) {
+            powerups.push({
+                x: Math.random() * MAP_SIZE,
+                y: Math.random() * MAP_SIZE,
+                type: Math.random() > 0.5 ? 'magnet' : '2x'
+            });
         }
     }
+
+    // Controls: Touch/Mouse direction relative to screen center
+    function handlePointer(e) {
+        if(!gameRunning) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const dx = clientX - canvas.width / 2;
+        const dy = clientY - canvas.height / 2;
+        targetAngle = Math.atan2(dy, dx);
+    }
+    window.addEventListener('touchmove', handlePointer);
+    window.addEventListener('mousemove', handlePointer);
 
     function getSkinColors(skin) {
         switch(skin) {
@@ -303,31 +293,100 @@
         }
     }
 
+    function drawRadar(head) {
+        radarCtx.clearRect(0, 0, 65, 65);
+        
+        // Draw player dot on radar
+        const rx = (head.x / MAP_SIZE) * 65;
+        const ry = (head.y / MAP_SIZE) * 65;
+        radarCtx.fillStyle = '#2ecc71';
+        radarCtx.beginPath();
+        radarCtx.arc(rx, ry, 2.5, 0, Math.PI * 2);
+        radarCtx.fill();
+    }
+
     function gameLoop() {
         if(!gameRunning) return;
 
-        ctx.fillStyle = '#141414';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Smooth Turn
+        let diff = targetAngle - currentAngle;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        currentAngle += diff * 0.1;
 
-        // Snake Movement
-        let head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+        // Move Snake Head
+        const speed = 3.2;
+        let head = {
+            x: snake[0].x + Math.cos(currentAngle) * speed,
+            y: snake[0].y + Math.sin(currentAngle) * speed
+        };
+
+        // Keep inside bounds
+        head.x = Math.max(10, Math.min(MAP_SIZE - 10, head.x));
+        head.y = Math.max(10, Math.min(MAP_SIZE - 10, head.y));
+
         snake.unshift(head);
         snake.pop();
 
-        // Draw Food
-        ctx.fillStyle = '#e74c3c';
-        ctx.beginPath();
-        ctx.arc(food.x, food.y, 8, 0, Math.PI * 2);
-        ctx.fill();
+        // Check Food Collision
+        foods.forEach((food, index) => {
+            let dist = Math.hypot(head.x - food.x, head.y - food.y);
+            if(dist < 15) {
+                score += 5;
+                document.getElementById('scoreVal').innerText = score;
+                foods[index] = {
+                    x: Math.random() * MAP_SIZE,
+                    y: Math.random() * MAP_SIZE,
+                    size: Math.random() * 3 + 3,
+                    color: food.color
+                };
+                // Grow snake
+                snake.push({...snake[snake.length - 1]});
+            }
+        });
+
+        // CAMERA FOLLOW: Offset world by head position
+        const camX = canvas.width / 2 - head.x;
+        const camY = canvas.height / 2 - head.y;
+
+        ctx.fillStyle = '#12161f';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.translate(camX, camY);
+
+        // Draw Map Grid/Border
+        ctx.strokeStyle = '#1e2532';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
+
+        // Draw Foods
+        foods.forEach(food => {
+            ctx.fillStyle = food.color;
+            ctx.beginPath();
+            ctx.arc(food.x, food.y, food.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Draw Power-ups (🧲 & ⚡)
+        powerups.forEach(p => {
+            ctx.font = "14px Arial";
+            ctx.fillText(p.type === 'magnet' ? '🧲' : '⚡', p.x, p.y);
+        });
 
         // Draw Snake Body
         const colors = getSkinColors(currentSkin);
-        snake.forEach((part, i) => {
+        for(let i = snake.length - 1; i >= 0; i--) {
             ctx.fillStyle = colors[i % colors.length];
             ctx.beginPath();
-            ctx.arc(part.x, part.y, i === 0 ? 11 : 9, 0, Math.PI * 2);
+            ctx.arc(snake[i].x, snake[i].y, i === 0 ? 10 : 8, 0, Math.PI * 2);
             ctx.fill();
-        });
+        }
+
+        ctx.restore();
+
+        // Update Radar
+        drawRadar(head);
 
         requestAnimationFrame(gameLoop);
     }
