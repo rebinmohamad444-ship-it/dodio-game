@@ -37,7 +37,7 @@
             font-size: 10px; margin-top: 4px; text-align: center;
         }
 
-        /* Smaller Top 10 Leaderboard */
+        /* Leaderboard */
         #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
             background: rgba(0,0,0,0.8); padding: 4px 8px;
@@ -324,20 +324,23 @@
         for(let i=0; i<200; i++) coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '📷', '✈️']; // ✈️ Airplane Steering Wheel
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '📷', '🎛️']; // 🎛️ Airplane Yoke Steering
         for(let i=0; i<250; i++) {
             powerups.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
     }
 
+    // SPAWN 10X BIGGER BOTS IN CENTER
     function spawnBot(id) {
-        let bx = Math.random() * (MAP_SIZE - 2000) + 1000;
-        let by = Math.random() * (MAP_SIZE - 2000) + 1000;
-        let startLen = Math.floor(Math.random() * 40) + 30; // Spawn larger & aggressive!
+        let bx = Math.random() * (MAP_SIZE - 4000) + 2000;
+        let by = Math.random() * (MAP_SIZE - 4000) + 2000;
+        let botRadius = 35; // 10X Bigger than Player base
+        let bodyLength = 120;
         let body = [];
-        for(let j=0; j<startLen; j++) body.push({x: bx - j*6, y: by});
+        for(let j=0; j<bodyLength; j++) body.push({x: bx - j*12, y: by});
+        
         const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X'];
-        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: startLen * 10, alive: true, circleAngle: 0, sizeRadius: 18 };
+        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 2500, alive: true, circleAngle: 0, sizeRadius: botRadius };
     }
 
     function explodeSnake(body) {
@@ -391,36 +394,37 @@
         container.innerHTML = html;
     }
 
-    // BEAUTIFUL FIERCE ANACONDA HEAD
+    // HANDSOME BEAUTIFUL ANACONDA/COBRA HEAD
     function drawSnakeHead(p, angle, mainColor, radius) {
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(angle);
         
+        // Sleek Cobra/Anaconda Head
         ctx.fillStyle = mainColor;
         ctx.beginPath();
-        ctx.ellipse(0, 0, radius * 1.8, radius * 1.3, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, radius * 1.7, radius * 1.25, 0, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.8; ctx.stroke();
 
-        // Glowing fierce eyes
-        ctx.fillStyle = '#ff3838';
+        // Sharp Handsome Eyes
+        ctx.fillStyle = '#f1c40f';
         ctx.beginPath();
-        ctx.arc(radius*0.6, -radius*0.45, radius*0.3, 0, Math.PI * 2);
-        ctx.arc(radius*0.6, radius*0.45, radius*0.3, 0, Math.PI * 2);
+        ctx.ellipse(radius*0.5, -radius*0.4, radius*0.35, radius*0.2, Math.PI*0.1, 0, Math.PI * 2);
+        ctx.ellipse(radius*0.5, radius*0.4, radius*0.35, radius*0.2, -Math.PI*0.1, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(radius*0.7, -radius*0.45, radius*0.12, 0, Math.PI * 2);
-        ctx.arc(radius*0.7, radius*0.45, radius*0.12, 0, Math.PI * 2);
+        ctx.arc(radius*0.55, -radius*0.4, radius*0.12, 0, Math.PI * 2);
+        ctx.arc(radius*0.55, radius*0.4, radius*0.12, 0, Math.PI * 2);
         ctx.fill();
 
-        // Forked tongue
+        // Forked Tongue
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(radius*1.8, 0); ctx.lineTo(radius*2.6, 0);
-        ctx.lineTo(radius*3.0, -5); ctx.moveTo(radius*2.6, 0); ctx.lineTo(radius*3.0, 5);
+        ctx.moveTo(radius*1.7, 0); ctx.lineTo(radius*2.5, 0);
+        ctx.lineTo(radius*2.9, -5); ctx.moveTo(radius*2.5, 0); ctx.lineTo(radius*2.9, 5);
         ctx.stroke();
 
         // 5 Vertical Magnet Lines
@@ -482,10 +486,10 @@
             bots.forEach(b => {
                 if(!b.alive) return;
                 b.body.forEach((seg, idx) => {
-                    if(idx > 2 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + 2) {
+                    if(idx > 2 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
                         player.alive = false;
                         recordMatchEnd();
-                        alert("Game Over! You crashed into a bot!");
+                        alert("Game Over! You crashed into a giant bot!");
                         location.reload();
                     }
                 });
@@ -546,9 +550,9 @@
                             manualSpeedBoost = false;
                         });
                     }
-                    if(p.icon === '✈️') { // Airplane Steering
+                    if(p.icon === '🎛️') { // Airplane Steering
                         isSteeringActive = true;
-                        addPowerupTimer('Airplane Steering', '✈️', 15000, () => isSteeringActive = false);
+                        addPowerupTimer('Airplane Steering', '🎛️', 15000, () => isSteeringActive = false);
                     }
                     if(p.icon === '📷') {
                         cameraScale = 0.42;
@@ -564,40 +568,33 @@
             });
         }
 
-        // BOTS AGGRESSIVE LOGIC + AUTO RESPAWN
+        // BOTS SMART MOVEMENT (STAY AWAY FROM RED ZONE, HUNT PLAYER & FRUITS)
         bots.forEach(b => {
             if(!b.alive) return;
 
-            fruits.forEach((f, fi) => {
-                if(Math.hypot(b.x - f.x, b.y - f.y) < b.sizeRadius + 8) {
-                    b.score += 5;
-                    b.body.push({...b.body[b.body.length-1]});
-                    fruits[fi].x = Math.random() * MAP_SIZE;
-                    fruits[fi].y = Math.random() * MAP_SIZE;
-                    if(b.body.length % 10 === 0) b.sizeRadius += 0.5;
-                }
-            });
-
-            let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
-            if(distToPlayer < 900 && player.alive) {
-                b.circleAngle += 0.05;
-                let targetX = player.x + Math.cos(b.circleAngle) * 180;
-                let targetY = player.y + Math.sin(b.circleAngle) * 180;
-                b.angle = Math.atan2(targetY - b.y, targetX - b.x);
+            // Keep bots inside safe area (Away from Red Zone)
+            if(b.x < 1500 || b.x > MAP_SIZE - 1500 || b.y < 1500 || b.y > MAP_SIZE - 1500) {
+                b.angle = Math.atan2(MAP_SIZE/2 - b.y, MAP_SIZE/2 - b.x);
             } else {
-                b.angle += (Math.random() - 0.5) * 0.12;
+                let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
+                if(distToPlayer < 1200 && player.alive) {
+                    b.angle = Math.atan2(player.y - b.y, player.x - b.x); // Aggressive Hunt
+                } else {
+                    b.angle += (Math.random() - 0.5) * 0.08;
+                }
             }
 
-            b.x += Math.cos(b.angle) * 4.5;
-            b.y += Math.sin(b.angle) * 4.5;
+            b.x += Math.cos(b.angle) * 4.2;
+            b.y += Math.sin(b.angle) * 4.2;
             b.body.unshift({x: b.x, y: b.y});
             b.body.pop();
 
+            // Instant Respawn on Death
             player.body.forEach((pSeg, idx) => {
-                if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius + 2) {
+                if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
                     b.alive = false;
                     explodeSnake(b.body);
-                    setTimeout(() => spawnBot(b.id), 2000); // Quick respawn
+                    setTimeout(() => spawnBot(b.id), 500); // 0.5s Fast Respawn!
                 }
             });
         });
@@ -612,8 +609,8 @@
         ctx.translate(camX, camY);
         ctx.scale(cameraScale, cameraScale);
 
-        // RED RED GRID LINES (Vertical & Horizontal Red Lines)
-        ctx.strokeStyle = 'rgba(231, 76, 60, 0.25)'; ctx.lineWidth = 2;
+        // GRID LINES
+        ctx.strokeStyle = 'rgba(231, 76, 60, 0.22)'; ctx.lineWidth = 2;
         for(let x = 0; x < MAP_SIZE; x += 200) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); ctx.stroke();
         }
@@ -676,6 +673,7 @@
             });
         }
 
+        // Draw Big Bots
         bots.forEach(b => {
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
