@@ -1,252 +1,218 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>dod.io - Realtime Multiplayer Anaconda</title>
-    <script src="
-https://cdn.socket.io/4.6.1/socket.io.min.js
-"></script>
-    <style>
-        body { margin: 0; overflow: hidden; background: #050505; font-family: 'Segoe UI', Tahoma, sans-serif; touch-action: none; user-select: none; }
-        #gameCanvas { display: block; background: #0b0e14; }
-        /* MAIN MENU SCREEN */
-        #mainMenu {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 50; color: white; text-align: center;
-        }
-        .lang-picker { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 10px; border-radius: 8px; outline: none; }
-        .game-title { font-size: 48px; font-weight: 900; color: #f1c40f; text-shadow: 0 4px 20px rgba(241, 196, 15, 0.5); margin-bottom: 5px; }
-        
-        .menu-box {
-            background: rgba(0, 0, 0, 0.75); border: 2px solid rgba(255, 255, 255, 0.15);
-            padding: 22px; border-radius: 20px; width: 330px; box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-        }
-        .profile-card {
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            background: rgba(255, 255, 255, 0.08); padding: 12px; border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.15); margin-bottom: 12px;
-        }
-        .mascot-avatar {
-            width: 55px; height: 55px; background: radial-gradient(circle, #2ecc71, #1e8449);
-            border: 2px solid #f1c40f; border-radius: 50%; display: flex; align-items: center;
-            justify-content: center; font-size: 30px; box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
-        }
-        .input-field {
-            width: 100%; padding: 10px; border: none; border-radius: 8px;
-            background: rgba(255, 255, 255, 0.15); color: white; text-align: center; font-size: 15px; outline: none; box-sizing: border-box;
-        }
-        .btn-play {
-            width: 100%; padding: 13px; margin-top: 10px; background: #2ecc71; color: white;
-            border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
-        }
-        /* IN-GAME HUD */
-        #ui { position: absolute; top: 10px; left: 10px; color: #fff; font-size: 13px; pointer-events: none; z-index: 10; display: none; }
-        #minimap { position: absolute; top: 10px; right: 10px; width: 130px; height: 95px; background: #000; border: 1.5px solid rgba(255,255,255,0.5); border-radius: 8px; z-index: 10; display: none; }
-        /* 360 ANALOG JOYSTICK */
-        #joystickZone {
-            position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px;
-            background: rgba(255, 255, 255, 0.12); border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%; z-index: 20; display: none; touch-action: none;
-        }
-        #joystickKnob {
-            position: absolute; top: 50%; left: 50%; width: 50px; height: 50px;
-            background: rgba(255, 255, 255, 0.6); border: 2px solid #fff; border-radius: 50%;
-            transform: translate(-50%, -50%); pointer-events: none;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>dod.io</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #111;
+        }
+        canvas {
+            background: #222;
+            display: block;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15px;
+        }
+        .stats {
+            background: rgba(0,0,0,0.6);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #4CAF50;
+            width: fit-content;
+        }
+        #menu-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            pointer-events: auto;
+        }
+        h1 {
+            font-size: 42px;
+            color: #4CAF50;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        .snake-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+        input[type="text"] {
+            padding: 12px 20px;
+            font-size: 18px;
+            border: 2px solid #4CAF50;
+            border-radius: 25px;
+            outline: none;
+            background: #222;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+            width: 80%;
+            max-width: 280px;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background: #4CAF50;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            transition: all 0.2s ease;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
 </head>
 <body>
-<!-- MAIN MENU -->
-<div id="mainMenu">
-    <div class="game-title">dod.io</div>
-    <div class="menu-box">
-        <div class="profile-card">
-            <div class="mascot-avatar">🐍</div>
-            <div style="flex-grow: 1;">
-                <input type="text" id="playerNameInput" class="input-field" placeholder="Username..." value="Shafeeq">
-            </div>
-        </div>
-        <button class="btn-play" id="btnPlay" onclick="startGame()">PLAY ONLINE 🌐</button>
-    </div>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui-layer">
+        <div class="stats">
+            <div>Score: <span id="scoreVal">0</span></div>
+            <div>Online Players: <span id="playersVal">1</span></div>
+        </div>
+    </div>
+
+    <div id="menu-overlay">
+        <h1>dod.io</h1>
+        <div class="snake-icon">🐍</div>
+        <input type="text" id="playerName" value="Shafeeq" placeholder="Enter Nickname">
+        <button id="startBtn">PLAY ONLINE 🌐</button>
+    </div>
 </div>
-<!-- IN-GAME HUD -->
-<div id="ui">
-    <div>Score: <span id="scoreText" style="color:#2ecc71; font-weight:bold;">0</span></div>
-    <div>Online Players: <span id="onlineCount" style="color:#3498db; font-weight:bold;">1</span></div>
-</div>
-<canvas id="minimap"></canvas>
-<!-- 360 JOYSTICK -->
-<div id="joystickZone">
-    <div id="joystickKnob"></div>
-</div>
-<canvas id="gameCanvas"></canvas>
+
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const mCanvas = document.getElementById('minimap');
-const mCtx = mCanvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-mCanvas.width = 130;
-mCanvas.height = 95;
-const MAP_WIDTH = 20000;
-const MAP_HEIGHT = 15000;
-let cameraZoom = 0.50;
-let socket;
-let myId = null;
-let gameStarted = false;
-let playerName = "Shafeeq";
-let mySnake = { x: MAP_WIDTH/2, y: MAP_HEIGHT/2, body: [], score: 0 };
-let otherPlayers = {};
-let foods = [];
-let coins = [];
-let angle = 0;
-let targetAngle = 0;
-let baseSpeed = 5.2;
-function startGame() {
-    let inputName = document.getElementById('playerNameInput').value;
-    if(inputName.trim() !== "") playerName = inputName;
-    document.getElementById('mainMenu').style.display = 'none';
-    document.getElementById('ui').style.display = 'block';
-    document.getElementById('minimap').style.display = 'block';
-    document.getElementById('joystickZone').style.display = 'block';
-    // Connect to Backend Multiplayer Server
-    socket = io();
-    socket.on('connect', () => {
-        socket.emit('joinGame', { name: playerName, skin: 'anaconda' });
-    });
-    socket.on('init', (data) => {
-        myId = data.id;
-        otherPlayers = data.players;
-        delete otherPlayers[myId];
-        foods = data.foods;
-        coins = data.coins;
-        gameStarted = true;
-    });
-    socket.on('newPlayer', (player) => {
-        otherPlayers[player.id] = player;
-        updateOnlineCount();
-    });
-    socket.on('playerMoved', (player) => {
-        if(otherPlayers[player.id]) {
-            otherPlayers[player.id] = player;
-        }
-    });
-    socket.on('foodSpawn', (data) => {
-        foods = foods.filter(f => f.id !== data.eatenId);
-        foods.push(data.newFood);
-    });
-    socket.on('playerLeft', (id) => {
-        delete otherPlayers[id];
-        updateOnlineCount();
-    });
-}
-function updateOnlineCount() {
-    let count = Object.keys(otherPlayers).length + 1;
-    document.getElementById('onlineCount').innerText = count;
-}
-// JOYSTICK LOGIC
-const joystickZone = document.getElementById('joystickZone');
-const joystickKnob = document.getElementById('joystickKnob');
-let isJoystickActive = false;
-joystickZone.addEventListener('touchstart', e => { isJoystickActive = true; handleJoystickMove(e.touches[0]); });
-joystickZone.addEventListener('touchmove', e => { if(isJoystickActive) handleJoystickMove(e.touches[0]); });
-joystickZone.addEventListener('touchend', () => {
-    isJoystickActive = false;
-    joystickKnob.style.top = '50%';
-    joystickKnob.style.left = '50%';
-});
-function handleJoystickMove(touch) {
-    let rect = joystickZone.getBoundingClientRect();
-    let centerX = rect.left + rect.width / 2;
-    let centerY = rect.top + rect.height / 2;
-    let deltaX = touch.clientX - centerX;
-    let deltaY = touch.clientY - centerY;
-    let distance = Math.hypot(deltaX, deltaY);
-    let maxRadius = rect.width / 2;
-    if(distance > maxRadius) {
-        deltaX = (deltaX / distance) * maxRadius;
-        deltaY = (deltaY / distance) * maxRadius;
-    }
-    joystickKnob.style.left = `${50 + (deltaX / rect.width) * 100}%`;
-    joystickKnob.style.top = `${50 + (deltaY / rect.height) * 100}%`;
-    targetAngle = Math.atan2(deltaY, deltaX);
-}
-function update() {
-    if(!gameStarted) return;
-    let diff = targetAngle - angle;
-    while (diff < -Math.PI) diff += Math.PI * 2;
-    while (diff > Math.PI) diff -= Math.PI * 2;
-    angle += diff * 0.18;
-    mySnake.x += Math.cos(angle) * baseSpeed;
-    mySnake.y += Math.sin(angle) * baseSpeed;
-    mySnake.body.unshift({ x: mySnake.x, y: mySnake.y });
-    while(mySnake.body.length > 20 + Math.floor(mySnake.score * 0.05)) mySnake.body.pop();
-    // Check food eat
-    foods.forEach(f => {
-        if(Math.hypot(mySnake.x - f.x, mySnake.y - f.y) < 30) {
-            mySnake.score += 10;
-            document.getElementById('scoreText').innerText = mySnake.score;
-            socket.emit('eatFood', f.id);
-        }
-    });
-    // Send position to Server
-    socket.emit('updatePos', {
-        x: mySnake.x,
-        y: mySnake.y,
-        angle: angle,
-        body: mySnake.body,
-        score: mySnake.score
-    });
-}
-function drawGridBackground() {
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-    ctx.lineWidth = 1.8;
-    for(let x = 0; x < MAP_WIDTH; x += 140) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_HEIGHT); ctx.stroke(); }
-    for(let y = 0; y < MAP_HEIGHT; y += 140) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_WIDTH, y); ctx.stroke(); }
-}
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if(!gameStarted) return;
-    ctx.save();
-    ctx.translate(canvas.width/2, canvas.height/2);
-    ctx.scale(cameraZoom, cameraZoom);
-    ctx.translate(-canvas.width/2, -canvas.height/2);
-    ctx.translate(canvas.width/2 - mySnake.x, canvas.height/2 - mySnake.y);
-    drawGridBackground();
-    // Draw Foods
-    foods.forEach(f => {
-        ctx.fillStyle = "#2ecc71";
-        ctx.beginPath(); ctx.arc(f.x, f.y, 8, 0, Math.PI * 2); ctx.fill();
-    });
-    // Draw Other Online Real Players
-    Object.values(otherPlayers).forEach(p => {
-        ctx.fillStyle = "#e74c3c";
-        if(p.body) {
-            p.body.forEach(b => {
-                ctx.beginPath(); ctx.arc(b.x, b.y, 22, 0, Math.PI * 2); ctx.fill();
-            });
-        }
-        ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif";
-        ctx.fillText(p.name, p.x - 20, p.y - 30);
-    });
-    // Draw My Snake
-    mySnake.body.forEach(b => {
-        ctx.fillStyle = "#27ae60";
-        ctx.beginPath(); ctx.arc(b.x, b.y, 22, 0, Math.PI * 2); ctx.fill();
-    });
-    ctx.fillStyle = "#fff"; ctx.font = "bold 14px sans-serif";
-    ctx.fillText(playerName, mySnake.x - 20, mySnake.y - 35);
-    ctx.restore();
-}
-function loop() { update(); draw(); requestAnimationFrame(loop); }
-loop();
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const startBtn = document.getElementById('startBtn');
+    const scoreVal = document.getElementById('scoreVal');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let gameRunning = false;
+    let score = 0;
+    let snake = [{x: canvas.width/2, y: canvas.height/2}];
+    let food = {x: 100, y: 100};
+    let dir = {x: 2, y: 0};
+
+    function spawnFood() {
+        food.x = Math.random() * (canvas.width - 40) + 20;
+        food.y = Math.random() * (canvas.height - 40) + 20;
+    }
+
+    startBtn.addEventListener('click', () => {
+        menuOverlay.style.display = 'none';
+        gameRunning = true;
+        spawnFood();
+        gameLoop();
+    });
+
+    // Touch control for mobile
+    window.addEventListener('touchmove', (e) => {
+        if(!gameRunning) return;
+        let touch = e.touches[0];
+        let head = snake[0];
+        let dx = touch.clientX - head.x;
+        let dy = touch.clientY - head.y;
+        let angle = Math.atan2(dy, dx);
+        dir.x = Math.cos(angle) * 3;
+        dir.y = Math.sin(angle) * 3;
+    });
+
+    function gameLoop() {
+        if(!gameRunning) return;
+
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Move head
+        let head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+        snake.unshift(head);
+
+        // Eat food
+        let dist = Math.hypot(head.x - food.x, head.y - food.y);
+        if(dist < 20) {
+            score += 10;
+            scoreVal.innerText = score;
+            spawnFood();
+        } else {
+            snake.pop();
+        }
+
+        // Draw food
+        ctx.fillStyle = '#FF5722';
+        ctx.beginPath();
+        ctx.arc(food.x, food.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw snake
+        ctx.fillStyle = '#4CAF50';
+        snake.forEach((part, index) => {
+            ctx.beginPath();
+            ctx.arc(part.x, part.y, index === 0 ? 12 : 10, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        requestAnimationFrame(gameLoop);
+    }
 </script>
+
 </body>
 </html>
-
