@@ -13,15 +13,13 @@
             touch-action: none;
         }
         html, body {
-            width: 100%; height: 100%;
+            width: 100vw; height: 100vh;
             background-color: #0b0d12;
-            color: #fff;
-            font-family: Arial, sans-serif;
+            color: #fff; font-family: Arial, sans-serif;
             overflow: hidden;
         }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
-        /* HUD Top Left */
         #radar-wrapper {
             position: absolute; top: 10px; left: 10px;
             display: flex; flex-direction: column; align-items: center;
@@ -44,40 +42,23 @@
             font-size: 10px; cursor: pointer; width: 70px; text-align: center; margin-top: 4px;
         }
 
-        /* Dynamic Floating Joystick */
-        #joystick-zone {
-            position: absolute; width: 90px; height: 90px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(46, 204, 113, 0.8);
-            border-radius: 50%; z-index: 10; display: none;
-            pointer-events: none; transform: translate(-50%, -50%);
-        }
-        #joystick-knob {
-            position: absolute; top: 22px; left: 22px;
-            width: 45px; height: 45px;
-            background: #2ecc71; border-radius: 50%;
-            box-shadow: 0 0 10px #2ecc71; pointer-events: none;
-        }
-
-        #btn-controls {
-            position: absolute; bottom: 20px; right: 20px;
-            display: none; grid-template-columns: repeat(3, 40px);
-            grid-template-rows: repeat(3, 40px); gap: 4px; z-index: 10;
-        }
-        .ctrl-btn {
-            background: rgba(46, 204, 113, 0.75); border: none;
-            color: #fff; font-weight: bold; border-radius: 6px; font-size: 15px;
+        #red-zone-alert {
+            position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%);
+            color: #e74c3c; font-size: 18px; font-weight: bold;
+            background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 8px;
+            border: 2px solid #e74c3c; display: none; z-index: 8;
+            animation: blinker 0.5s linear infinite;
         }
 
         #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.8); padding: 4px 8px;
-            border-radius: 6px; border: 1px solid #f1c40f;
-            font-size: 9px; z-index: 5; min-width: 110px; pointer-events: none;
+            background: rgba(0,0,0,0.85); padding: 6px 10px;
+            border-radius: 8px; border: 1.5px solid #f1c40f;
+            font-size: 9px; z-index: 5; min-width: 120px; pointer-events: none;
         }
 
         #active-powers-container {
-            position: absolute; top: 125px; left: 10px;
+            position: absolute; top: 135px; left: 10px;
             display: flex; flex-direction: column; gap: 3px; z-index: 5;
         }
         .power-badge {
@@ -85,8 +66,6 @@
             padding: 2px 6px; border-radius: 8px; font-weight: bold;
             font-size: 9px; box-shadow: 0 0 6px #f1c40f; width: fit-content;
         }
-        .blinking { animation: blinker 0.5s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0.2; } }
 
         #ingame-garage-btn {
             position: absolute; bottom: 15px; left: 15px;
@@ -97,38 +76,34 @@
 
         #boost-btn {
             position: absolute; bottom: 20px; right: 20px;
-            width: 60px; height: 60px;
-            background: rgba(231, 76, 60, 0.9);
+            width: 60px; height: 60px; background: rgba(231, 76, 60, 0.9);
             border: 2px solid #fff; border-radius: 50%;
             color: #fff; font-weight: bold; font-size: 11px;
             z-index: 10; display: none; justify-content: center; align-items: center;
             box-shadow: 0 0 10px #e74c3c; cursor: pointer;
         }
 
-        #menu-overlay, #shop-modal, #history-modal, #settings-modal {
+        #menu-overlay, #shop-modal, #history-modal, #exit-modal {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.95); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
-        #shop-modal, #history-modal, #settings-modal { display: none; z-index: 30; }
+        #shop-modal, #history-modal, #exit-modal { display: none; z-index: 30; }
 
         h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
         .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 280px; }
-        button, select, input {
-            padding: 9px; font-size: 12px; border-radius: 12px;
-            border: 1.5px solid #2ecc71; background: #181c24; color: #fff; text-align: center; outline: none;
-        }
-        button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; border: none; }
+        button { padding: 9px; font-size: 12px; border-radius: 12px; border: none; background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; }
         button.shop-btn { background: #f39c12; color: #fff; }
 
-        .shop-list, .history-list {
+        .shop-list {
             display: flex; flex-direction: column; gap: 8px;
             max-height: 220px; overflow-y: auto; width: 85%; max-width: 320px; margin: 10px 0;
         }
-        .shop-item, .history-item {
+        .shop-item {
             display: flex; justify-content: space-between; align-items: center;
             background: #181c24; padding: 8px 12px; border-radius: 8px; border: 1px solid #333; font-size: 11px;
         }
+        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
@@ -139,64 +114,46 @@
         <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
         <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
     </div>
-    <button id="exit-btn" onclick="returnToMenu()">🏠 Exit</button>
+    <button id="exit-btn" onclick="openExitModal()">🏠 Exit</button>
 </div>
 
+<div id="red-zone-alert">⚠️ WARNING: RED ZONE! ⚠️</div>
 <div id="active-powers-container"></div>
 
 <div id="leaderboard-box">
-    <h4 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 TOP 10</h4>
+    <h4 style="color:#f1c40f; text-align:center; margin-bottom:2px; font-size:9px;">🏆 TOP 10 PLAYERS</h4>
     <div id="topList"></div>
-</div>
-
-<div id="joystick-zone"><div id="joystick-knob"></div></div>
-<div id="btn-controls">
-    <div></div><button class="ctrl-btn" onclick="setDir(0, -1)">▲</button><div></div>
-    <button class="ctrl-btn" onclick="setDir(-1, 0)">◀</button><div></div><button class="ctrl-btn" onclick="setDir(1, 0)">▶</button>
-    <div></div><button class="ctrl-btn" onclick="setDir(0, 1)">▼</button><div></div>
 </div>
 
 <div id="ingame-garage-btn" onclick="openShop()">🚗 Garage</div>
 <div id="boost-btn">BOOST 🚀</div>
 
+<!-- Main Menu -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
     <div style="font-size:30px; margin-bottom:8px;">🐍</div>
-    
     <div style="font-size:12px; color:#f1c40f; margin-bottom:10px;">
         High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">0</span> 🪙
     </div>
-
     <div class="btn-group">
-        <input type="text" id="playerName" placeholder="Enter Player Name">
+        <input type="text" id="playerName" placeholder="Enter Player Name" style="padding:9px; border-radius:12px; border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
         <button onclick="startGame()">Play Game 🎮</button>
-        <button class="shop-btn" onclick="openShop()">Shop & Flag Skins 🛒</button>
-        <button style="background:#e67e22; color:#fff;" onclick="openSettings()">Controls & Settings ⚙️</button>
-        <button style="background:#9b59b6; color:#fff;" onclick="openHistory()">Match History 📜</button>
+        <button class="shop-btn" onclick="openShop()">Shop & Country Flags 🛒</button>
     </div>
 </div>
 
-<div id="settings-modal">
-    <h3 style="color:#e67e22; margin-bottom:10px;">Control Settings ⚙️</h3>
+<!-- Exit Confirm Modal -->
+<div id="exit-modal">
+    <h3 style="color:#e74c3c; margin-bottom:15px;">Exit Game?</h3>
     <div class="btn-group">
-        <label style="font-size:11px;">Control Style:</label>
-        <select id="controlTypeSelect" onchange="changeControlType()">
-            <option value="touch">Touch Pointer Target</option>
-            <option value="joystick">Floating Anywhere Joystick</option>
-            <option value="buttons">4-Direction Buttons</option>
-        </select>
-        <button onclick="closeSettings()">Save & Back</button>
+        <button onclick="confirmExit()" style="background:#e74c3c; color:#fff;">Go to Main Menu 🏠</button>
+        <button onclick="closeExitModal()" style="background:#2ecc71; color:#111;">Continue Playing ▶️</button>
     </div>
 </div>
 
-<div id="history-modal">
-    <h3 style="color:#9b59b6; margin-bottom:5px;">Match History 📜</h3>
-    <div class="history-list" id="historyContainer"></div>
-    <button onclick="closeHistory()" style="width:120px;">Close</button>
-</div>
-
+<!-- Shop Modal -->
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Flag Skins 🛒</h3>
+    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Country Flags 🛒</h3>
     <div style="font-size:12px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
     <div class="shop-list" id="shopItemsContainer"></div>
     <button onclick="closeShop()" style="width:120px;">Close</button>
@@ -210,14 +167,14 @@
     const radarCanvas = document.getElementById('radar-canvas');
     const radarCtx = radarCanvas.getContext('2d');
 
-    const MAP_SIZE = 14000;
+    const MAP_RADIUS = 6000;
+    const MAP_CENTER = 7000;
     let cameraScale = 0.65;
     let gameRunning = false;
-    let controlType = 'touch';
-    
+    let lastTime = performance.now();
+
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
-    let matchHistory = JSON.parse(localStorage.getItem('dodio_history') || '[]');
     let score = 0;
 
     let currentMultiplier = 1;
@@ -227,32 +184,38 @@
     let activePowers = [];
     let deadRemains = [];
 
-    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 16 };
+    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 18 };
     let bots = [];
     let fruits = [];
     let coinItems = [];
     let powerups = [];
 
+    // Full Flag Skins Database with Colors for Body Pattern
     const skinsDatabase = [
-        { id: 'free1', name: '🟢 Lime Green', price: 0, color: '#2ecc71' },
-        { id: 'free2', name: '🔵 Sky Blue', price: 0, color: '#3498db' },
-        { id: 'free3', name: '🔴 Ruby Red', price: 0, color: '#e74c3c' },
-        { id: 'free4', name: '🟡 Bright Yellow', price: 0, color: '#f1c40f' },
-        { id: 'free5', name: '🟣 Royal Purple', price: 0, color: '#9b59b6' },
-        { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, color: '#00A859' },
-        { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, color: '#FFDF00' },
-        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, color: '#DD0000' }
+        { id: 'free1', name: '🟢 Lime Green', price: 0, colors: ['#2ecc71', '#27ae60'] },
+        { id: 'free2', name: '🔵 Sky Blue', price: 0, colors: ['#3498db', '#2980b9'] },
+        { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
+        { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, colors: ['#009c3b', '#ffdf00', '#002776'] },
+        { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, colors: ['#74acdf', '#ffffff', '#74acdf'] },
+        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, colors: ['#000000', '#dd0000', '#ffce00'] },
+        { id: 'france', name: '🇫🇷 France Flag', price: 100, colors: ['#002395', '#ffffff', '#ed2939'] },
+        { id: 'spain', name: '🇪🇸 Spain Flag', price: 100, colors: ['#aa152b', '#f1bf00', '#aa152b'] }
     ];
 
-    let ownedSkins = skinsDatabase.filter(s => s.price === 0).map(s => s.id);
-    ownedSkins.push('kurdish');
+    let ownedSkins = skinsDatabase.map(s => s.id);
+
+    const garages = [
+        { x: MAP_CENTER - 3500, y: MAP_CENTER - 3500 },
+        { x: MAP_CENTER + 3500, y: MAP_CENTER - 3500 },
+        { x: MAP_CENTER - 3500, y: MAP_CENTER + 3500 },
+        { x: MAP_CENTER + 3500, y: MAP_CENTER + 3500 }
+    ];
 
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
 
     updateMenuStats();
@@ -265,63 +228,32 @@
 
     function openShop() { renderShop(); document.getElementById('shop-modal').style.display = 'flex'; }
     function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
-    function openHistory() { renderHistory(); document.getElementById('history-modal').style.display = 'flex'; }
-    function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
-    function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
-    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
-
-    function changeControlType() {
-        controlType = document.getElementById('controlTypeSelect').value;
-        document.getElementById('btn-controls').style.display = controlType === 'buttons' ? 'grid' : 'none';
-        document.getElementById('joystick-zone').style.display = 'none';
-    }
-
-    function setDir(x, y) { player.targetAngle = Math.atan2(y, x); }
-    function returnToMenu() { gameRunning = false; document.getElementById('menu-overlay').style.display = 'flex'; }
-
-    function renderHistory() {
-        let container = document.getElementById('historyContainer');
-        if(matchHistory.length === 0) {
-            container.innerHTML = "<div style='font-size:11px; text-align:center;'>No match history recorded yet!</div>";
-            return;
-        }
-        let html = "";
-        matchHistory.slice(-5).reverse().forEach(h => {
-            html += `<div class="history-item"><span>Score: ${h.score}</span><span style="color:#f1c40f;">🪙 ${h.coins}</span><span>${h.date}</span></div>`;
-        });
-        container.innerHTML = html;
-    }
+    function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }
+    function closeExitModal() { document.getElementById('exit-modal').style.display = 'none'; }
+    function confirmExit() { gameRunning = false; closeExitModal(); document.getElementById('menu-overlay').style.display = 'flex'; }
 
     function renderShop() {
         let container = document.getElementById('shopItemsContainer');
-        container.innerHTML = "<h4 style='color:#2ecc71;'>Free Skins & Flag Skins (100 🪙)</h4>";
+        container.innerHTML = "";
         skinsDatabase.forEach(s => {
             let isOwned = ownedSkins.includes(s.id);
             let isSelected = player.skin === s.id;
             container.innerHTML += `
                 <div class="shop-item">
                     <span>${s.name}</span>
-                    ${isOwned ? 
-                        `<button style="background:${isSelected ? '#27ae60' : '#2980b9'}; padding:4px 8px; font-size:10px;" onclick="selectSkin('${s.id}')">${isSelected ? 'Equipped' : 'Equip'}</button>` :
-                        `<button class="shop-btn" style="padding:4px 8px; font-size:10px;" onclick="buySkin('${s.id}', ${s.price})">Buy 🪙${s.price}</button>`
-                    }
+                    <button style="background:${isSelected ? '#27ae60' : '#2980b9'}; padding:4px 8px;" onclick="selectSkin('${s.id}')">${isSelected ? 'Equipped' : 'Equip'}</button>
                 </div>
             `;
         });
-    }
-
-    function buySkin(id, price) {
-        if(coins >= price) {
-            coins -= price; ownedSkins.push(id); player.skin = id;
-            updateMenuStats(); saveStats(); renderShop();
-        } else alert("Not enough coins!");
     }
 
     function selectSkin(id) { player.skin = id; renderShop(); }
 
     function startGame() {
         document.getElementById('menu-overlay').style.display = 'none';
-        gameRunning = true; initGame(); gameLoop();
+        gameRunning = true; initGame();
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
     }
 
     function saveStats() {
@@ -330,19 +262,12 @@
         updateMenuStats();
     }
 
-    function recordMatchEnd() {
-        let dateStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        matchHistory.push({ score, coins, date: dateStr });
-        localStorage.setItem('dodio_history', JSON.stringify(matchHistory));
-        saveStats();
-    }
-
     function initGame() {
         score = 0; currentMultiplier = 1;
         document.getElementById('scoreVal').innerText = score;
         
-        player.alive = true; player.x = MAP_SIZE/2; player.y = MAP_SIZE/2;
-        player.sizeRadius = 16; player.body = [];
+        player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
+        player.sizeRadius = 18; player.body = [];
         for(let i=0; i<30; i++) player.body.push({x: player.x - i*6, y: player.y});
 
         bots = [];
@@ -350,80 +275,58 @@
 
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<3500; i++) {
-            fruits.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, type: fTypes[Math.floor(Math.random()*fTypes.length)] });
+        for(let i=0; i<2500; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let r = Math.random() * (MAP_RADIUS - 100);
+            fruits.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, type: fTypes[Math.floor(Math.random()*fTypes.length)] });
         }
 
         coinItems = [];
-        for(let i=0; i<200; i++) coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
+        for(let i=0; i<180; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let r = Math.random() * (MAP_RADIUS - 100);
+            coinItems.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r });
+        }
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '📷', '🎛️'];
-        for(let i=0; i<250; i++) {
-            powerups.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🎯', '🎛️']; // 🎯 Sniper Scope, 🎛️ Airplane Steering
+        for(let i=0; i<200; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let r = Math.random() * (MAP_RADIUS - 100);
+            powerups.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
     }
 
     function spawnBot(id) {
-        let bx = Math.random() * (MAP_SIZE - 4000) + 2000;
-        let by = Math.random() * (MAP_SIZE - 4000) + 2000;
+        let angle = Math.random() * Math.PI * 2;
+        let r = Math.random() * (MAP_RADIUS - 1000);
+        let bx = MAP_CENTER + Math.cos(angle)*r;
+        let by = MAP_CENTER + Math.sin(angle)*r;
         let body = [];
-        for(let j=0; j<80; j++) body.push({x: bx - j*10, y: by});
+        for(let j=0; j<50; j++) body.push({x: bx - j*8, y: by});
         const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X'];
-        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 2000, alive: true, sizeRadius: 28 };
+        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 1500, alive: true, sizeRadius: 22 };
     }
 
     function explodeSnake(body) {
-        const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#e67e22'];
+        const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6'];
         body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
     }
-
-    // FLOATING JOYSTICK Anywhere on Screen
-    const joyZone = document.getElementById('joystick-zone');
-    const joyKnob = document.getElementById('joystick-knob');
-    let joyActive = false, joyCenterX = 0, joyCenterY = 0;
-
-    window.addEventListener('touchstart', (e) => {
-        if(!gameRunning || !player.alive || controlType !== 'joystick') return;
-        const touch = e.touches[0];
-        if(touch.clientX < 100 && touch.clientY < 100) return; // Ignore HUD top left
-
-        joyCenterX = touch.clientX; joyCenterY = touch.clientY;
-        joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
-        joyZone.style.display = 'block'; joyActive = true;
-    });
-
-    window.addEventListener('touchmove', (e) => {
-        if(!joyActive || controlType !== 'joystick') return;
-        const touch = e.touches[0];
-        const dx = touch.clientX - joyCenterX; const dy = touch.clientY - joyCenterY;
-        const dist = Math.hypot(dx, dy); const maxDist = 28;
-        let knobX = dx, knobY = dy;
-        if(dist > maxDist) { knobX = (dx / dist) * maxDist; knobY = (dy / dist) * maxDist; }
-        joyKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
-        player.targetAngle = Math.atan2(dy, dx);
-    });
-
-    window.addEventListener('touchend', () => { joyActive = false; joyZone.style.display = 'none'; });
 
     const boostBtn = document.getElementById('boost-btn');
     boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
     boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); manualSpeedBoost = false; });
 
-    function handlePointer(e) {
-        if(!gameRunning || !player.alive || controlType !== 'touch') return;
-        const cx = e.touches ? e.touches[0].clientX : e.clientX;
-        const cy = e.touches ? e.touches[0].clientY : e.clientY;
-        player.targetAngle = Math.atan2(cy - canvas.height/2, cx - canvas.width/2);
-    }
-    window.addEventListener('touchmove', handlePointer);
-    window.addEventListener('mousemove', handlePointer);
+    window.addEventListener('touchmove', (e) => {
+        if(!gameRunning || !player.alive) return;
+        const touch = e.touches[0];
+        player.targetAngle = Math.atan2(touch.clientY - canvas.height/2, touch.clientX - canvas.width/2);
+    });
 
     function addPowerupTimer(name, icon, durationMs, onExpire) {
         let expireTime = Date.now() + durationMs;
         let powerObj = { name, icon, expireTime };
         activePowers.push(powerObj);
-
         setTimeout(() => {
             let idx = activePowers.indexOf(powerObj);
             if(idx > -1) activePowers.splice(idx, 1);
@@ -436,7 +339,7 @@
         let html = ""; let now = Date.now();
         activePowers.forEach(p => {
             let timeLeft = Math.max(0, Math.ceil((p.expireTime - now) / 1000));
-            html += `<div class="power-badge ${timeLeft <= 5 ? 'blinking' : ''}">${p.icon} ${p.name} (${timeLeft}s)</div>`;
+            html += `<div class="power-badge">${p.icon} ${p.name} (${timeLeft}s)</div>`;
         });
         container.innerHTML = html;
     }
@@ -454,10 +357,6 @@
         ctx.fillStyle = '#000'; ctx.beginPath();
         ctx.arc(radius*0.55, -radius*0.4, radius*0.12, 0, Math.PI * 2);
         ctx.arc(radius*0.55, radius*0.4, radius*0.12, 0, Math.PI * 2); ctx.fill();
-
-        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3; ctx.beginPath();
-        ctx.moveTo(radius*1.7, 0); ctx.lineTo(radius*2.5, 0);
-        ctx.lineTo(radius*2.9, -5); ctx.moveTo(radius*2.5, 0); ctx.lineTo(radius*2.9, 5); ctx.stroke();
         ctx.restore();
     }
 
@@ -469,64 +368,73 @@
         let html = "";
         list.slice(0, 10).forEach((item, idx) => {
             let isPlayer = item.name.includes("Player");
-            html += `<div style="color:${isPlayer ? '#2ecc71' : '#fff'}; font-weight:${isPlayer ? 'bold' : 'normal'}">${idx+1}. ${item.name} - ${item.score}</div>`;
+            html += `<div style="color:${isPlayer ? '#2ecc71' : '#fff'};">${idx+1}. ${item.name} - ${item.score}</div>`;
         });
         document.getElementById('topList').innerHTML = html;
     }
 
-    function gameLoop() {
+    function gameLoop(now) {
         if(!gameRunning) return;
+        let dt = (now - lastTime) / 1000;
+        if(dt > 0.1) dt = 0.1;
+        lastTime = now;
 
-        let now = Date.now();
-        deadRemains = deadRemains.filter(r => now - r.spawnTime < 20000);
+        deadRemains = deadRemains.filter(r => Date.now() - r.spawnTime < 20000);
 
         if(player.alive) {
             let diff = player.targetAngle - player.angle;
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
 
-            player.angle += diff * (isSteeringActive ? 0.42 : 0.22);
+            player.angle += diff * (isSteeringActive ? 0.45 : 0.22);
 
-            let currentSpeed = manualSpeedBoost ? 8.0 : 4.8;
-            player.x += Math.cos(player.angle) * currentSpeed;
-            player.y += Math.sin(player.angle) * currentSpeed;
+            let currentSpeed = (manualSpeedBoost ? 380 : 220) * (dt * 60 / 1);
+            player.x += Math.cos(player.angle) * (currentSpeed * 0.08);
+            player.y += Math.sin(player.angle) * (currentSpeed * 0.08);
             player.body.unshift({x: player.x, y: player.y});
-            
-            // DYNAMIC LIMITED LENGTH (Max 70 Segments)
-            let maxAllowedSegments = Math.min(75, 30 + Math.floor(score / 150));
+
+            // Growth in Length & Thickness
+            let maxAllowedSegments = Math.min(90, 30 + Math.floor(score / 100));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
-            // DYNAMIC CAMERA ZOOM OUT WITH SNAKE GROWTH
-            cameraScale = Math.max(0.38, 0.65 - (player.sizeRadius - 16) * 0.015);
-
-            if(player.x <= 20 || player.x >= MAP_SIZE - 20 || player.y <= 20 || player.y >= MAP_SIZE - 20) {
-                player.alive = false; recordMatchEnd(); alert("Game Over! You hit the Red Zone!"); location.reload();
+            // Circular Zone Death Check
+            let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
+            if(distFromCenter >= MAP_RADIUS - 50) {
+                player.alive = false; alert("Game Over! You hit the Circular Red Zone!"); location.reload();
             }
+            document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 800 ? 'block' : 'none';
 
             bots.forEach(b => {
                 if(!b.alive) return;
                 b.body.forEach((seg, idx) => {
                     if(idx > 2 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
-                        player.alive = false; recordMatchEnd(); alert("Game Over! You crashed into a bot!"); location.reload();
+                        player.alive = false; alert("Game Over! You crashed into a bot!"); location.reload();
                     }
                 });
             });
 
+            // Eat Fruits
             fruits.forEach((f, i) => {
-                if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 10) {
+                if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
                     score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
-                    fruits[i].x = Math.random() * MAP_SIZE; fruits[i].y = Math.random() * MAP_SIZE;
-                    if(player.sizeRadius < 28) player.sizeRadius += 0.04;
+                    f.x = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
+                    f.y = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
+                    if(player.sizeRadius < 35) player.sizeRadius += 0.05; // Thickness Growth!
                 }
             });
 
+            // Eat Powerups
             powerups.forEach((p, i) => {
-                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 12) {
-                    if(p.icon.includes('x')) { // WORKING MULTIPLIERS!
+                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 25) {
+                    if(p.icon.includes('x')) {
                         let val = parseInt(p.icon.replace('x', '')) || 2;
                         currentMultiplier = val;
                         addPowerupTimer(`Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
+                    }
+                    if(p.icon === '🎯') { // Sniper Camera Zoom
+                        cameraScale = 0.38;
+                        addPowerupTimer('Sniper Zoom', '🎯', 15000, () => cameraScale = 0.65);
                     }
                     if(p.icon === '🚀') {
                         document.getElementById('boost-btn').style.display = 'flex';
@@ -538,26 +446,21 @@
                         isSteeringActive = true; addPowerupTimer('Airplane Steering', '🎛️', 15000, () => isSteeringActive = false);
                     }
 
-                    powerups[i].x = Math.random() * MAP_SIZE; powerups[i].y = Math.random() * MAP_SIZE;
+                    p.x = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
+                    p.y = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
                 }
             });
         }
 
-        // AGGRESSIVE CRAZY BOTS INTERCEPTING PLAYER
+        // Smart Bots Logic
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
-            
             if(distToPlayer < 1000 && player.alive) {
-                // Intercept Player Path!
-                let futurePlayerX = player.x + Math.cos(player.angle) * 120;
-                let futurePlayerY = player.y + Math.sin(player.angle) * 120;
-                b.angle = Math.atan2(futurePlayerY - b.y, futurePlayerX - b.x);
-            } else {
-                b.angle += (Math.random() - 0.5) * 0.1;
-            }
+                b.angle = Math.atan2(player.y - b.y, player.x - b.x);
+            } else { b.angle += (Math.random() - 0.5) * 0.1; }
 
-            b.x += Math.cos(b.angle) * 4.5; b.y += Math.sin(b.angle) * 4.5;
+            b.x += Math.cos(b.angle) * 4.2; b.y += Math.sin(b.angle) * 4.2;
             b.body.unshift({x: b.x, y: b.y}); b.body.pop();
 
             player.body.forEach((pSeg, idx) => {
@@ -573,27 +476,34 @@
         ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
 
-        ctx.strokeStyle = 'rgba(231, 76, 60, 0.22)'; ctx.lineWidth = 2;
-        for(let x = 0; x < MAP_SIZE; x += 200) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); ctx.stroke(); }
-        for(let y = 0; y < MAP_SIZE; y += 200) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); ctx.stroke(); }
+        // CIRCULAR MAP BORDER
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 25; ctx.beginPath();
+        ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 20; ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
+        // Garages
+        garages.forEach(g => {
+            ctx.fillStyle = '#2ecc71'; ctx.fillRect(g.x - 100, g.y - 100, 200, 200);
+            ctx.fillStyle = '#fff'; ctx.font = "bold 20px Arial"; ctx.fillText("GARAGE 🚗", g.x - 50, g.y + 5);
+        });
 
         fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 12, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
+        // Draw Player Snake with Full Country Flag Colors
         if(player.alive) {
-            let activeSkinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
+            let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             player.body.forEach((p, i) => {
-                if(i === 0) drawSnakeHead(p, player.angle, activeSkinObj.color, player.sizeRadius);
+                let color = skinObj.colors[i % skinObj.colors.length];
+                if(i === 0) drawSnakeHead(p, player.angle, color, player.sizeRadius);
                 else {
-                    ctx.fillStyle = i % 2 === 0 ? activeSkinObj.color : '#f1c40f';
-                    ctx.beginPath(); ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = color; ctx.beginPath();
+                    ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
                 }
             });
         }
 
+        // Draw Bots
         bots.forEach(b => {
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
@@ -607,156 +517,16 @@
 
         ctx.restore();
 
+        // Radar
         radarCtx.clearRect(0, 0, 70, 70);
         if(player.alive) {
             radarCtx.fillStyle = '#2ecc71'; radarCtx.beginPath();
-            radarCtx.arc((player.x/MAP_SIZE)*70, (player.y/MAP_SIZE)*70, 3.5, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*70, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*70, 3.5, 0, Math.PI*2); radarCtx.fill();
         }
 
-        renderPowerBadges(); updateLeaderboard(); requestAnimationFrame(gameLoop);
+        renderPowerBadges(); updateLeaderboard();
+        requestAnimationFrame(gameLoop);
     }
 </script>
 </body>
 </html>
-
-extends Node2D
-
-# --- Variables ---
-var score = 0
-var speed = 200
-var rotation_speed = 3.0
-var snake_parts = []
-var base_thickness = 20.0
-var zoom_level = 1.0
-
-var country_skins = {
-  "kurdistan": [Color.RED, Color.WHITE, Color.GREEN, Color.YELLOW],
-  "iraq": [Color.RED, Color.WHITE, Color.BLACK],
-  "usa": [Color.BLUE, Color.RED, Color.WHITE]
-}
-var current_skin = "default"
-
-# Items status
-var has_magnet = false
-var magnet_timer = 0.0
-
-@onready var camera = $Camera2D
-@onready var map_boundary = $MapBoundary
-@onready var exit_dialog = $CanvasLayer/ExitDialog
-
-func _ready():
-  # دروستکردنی نەخشەی خڕ
-  setup_circular_map(1500)
-  
-  # ئامادەکردنی دیالۆگی چوونە دەرەوە
-  setup_exit_dialog()
-  
-  # شاردنەوەی مەترسی ڕێد بۆن (Red Zone Risk)
-  if has_node("RedZone"):
-    $RedZone.visible = false
-
-func _process(delta):
-  # جوڵەی مارەکە
-  move_snake(delta)
-  
-  # کارکردنی موگناتیس
-  if has_magnet:
-    magnet_timer -= delta
-    if magnet_timer <= 0:
-      has_magnet = false
-      
-  # نوێکردنەوەی کامێرا (بەشێوەی ڕەسەدی سنایپەر)
-  update_sniper_camera()
-
-# --- 1. درێژبوون و ئەستووربوونی مارەکە ---
-func eat_fruit(fruit_type):
-  var growth_amount = 1
-  
-  if fruit_type == "X2":
-    growth_amount = 2
-  elif fruit_type == "X5":
-    growth_amount = 5
-    
-  for i in range(growth_amount):
-    add_snake_segment()
-    
-  # زیadbوونی ئەستووری بربرەی مارەکە بەپێی خواردن
-  base_thickness += 0.5 * growth_amount
-  update_snake_thickness()
-
-func add_snake_segment():
-  var new_part = Sprite2D.new()
-  # لێرەدا وێنەی بەشی مارەکە دادەنرێت
-  add_child(new_part)
-  snake_parts.append(new_part)
-
-func update_snake_thickness():
-  for part in snake_parts:
-    part.scale = Vector2(base_thickness / 20.0, base_thickness / 20.0)
-
-# --- 2. چارەسەری خێرایی یاریەکە لای هاوڕێکانت (Delta Sync) ---
-func move_snake(delta):
-  # بەکارهێنانی delta بۆ ئەوەی خێرایی لەسەر هەموو مۆبایلەکان وەک یەک بێت
-  var current_speed = speed
-  
-  # ئەگەر دوگمەی خێراکردن داگیرابێت
-  if Input.is_action_pressed("boost"):
-    current_speed *= 1.8
-    
-  position += Vector2.UP.rotated(rotation) * current_speed * delta
-
-# --- 3. ئایکۆنی خێرا پێچکردنەوە (ستێرنی تەیارە) ---
-func _on_steering_wheel_input(steer_direction, delta):
-  # بەکارهێنانی ستێرنی تەیارە بۆ پێچکردنەوە
-  rotation += steer_direction * rotation_speed * delta
-
-# --- 4. کامێرا بە شێوازی ڕەسەدی سنایپەر (Sniper Scope Zoom) ---
-func update_sniper_camera():
-  # هێمای دوورکردنەوە/نزیککردنەوە وەک دووربینی سنایپەر
-  camera.zoom = Vector2(zoom_level, zoom_level)
-
-# --- 5. نەخشەی خڕ (Circular Map) ---
-func setup_circular_map(radius):
-  # گۆڕینی نەخشەکە لە چوارگۆشەوە بۆ خڕ
-  var shape = CircleShape2D.new()
-  shape.radius = radius
-  if map_boundary:
-    map_boundary.shape = shape
-
-# --- 6. سکینی وڵاتان بۆ تەواوی لاشەی مارەکە ---
-func apply_country_skin(country_name):
-  if country_skins.has(country_name):
-    current_skin = country_name
-    var colors = country_skins[country_name]
-    
-    for i in range(snake_parts.size()):
-      var color_index = i % colors.size()
-      snake_parts[i].modulate = colors[color_index]
-
-# --- 7. دیالۆگی چوونە دەرەوە (دوو ئۆپشن) ---
-func setup_exit_dialog():
-  if exit_dialog:
-    exit_dialog.hide()
-
-func _on_exit_button_pressed():
-  get_tree().paused = true
-  exit_dialog.show()
-
-func _on_resume_button_pressed():
-  exit_dialog.hide()
-  get_tree().paused = false
-
-func _on_main_menu_button_pressed():
-  get_tree().paused = false
-  get_tree().change_scene_to_file("res://MainMenu.tscn")
-
-# --- 8. کارکردنی ئایکۆنەکان (X2, X5, موگناتیس) ---
-func _on_magnet_powerup_collected():
-  has_magnet = true
-  magnet_timer = 10.0 # بۆ ماوەی ۱۰ چرکە کار دەکات
-
-func _on_item_x2_collected():
-  eat_fruit("X2")
-
-func _on_item_x5_collected():
-  eat_fruit("X5")
