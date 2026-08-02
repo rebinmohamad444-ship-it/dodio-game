@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>dod.io</title>
     <style>
         * {
@@ -10,13 +10,14 @@
             margin: 0; padding: 0;
             user-select: none;
             -webkit-user-select: none;
+            touch-action: none;
         }
-        body {
+        html, body {
+            width: 100%; height: 100%;
             background-color: #0b0d12;
             color: #fff;
             font-family: Arial, sans-serif;
             overflow: hidden;
-            width: 100vw; height: 100vh;
         }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
@@ -67,27 +68,35 @@
             box-shadow: 0 0 10px #f1c40f;
         }
 
-        /* Controls */
+        /* Working Joystick on Bottom Right */
         #joystick-zone {
-            position: absolute; bottom: 30px; left: 30px;
-            width: 100px; height: 100px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(46, 204, 113, 0.6);
-            border-radius: 50%; z-index: 10; display: none;
+            position: absolute; bottom: 35px; right: 35px;
+            width: 110px; height: 110px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 2px solid rgba(46, 204, 113, 0.7);
+            border-radius: 50%; z-index: 10; display: block;
+            touch-action: none;
         }
+        #joystick-knob {
+            position: absolute; top: 30px; left: 30px;
+            width: 50px; height: 50px;
+            background: #2ecc71; border-radius: 50%;
+            box-shadow: 0 0 10px #2ecc71; pointer-events: none;
+        }
+
         #btn-controls {
-            position: absolute; bottom: 30px; left: 30px;
-            display: none; grid-template-columns: repeat(3, 40px);
-            grid-template-rows: repeat(3, 40px); gap: 4px; z-index: 10;
+            position: absolute; bottom: 30px; right: 35px;
+            display: none; grid-template-columns: repeat(3, 42px);
+            grid-template-rows: repeat(3, 42px); gap: 4px; z-index: 10;
         }
         .ctrl-btn {
-            background: rgba(46, 204, 113, 0.7); border: none;
-            color: #fff; font-weight: bold; border-radius: 6px;
+            background: rgba(46, 204, 113, 0.75); border: none;
+            color: #fff; font-weight: bold; border-radius: 6px; font-size: 16px;
         }
 
         #boost-btn {
-            position: absolute; bottom: 35px; right: 25px;
-            width: 55px; height: 55px;
+            position: absolute; bottom: 35px; left: 35px;
+            width: 60px; height: 60px;
             background: rgba(231, 76, 60, 0.85);
             border: 2px solid #fff; border-radius: 50%;
             color: #fff; font-weight: bold; font-size: 11px;
@@ -97,7 +106,7 @@
 
         /* Menus */
         #menu-overlay, #shop-modal, #email-modal, #settings-modal {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.95); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
@@ -143,7 +152,9 @@
     <div id="topList"></div>
 </div>
 
-<div id="joystick-zone"></div>
+<!-- Right Side Joystick -->
+<div id="joystick-zone"><div id="joystick-knob"></div></div>
+
 <div id="btn-controls">
     <div></div><button class="ctrl-btn" onclick="setDir(0, -1)">▲</button><div></div>
     <button class="ctrl-btn" onclick="setDir(-1, 0)">◀</button><div></div><button class="ctrl-btn" onclick="setDir(1, 0)">▶</button>
@@ -158,7 +169,7 @@
     
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name">
-        <button onclick="startGame()">Play as Guest 🎮</button>
+        <button onclick="startGame()">Play Game 🎮</button>
         <button class="guest-btn" onclick="openEmailModal()">Email Login ✉️</button>
         <button class="shop-btn" onclick="openShop()">Shop & Skins 🛒</button>
         <button style="background:#e67e22; color:#fff;" onclick="openSettings()">Settings ⚙️</button>
@@ -182,8 +193,8 @@
     <div class="btn-group">
         <label style="font-size:11px;">Control Type:</label>
         <select id="controlTypeSelect" onchange="changeControlType()">
+            <option value="joystick">Joystick 360° (Right Side)</option>
             <option value="touch">Touch / Touchscreen</option>
-            <option value="joystick">Joystick 360°</option>
             <option value="buttons">4-Direction Buttons</option>
         </select>
         <button onclick="closeSettings()">Save & Close</button>
@@ -206,7 +217,7 @@
     const radarCanvas = document.getElementById('radar-canvas');
     const radarCtx = radarCanvas.getContext('2d');
 
-    const MAP_SIZE = 16000; // Expanded Map Size
+    const MAP_SIZE = 16000;
     let cameraScale = 0.65;
     let gameRunning = false;
     let score = 0, coins = 0;
@@ -217,7 +228,7 @@
     let isBoostActive = false;
     let boostCharge = false;
     let turnAgility = 0.12;
-    let controlType = 'touch';
+    let controlType = 'joystick';
 
     let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, thickness: 11 };
     let bots = [];
@@ -249,6 +260,7 @@
         canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
 
     function openShop() { document.getElementById('shop-modal').style.display = 'flex'; }
@@ -267,6 +279,43 @@
     function setDir(x, y) {
         player.targetAngle = Math.atan2(y, x);
     }
+
+    // Working 360 Degree Joystick Logic
+    const joyZone = document.getElementById('joystick-zone');
+    const joyKnob = document.getElementById('joystick-knob');
+    let joyActive = false;
+
+    function handleJoyMove(e) {
+        if(!joyActive) return;
+        const rect = joyZone.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const touchX = e.touches ? e.touches[0].clientX : e.clientX;
+        const touchY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const dx = touchX - centerX;
+        const dy = touchY - centerY;
+        const dist = Math.hypot(dx, dy);
+        const maxDist = 35;
+
+        let knobX = dx;
+        let knobY = dy;
+        if(dist > maxDist) {
+            knobX = (dx / dist) * maxDist;
+            knobY = (dy / dist) * maxDist;
+        }
+
+        joyKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+        player.targetAngle = Math.atan2(dy, dx);
+    }
+
+    joyZone.addEventListener('touchstart', (e) => { joyActive = true; handleJoyMove(e); });
+    joyZone.addEventListener('touchmove', handleJoyMove);
+    joyZone.addEventListener('touchend', () => { joyActive = false; joyKnob.style.transform = 'translate(0px, 0px)'; });
+    joyZone.addEventListener('mousedown', (e) => { joyActive = true; handleJoyMove(e); });
+    window.addEventListener('mousemove', handleJoyMove);
+    window.addEventListener('mouseup', () => { joyActive = false; joyKnob.style.transform = 'translate(0px, 0px)'; });
 
     function startGame() {
         document.getElementById('menu-overlay').style.display = 'none';
@@ -308,10 +357,6 @@
         for(let j=0; j<25; j++) body.push({x: bx - j*6, y: by});
         const botNames = ['Pro_Snake', 'Viper_X', 'Anaconda_CN', 'Shadow_99', 'Kurd_King', 'Hunter', 'Toxic_Bite', 'Speedy', 'Alpha_Bot', 'Slayer'];
         bots[id] = { id, name: botNames[id] || 'Bot_'+id, x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: Math.floor(Math.random()*600+100), alive: true, circleAngle: 0 };
-    }
-
-    function explodeSnake(body) {
-        body.forEach(p => deadRemains.push({ x: p.x, y: p.y, spawnTime: Date.now() }));
     }
 
     const boostBtn = document.getElementById('boost-btn');
@@ -379,7 +424,6 @@
             player.body.unshift({x: player.x, y: player.y});
             player.body.pop();
 
-            // Slightly thicker with eating
             player.thickness = Math.min(18, 11 + Math.floor(player.body.length / 25));
 
             if(player.x <= 300 || player.x >= MAP_SIZE - 300 || player.y <= 300 || player.y >= MAP_SIZE - 300) {
@@ -396,7 +440,7 @@
 
             // Eat Power-ups
             powerups.forEach((p, i) => {
-                if(Math.hypot(player.x - p.x, player.y - p.y) < player.thickness + 12) {
+                if(Math.hypot(player.x - p.x, player.y - p.y) < player.thickness + 14) {
                     if(p.icon === '🚀') {
                         isBoostActive = true;
                         document.getElementById('boost-btn').style.display = 'flex';
@@ -412,7 +456,7 @@
 
             // Eat Fruits
             fruits.forEach((f, i) => {
-                if(Math.hypot(player.x - f.x, player.y - f.y) < player.thickness + 10) {
+                if(Math.hypot(player.x - f.x, player.y - f.y) < player.thickness + 12) {
                     score += 5;
                     document.getElementById('scoreVal').innerText = score;
                     fruits[i].x = Math.random() * MAP_SIZE;
@@ -455,8 +499,12 @@
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 20;
         ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-        fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
-        powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
+        // Larger Fruits (32px)
+        fruits.forEach(f => { ctx.font = "32px Arial"; ctx.fillText(f.type, f.x, f.y); });
+        
+        // Larger Coins & Powerups (34px / 36px)
+        coinItems.forEach(c => { ctx.font = "28px Arial"; ctx.fillText("🪙", c.x, c.y); });
+        powerups.forEach(p => { ctx.font = "bold 36px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
         if(player.alive) {
             player.body.forEach((p, i) => {
