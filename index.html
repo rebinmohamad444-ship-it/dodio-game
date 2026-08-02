@@ -37,10 +37,20 @@
             font-size: 10px; margin-top: 4px; text-align: center; width: 75px;
         }
 
+        /* Left Bottom Stack: Garage & Exit */
+        #left-bottom-container {
+            position: absolute; bottom: 15px; left: 15px;
+            display: flex; flex-direction: column; gap: 6px; z-index: 10;
+        }
+        #ingame-garage-btn {
+            background: rgba(243, 156, 18, 0.9); border: 1.5px solid #fff;
+            color: #fff; padding: 6px 12px; border-radius: 10px;
+            font-size: 11px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
+        }
         #exit-btn {
             background: #e74c3c; color: #fff; font-weight: bold;
-            border: none; padding: 5px 8px; border-radius: 6px;
-            font-size: 10px; cursor: pointer; width: 75px; text-align: center; margin-top: 4px;
+            border: 1.5px solid #fff; padding: 6px 12px; border-radius: 10px;
+            font-size: 11px; cursor: pointer; text-align: center; width: 75px;
         }
 
         #red-zone-alert {
@@ -66,13 +76,6 @@
             background: rgba(241, 196, 15, 0.95); color: #111;
             padding: 3px 8px; border-radius: 8px; font-weight: bold;
             font-size: 10px; box-shadow: 0 0 6px #f1c40f; width: fit-content;
-        }
-
-        #ingame-garage-btn {
-            position: absolute; bottom: 15px; left: 15px;
-            background: rgba(243, 156, 18, 0.85); border: 1.5px solid #fff;
-            color: #fff; padding: 8px 14px; border-radius: 12px;
-            font-size: 11px; font-weight: bold; z-index: 10; cursor: pointer;
         }
 
         #boost-btn {
@@ -119,7 +122,11 @@
         <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
         <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
     </div>
-    <button id="exit-btn" onclick="openExitModal()">🏠 Exit</button>
+</div>
+
+<div id="left-bottom-container">
+    <div id="ingame-garage-btn" onclick="openShop()">🚗 Garage</div>
+    <div id="exit-btn" onclick="openExitModal()">🏠 Exit</div>
 </div>
 
 <div id="red-zone-alert">⚠️ WARNING: RED ZONE! ⚠️</div>
@@ -130,7 +137,6 @@
     <div id="topList"></div>
 </div>
 
-<div id="ingame-garage-btn" onclick="openShop()">🚗 Garage</div>
 <div id="boost-btn">BOOST 🚀</div>
 
 <!-- Full Main Menu -->
@@ -176,7 +182,7 @@
 
     const MAP_RADIUS = 6000;
     const MAP_CENTER = 7000;
-    let cameraScale = 0.65;
+    let cameraScale = 0.55; // Wider Camera View
     let gameRunning = false;
 
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
@@ -190,13 +196,13 @@
     let activePowers = [];
     let deadRemains = [];
 
-    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 18 };
+    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 16 };
     let bots = [];
     let fruits = [];
     let coinItems = [];
     let powerups = [];
 
-    // Complete Skins & Country Flags Database
+    // Full Skins & Country Flags Database
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', price: 0, colors: ['#2ecc71', '#27ae60'] },
         { id: 'free2', name: '🔵 Sky Blue', price: 0, colors: ['#3498db', '#2980b9'] },
@@ -276,13 +282,12 @@
         document.getElementById('scoreVal').innerText = score;
         
         player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
-        player.sizeRadius = 18; player.body = [];
+        player.sizeRadius = 16; player.body = [];
         for(let i=0; i<30; i++) player.body.push({x: player.x - i*6, y: player.y});
 
         bots = [];
         for(let i=0; i<10; i++) spawnBot(i);
 
-        // Optimized Fruit Count (Not overcrowded)
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
         for(let i=0; i<600; i++) {
@@ -299,7 +304,7 @@
         }
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🎯', '🎛️'];
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🎯', '🏎️']; // 🏎️ Steering Wheel Icon
         for(let i=0; i<80; i++) {
             let angle = Math.random() * Math.PI * 2;
             let r = Math.random() * (MAP_RADIUS - 100);
@@ -315,7 +320,7 @@
         let body = [];
         for(let j=0; j<50; j++) body.push({x: bx - j*8, y: by});
         const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X'];
-        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 1500, alive: true, sizeRadius: 22 };
+        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 1500, alive: true, sizeRadius: 20 };
     }
 
     function explodeSnake(body) {
@@ -418,37 +423,54 @@
                 });
             });
 
-            // EATING FRUITS (Fixed Collision Radius)
+            // WORKING MAGNET PULL LOGIC
+            if(isMagnetActive) {
+                [fruits, coinItems, powerups, deadRemains].forEach(group => {
+                    group.forEach(item => {
+                        let d = Math.hypot(player.x - item.x, player.y - item.y);
+                        if(d < 450) {
+                            item.x += (player.x - item.x) * 0.12;
+                            item.y += (player.y - item.y) * 0.12;
+                        }
+                    });
+                });
+            }
+
+            // EATING FRUITS (Balanced Growth)
             fruits.forEach((f, i) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
                     score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     f.x = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
                     f.y = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
-                    if(player.sizeRadius < 32) player.sizeRadius += 0.05;
+                    if(player.sizeRadius < 28) player.sizeRadius += 0.035;
                 }
             });
 
-            // EATING DEAD REMAINS (Bot Remains)
+            // EATING DEAD REMAINS
             deadRemains.forEach((r, i) => {
                 if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
                     score += 15 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
-                    if(player.sizeRadius < 32) player.sizeRadius += 0.08;
+                    if(player.sizeRadius < 28) player.sizeRadius += 0.05;
                 }
             });
 
             powerups.forEach((p, i) => {
                 if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
+                    if(p.icon === '🧲') {
+                        isMagnetActive = true;
+                        addPowerupTimer('Magnet', '🧲', 15000, () => isMagnetActive = false);
+                    }
                     if(p.icon.includes('x')) {
                         let val = parseInt(p.icon.replace('x', '')) || 2;
                         currentMultiplier = val;
                         addPowerupTimer(`Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
                     }
                     if(p.icon === '🎯') {
-                        cameraScale = 0.38;
-                        addPowerupTimer('Sniper Zoom', '🎯', 15000, () => cameraScale = 0.65);
+                        cameraScale = 0.32;
+                        addPowerupTimer('Sniper Zoom', '🎯', 15000, () => cameraScale = 0.55);
                     }
                     if(p.icon === '🚀') {
                         document.getElementById('boost-btn').style.display = 'flex';
@@ -456,8 +478,8 @@
                             document.getElementById('boost-btn').style.display = 'none'; manualSpeedBoost = false;
                         });
                     }
-                    if(p.icon === '🎛️') {
-                        isSteeringActive = true; addPowerupTimer('Airplane Steering', '🎛️', 15000, () => isSteeringActive = false);
+                    if(p.icon === '🏎️') {
+                        isSteeringActive = true; addPowerupTimer('Steering Wheel', '🏎️', 15000, () => isSteeringActive = false);
                     }
 
                     p.x = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
