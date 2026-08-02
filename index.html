@@ -177,7 +177,6 @@
     </div>
 </div>
 
-<!-- Settings Modal -->
 <div id="settings-modal">
     <h3 style="color:#e67e22; margin-bottom:10px;">Control Settings ⚙️</h3>
     <div class="btn-group">
@@ -435,7 +434,6 @@
         });
     }
 
-    // Joystick Touch Controls
     const joyZone = document.getElementById('joystick-zone');
     const joyKnob = document.getElementById('joystick-knob');
     let joyActive = false;
@@ -615,7 +613,7 @@
                 });
             }
 
-            // Noticeable Thickness Growth per fruit eaten
+            // BALANCED GROWTH WITH A MAXIMUM CAP (Max Radius: 32)
             fruits.forEach((f, i) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 10) {
                     score += 5;
@@ -623,7 +621,7 @@
                     fruits[i].x = Math.random() * MAP_SIZE;
                     fruits[i].y = Math.random() * MAP_SIZE;
                     player.body.push({...player.body[player.body.length-1]});
-                    player.sizeRadius += 0.2; // Continuous Thickness Growth!
+                    if(player.sizeRadius < 32) player.sizeRadius += 0.03;
                 }
             });
 
@@ -633,7 +631,7 @@
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
                     player.body.push({...player.body[player.body.length-1]});
-                    player.sizeRadius += 0.3;
+                    if(player.sizeRadius < 32) player.sizeRadius += 0.05;
                 }
             });
 
@@ -737,12 +735,11 @@
         fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
         coinItems.forEach(c => { ctx.font = "20px Arial"; ctx.fillText("🪙", c.x, c.y); });
 
-        // Larger Glowing Dead Remains
         deadRemains.forEach(r => {
             let isBlinking = (Math.floor(Date.now() / 250) % 2 === 0);
             ctx.shadowColor = r.color; ctx.shadowBlur = isBlinking ? 18 : 4;
             ctx.fillStyle = r.color;
-            ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); // Bigger Size (14px)
+            ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill();
             ctx.shadowBlur = 0;
         });
 
