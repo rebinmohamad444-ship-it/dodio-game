@@ -44,40 +44,49 @@
             font-size: 10px; z-index: 5; min-width: 130px; pointer-events: none;
         }
 
+        /* Smaller Active Power Badges */
         #active-powers-container {
             position: absolute; top: 90px; left: 10px;
-            display: flex; flex-direction: column; gap: 4px; z-index: 5;
+            display: flex; flex-direction: column; gap: 3px; z-index: 5;
         }
         .power-badge {
             background: rgba(241, 196, 15, 0.9); color: #111;
-            padding: 3px 8px; border-radius: 10px; font-weight: bold;
-            font-size: 10px; box-shadow: 0 0 8px #f1c40f;
+            padding: 2px 6px; border-radius: 8px; font-weight: bold;
+            font-size: 9px; box-shadow: 0 0 6px #f1c40f; width: fit-content;
         }
         .blinking {
-            animation: blinker 0.6s linear infinite;
+            animation: blinker 0.5s linear infinite;
         }
         @keyframes blinker {
             50% { opacity: 0.2; }
         }
 
-        /* Boost Button - Only Appears when Rocket Eaten */
+        /* In-Game Garage Button */
+        #ingame-garage-btn {
+            position: absolute; bottom: 15px; left: 15px;
+            background: rgba(243, 156, 18, 0.85); border: 1.5px solid #fff;
+            color: #fff; padding: 6px 12px; border-radius: 12px;
+            font-size: 11px; font-weight: bold; z-index: 10; cursor: pointer;
+        }
+
+        /* Boost Button */
         #boost-btn {
-            position: absolute; bottom: 25px; right: 25px;
-            width: 65px; height: 65px;
+            position: absolute; bottom: 20px; right: 20px;
+            width: 60px; height: 60px;
             background: rgba(231, 76, 60, 0.9);
             border: 2px solid #fff; border-radius: 50%;
-            color: #fff; font-weight: bold; font-size: 12px;
+            color: #fff; font-weight: bold; font-size: 11px;
             z-index: 10; display: none; justify-content: center; align-items: center;
-            box-shadow: 0 0 12px #e74c3c; cursor: pointer;
+            box-shadow: 0 0 10px #e74c3c; cursor: pointer;
         }
 
         /* Menus and Modals */
-        #menu-overlay, #shop-modal, #settings-modal {
+        #menu-overlay, #shop-modal, #history-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 12, 16, 0.95); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
-        #shop-modal, #settings-modal { display: none; z-index: 30; }
+        #shop-modal, #history-modal { display: none; z-index: 30; }
 
         h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
         .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 280px; }
@@ -90,11 +99,11 @@
         button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
         button.shop-btn { background: #f39c12; color: #fff; }
 
-        .shop-list {
+        .shop-list, .history-list {
             display: flex; flex-direction: column; gap: 8px;
-            max-height: 250px; overflow-y: auto; width: 85%; max-width: 320px; margin: 12px 0;
+            max-height: 220px; overflow-y: auto; width: 85%; max-width: 320px; margin: 10px 0;
         }
-        .shop-item {
+        .shop-item, .history-item {
             display: flex; justify-content: space-between; align-items: center;
             background: #181c24; padding: 8px 12px; border-radius: 8px; border: 1px solid #333; font-size: 11px;
         }
@@ -117,6 +126,7 @@
     <div id="topList"></div>
 </div>
 
+<div id="ingame-garage-btn" onclick="openShop()">🚗 Garage</div>
 <div id="boost-btn">BOOST 🚀</div>
 
 <!-- Main Menu Overlay -->
@@ -124,31 +134,30 @@
     <h1>dod.io</h1>
     <div style="font-size:30px; margin-bottom:8px;">🐍</div>
     
+    <div style="font-size:12px; color:#f1c40f; margin-bottom:10px;">
+        High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">0</span> 🪙
+    </div>
+
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name">
         <button onclick="startGame()">Play as Guest 🎮</button>
         <button class="guest-btn" onclick="startGame()">Email Login ✉️</button>
         <button class="fb-btn" onclick="startGame()">Connect Facebook 📘</button>
         <button class="shop-btn" onclick="openShop()">Shop & Skins 🛒</button>
-        <button style="background:#e67e22; color:#fff;" onclick="openSettings()">Settings ⚙️</button>
+        <button style="background:#9b59b6; color:#fff;" onclick="openHistory()">Match History 📜</button>
     </div>
 </div>
 
-<!-- Settings Modal -->
-<div id="settings-modal">
-    <h3 style="color:#e67e22; margin-bottom:10px;">Settings ⚙️</h3>
-    <div class="btn-group">
-        <label style="font-size:11px;">Landscape Controls:</label>
-        <select id="controlTypeSelect">
-            <option value="touch">Touch Pointer Target</option>
-        </select>
-        <button onclick="closeSettings()">Save & Back</button>
-    </div>
+<!-- Match History Modal -->
+<div id="history-modal">
+    <h3 style="color:#9b59b6; margin-bottom:5px;">Match History 📜</h3>
+    <div class="history-list" id="historyContainer"></div>
+    <button onclick="closeHistory()" style="width:120px;">Close</button>
 </div>
 
 <!-- Shop Modal -->
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Country Flags 🛒</h3>
+    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Garages 🛒</h3>
     <div style="font-size:12px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
     
     <div class="shop-list" id="shopItemsContainer"></div>
@@ -170,12 +179,14 @@
     
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
+    let matchHistory = JSON.parse(localStorage.getItem('dodio_history') || '[]');
     let score = 0;
 
     let manualSpeedBoost = false;
     let isMagnetActive = false;
     let isSteeringActive = false;
     let activePowers = [];
+    let deadRemains = [];
 
     let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 16 };
     let bots = [];
@@ -189,22 +200,9 @@
         { id: 'free3', name: '🔴 Ruby Red', price: 0, color: '#e74c3c' },
         { id: 'free4', name: '🟡 Bright Yellow', price: 0, color: '#f1c40f' },
         { id: 'free5', name: '🟣 Royal Purple', price: 0, color: '#9b59b6' },
-        { id: 'free6', name: '🟠 Sunset Orange', price: 0, color: '#e67e22' },
-        { id: 'free7', name: '⚪ Pure White', price: 0, color: '#ffffff' },
-        { id: 'free8', name: '⚫ Dark Shadow', price: 0, color: '#34495e' },
-        { id: 'free9', name: '💖 Neon Pink', price: 0, color: '#ff6b81' },
-        { id: 'free10', name: '🌊 Cyan Ocean', price: 0, color: '#1abc9c' },
-        { id: 'free11', name: '🌲 Deep Forest', price: 0, color: '#27ae60' },
-        { id: 'free12', name: '🔥 Fire Red', price: 0, color: '#c0392b' },
-        { id: 'free13', name: '🪙 Gold Luxury', price: 0, color: '#d35400' },
-        { id: 'free14', name: '🪐 Indigo Night', price: 0, color: '#2c3e50' },
-        { id: 'free15', name: '🌸 Cherry Blossom', price: 0, color: '#ff7979' },
         { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, color: '#00A859' },
         { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, color: '#FFDF00' },
-        { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, color: '#74ACDF' },
-        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, color: '#DD0000' },
-        { id: 'france', name: '🇫🇷 France Flag', price: 100, color: '#002395' },
-        { id: 'spain', name: '🇪🇸 Spain Flag', price: 100, color: '#AA152B' }
+        { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, color: '#74ACDF' }
     ];
 
     let ownedSkins = skinsDatabase.filter(s => s.price === 0).map(s => s.id);
@@ -223,7 +221,13 @@
     window.addEventListener('resize', resize);
     resize();
 
-    document.getElementById('coinVal').innerText = `🪙 ${coins}`;
+    updateMenuStats();
+
+    function updateMenuStats() {
+        document.getElementById('coinVal').innerText = `🪙 ${coins}`;
+        document.getElementById('menuCoins').innerText = coins;
+        document.getElementById('menuHighScore').innerText = highScore;
+    }
 
     function openShop() {
         document.getElementById('shopCoinVal').innerText = `🪙 ${coins}`;
@@ -231,16 +235,31 @@
         document.getElementById('shop-modal').style.display = 'flex';
     }
     function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
-    function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
-    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+    function openHistory() {
+        renderHistory();
+        document.getElementById('history-modal').style.display = 'flex';
+    }
+    function closeHistory() { document.getElementById('history-modal').style.display = 'none'; }
+
+    function renderHistory() {
+        let container = document.getElementById('historyContainer');
+        if(matchHistory.length === 0) {
+            container.innerHTML = "<div style='font-size:11px; text-align:center;'>No match history recorded yet!</div>";
+            return;
+        }
+        let html = "";
+        matchHistory.slice(-5).reverse().forEach(h => {
+            html += `<div class="history-item"><span>Score: ${h.score}</span><span style="color:#f1c40f;">🪙 ${h.coins}</span><span>${h.date}</span></div>`;
+        });
+        container.innerHTML = html;
+    }
 
     function renderShop() {
         let container = document.getElementById('shopItemsContainer');
-        container.innerHTML = "<h4 style='color:#2ecc71;'>15 Free Skins & Flag Skins (100 🪙)</h4>";
+        container.innerHTML = "<h4 style='color:#2ecc71;'>Free & Flag Skins (100 🪙)</h4>";
         skinsDatabase.forEach(s => {
             let isOwned = ownedSkins.includes(s.id);
             let isSelected = player.skin === s.id;
-            
             container.innerHTML += `
                 <div class="shop-item">
                     <span>${s.name}</span>
@@ -258,7 +277,7 @@
             coins -= price;
             ownedSkins.push(id);
             player.skin = id;
-            document.getElementById('coinVal').innerText = `🪙 ${coins}`;
+            updateMenuStats();
             saveStats();
             renderShop();
         } else {
@@ -280,7 +299,18 @@
 
     function saveStats() {
         localStorage.setItem('dodio_coins', coins.toString());
-        if(score > highScore) localStorage.setItem('dodio_highscore', score.toString());
+        if(score > highScore) {
+            highScore = score;
+            localStorage.setItem('dodio_highscore', highScore.toString());
+        }
+        updateMenuStats();
+    }
+
+    function recordMatchEnd() {
+        let dateStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        matchHistory.push({ score, coins, date: dateStr });
+        localStorage.setItem('dodio_history', JSON.stringify(matchHistory));
+        saveStats();
     }
 
     function initGame() {
@@ -321,7 +351,18 @@
         bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: Math.floor(Math.random()*300+50), alive: true, circleAngle: 0, sizeRadius: 14 };
     }
 
-    // Boost Button Touch Events
+    function explodeSnake(body) {
+        const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6', '#e67e22'];
+        body.forEach(p => {
+            deadRemains.push({
+                x: p.x, y: p.y,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                spawnTime: Date.now()
+            });
+        });
+    }
+
+    // Boost Button Touch Controls
     const boostBtn = document.getElementById('boost-btn');
     boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
     boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); manualSpeedBoost = false; });
@@ -356,7 +397,7 @@
 
         activePowers.forEach(p => {
             let timeLeft = Math.max(0, Math.ceil((p.expireTime - now) / 1000));
-            let isBlinking = timeLeft <= 5; // Blinks in final 5 seconds
+            let isBlinking = timeLeft <= 5;
             html += `<div class="power-badge ${isBlinking ? 'blinking' : ''}">${p.icon} ${p.name} (${timeLeft}s)</div>`;
         });
         container.innerHTML = html;
@@ -390,13 +431,13 @@
         ctx.lineTo(radius*2.6, -4); ctx.moveTo(radius*2.3, 0); ctx.lineTo(radius*2.6, 4);
         ctx.stroke();
 
-        // 5 VERTICAL RED MAGNET LINES IN FRONT OF HEAD
+        // 5 Vertical Magnet Lines
         if(isMagnetActive) {
             ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
             for(let i = -2; i <= 2; i += 1) {
                 ctx.beginPath();
                 ctx.moveTo(radius * 2.0, i * 8);
-                ctx.lineTo(radius * 2.0, (i * 8) + 14); // Vertical Lines
+                ctx.lineTo(radius * 2.0, (i * 8) + 14);
                 ctx.stroke();
             }
         }
@@ -420,14 +461,17 @@
     function gameLoop() {
         if(!gameRunning) return;
 
+        let now = Date.now();
+        deadRemains = deadRemains.filter(r => now - r.spawnTime < 20000);
+
         if(player.alive) {
             let diff = player.targetAngle - player.angle;
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
 
-            // Turn agility depends on thickness and Steering Wheel powerup
-            let baseAgility = Math.max(0.04, 0.16 - (player.sizeRadius * 0.005));
-            if(isSteeringActive) baseAgility = 0.32; // Super fast turn with Steering Wheel!
+            // Smoother and easier steering
+            let baseAgility = 0.22; // Much easier to turn!
+            if(isSteeringActive) baseAgility = 0.38;
 
             player.angle += diff * baseAgility;
 
@@ -440,7 +484,7 @@
             // Red Zone Death
             if(player.x <= 20 || player.x >= MAP_SIZE - 20 || player.y <= 20 || player.y >= MAP_SIZE - 20) {
                 player.alive = false;
-                saveStats();
+                recordMatchEnd();
                 alert("Game Over! You hit the Red Zone!");
                 location.reload();
             }
@@ -451,7 +495,7 @@
                 b.body.forEach((seg, idx) => {
                     if(idx > 2 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + 2) {
                         player.alive = false;
-                        saveStats();
+                        recordMatchEnd();
                         alert("Game Over! You crashed into a bot!");
                         location.reload();
                     }
@@ -460,7 +504,7 @@
 
             // MAGNET ATTRACTS ALL ITEMS
             if(isMagnetActive) {
-                [fruits, coinItems, powerups].forEach(group => {
+                [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
                         let d = Math.hypot(player.x - item.x, player.y - item.y);
                         if(d < 380) {
@@ -471,7 +515,7 @@
                 });
             }
 
-            // Eat Fruits
+            // Eat Fruits & Grow Snake
             fruits.forEach((f, i) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 10) {
                     score += 5;
@@ -479,7 +523,17 @@
                     fruits[i].x = Math.random() * MAP_SIZE;
                     fruits[i].y = Math.random() * MAP_SIZE;
                     player.body.push({...player.body[player.body.length-1]});
-                    if(player.body.length % 15 === 0) player.sizeRadius += 0.5;
+                    if(player.body.length % 10 === 0) player.sizeRadius += 0.6; // Noticeable thickness growth
+                }
+            });
+
+            // Eat Dead Remains (Multi-colored)
+            deadRemains.forEach((r, i) => {
+                if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 10) {
+                    score += 15;
+                    document.getElementById('scoreVal').innerText = score;
+                    deadRemains.splice(i, 1);
+                    player.body.push({...player.body[player.body.length-1]});
                 }
             });
 
@@ -536,7 +590,7 @@
                     fruits[fi].x = Math.random() * MAP_SIZE;
                     fruits[fi].y = Math.random() * MAP_SIZE;
                     b.body.push({...b.body[b.body.length-1]});
-                    if(b.body.length % 15 === 0) b.sizeRadius += 0.4;
+                    if(b.body.length % 10 === 0) b.sizeRadius += 0.5;
                 }
             });
 
@@ -558,6 +612,7 @@
             player.body.forEach((pSeg, idx) => {
                 if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius + 2) {
                     b.alive = false;
+                    explodeSnake(b.body);
                     setTimeout(() => spawnBot(b.id), 3000);
                 }
             });
@@ -599,7 +654,16 @@
         fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
         coinItems.forEach(c => { ctx.font = "20px Arial"; ctx.fillText("🪙", c.x, c.y); });
 
-        // Draw Power-ups (🧲, ⚡2X, 🚀, 📷, ☸️)
+        // Draw Multi-color Blinking Dead Remains (20 Seconds)
+        deadRemains.forEach(r => {
+            let isBlinking = (Math.floor(Date.now() / 250) % 2 === 0);
+            ctx.shadowColor = r.color; ctx.shadowBlur = isBlinking ? 14 : 2;
+            ctx.fillStyle = isBlinking ? r.color : '#ffffff';
+            ctx.beginPath(); ctx.arc(r.x, r.y, 9, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
+        });
+
+        // Draw Power-ups
         powerups.forEach(p => {
             ctx.shadowColor = "#f1c40f"; ctx.shadowBlur = 12;
             ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y);
