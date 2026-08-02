@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>dod.io</title>
     <style>
         * {
@@ -10,22 +10,21 @@
             margin: 0; padding: 0;
             user-select: none;
             -webkit-user-select: none;
-            touch-action: none;
         }
-        html, body {
-            width: 100%; height: 100%;
+        body {
             background-color: #0b0d12;
             color: #fff;
             font-family: Arial, sans-serif;
             overflow: hidden;
+            width: 100vw; height: 100vh;
         }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
         /* HUD Top Left */
-        #hud-container {
+        #radar-wrapper {
             position: absolute; top: 10px; left: 10px;
-            display: flex; flex-direction: column; align-items: flex-start;
-            gap: 5px; z-index: 5; pointer-events: auto;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 4px; z-index: 5;
         }
         #radar-canvas {
             width: 75px; height: 75px;
@@ -35,25 +34,9 @@
         #hud-stats {
             background: rgba(0,0,0,0.75); padding: 4px 8px;
             border-radius: 6px; border: 1px solid #2ecc71;
-            font-size: 10px; text-align: center; width: 75px;
-        }
-        
-        /* Menu Exit Button */
-        #exit-btn {
-            background: #e74c3c; color: #fff; font-weight: bold;
-            border: none; padding: 5px 8px; border-radius: 6px;
-            font-size: 11px; cursor: pointer; width: 75px; text-align: center;
+            font-size: 10px; margin-top: 4px; text-align: center;
         }
 
-        /* Emoji Bar */
-        #emoji-bar {
-            display: flex; gap: 3px; background: rgba(0,0,0,0.75);
-            padding: 3px 6px; border-radius: 10px; border: 1px solid #444;
-        }
-        .emoji-btn { font-size: 15px; cursor: pointer; }
-        .emoji-btn:active { transform: scale(1.3); }
-
-        /* Leaderboard Top Right */
         #leaderboard-box {
             position: absolute; top: 10px; right: 10px;
             background: rgba(0,0,0,0.85); padding: 6px 10px;
@@ -61,49 +44,32 @@
             font-size: 10px; z-index: 5; min-width: 130px; pointer-events: none;
         }
 
-        #danger-banner {
-            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
-            background: rgba(231, 76, 60, 0.9); color: #fff; padding: 5px 12px;
-            border-radius: 15px; font-weight: bold; font-size: 12px; z-index: 10;
-            display: none; animation: flashWarn 0.5s infinite alternate;
-        }
-        @keyframes flashWarn {
-            from { opacity: 1; box-shadow: 0 0 10px #e74c3c; }
-            to { opacity: 0.2; box-shadow: none; }
+        #multiplier-badge {
+            position: absolute; top: 110px; left: 10px;
+            background: rgba(241, 196, 15, 0.95); color: #111;
+            padding: 4px 10px; border-radius: 12px; font-weight: bold;
+            font-size: 11px; z-index: 5; display: none;
+            box-shadow: 0 0 10px #f1c40f;
         }
 
-        /* Working Joystick on Bottom Right */
-        #joystick-zone {
-            position: absolute; bottom: 35px; right: 35px;
-            width: 110px; height: 110px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 2px solid rgba(46, 204, 113, 0.7);
-            border-radius: 50%; z-index: 10; display: block;
-        }
-        #joystick-knob {
-            position: absolute; top: 30px; left: 30px;
-            width: 50px; height: 50px;
-            background: #2ecc71; border-radius: 50%;
-            box-shadow: 0 0 10px #2ecc71; pointer-events: none;
-        }
-
+        /* Boost Button */
         #boost-btn {
-            position: absolute; bottom: 35px; left: 35px;
+            position: absolute; bottom: 35px; right: 25px;
             width: 60px; height: 60px;
             background: rgba(231, 76, 60, 0.85);
             border: 2px solid #fff; border-radius: 50%;
-            color: #fff; font-weight: bold; font-size: 11px;
-            z-index: 10; display: none; justify-content: center; align-items: center;
+            color: #fff; font-weight: bold; font-size: 12px;
+            z-index: 10; display: flex; justify-content: center; align-items: center;
             box-shadow: 0 0 10px #e74c3c;
         }
 
-        /* Menus */
-        #menu-overlay, #shop-modal, #email-modal, #settings-modal {
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+        /* Menus and Modals */
+        #menu-overlay, #shop-modal, #settings-modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 12, 16, 0.95); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
-        #shop-modal, #email-modal, #settings-modal { display: none; z-index: 30; }
+        #shop-modal, #settings-modal { display: none; z-index: 30; }
 
         h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
         .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 260px; }
@@ -113,7 +79,6 @@
         }
         button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; border: none; }
         button.shop-btn { background: #f39c12; color: #fff; }
-        button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
 
         .shop-list {
             display: flex; flex-direction: column; gap: 8px;
@@ -127,30 +92,21 @@
 </head>
 <body>
 
-<div id="danger-banner">⚠️ RED ZONE WARNING! ⚠️</div>
-
-<div id="hud-container">
+<div id="radar-wrapper">
     <canvas id="radar-canvas" width="75" height="75"></canvas>
     <div id="hud-stats">
         <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
         <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
     </div>
-    <div id="emoji-bar">
-        <span class="emoji-btn" onclick="triggerEmoji('😂')">😂</span>
-        <span class="emoji-btn" onclick="triggerEmoji('😭')">😭</span>
-        <span class="emoji-btn" onclick="triggerEmoji('👍')">👍</span>
-        <span class="emoji-btn" onclick="triggerEmoji('💪')">💪</span>
-        <span class="emoji-btn" onclick="triggerEmoji('✌️')">✌️</span>
-    </div>
-    <button id="exit-btn" onclick="returnToMenu()">🏠 Menu</button>
 </div>
+
+<div id="multiplier-badge">⚡ 1X</div>
 
 <div id="leaderboard-box">
     <h4 style="color:#f1c40f; text-align:center; margin-bottom:4px; font-size:10px;">🏆 TOP 10 PLAYERS</h4>
     <div id="topList"></div>
 </div>
 
-<div id="joystick-zone"><div id="joystick-knob"></div></div>
 <div id="boost-btn">BOOST</div>
 
 <!-- Main Menu Overlay -->
@@ -160,21 +116,9 @@
     
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name">
-        <button onclick="startGame()">Play Game 🎮</button>
-        <button class="guest-btn" onclick="openEmailModal()">Email Login ✉️</button>
-        <button class="shop-btn" onclick="openShop()">Shop & Skins 🛒</button>
+        <button onclick="startGame()">PLAY GAME 🎮</button>
+        <button class="shop-btn" onclick="openShop()">Shop & Garage 🛒</button>
         <button style="background:#e67e22; color:#fff;" onclick="openSettings()">Settings ⚙️</button>
-    </div>
-</div>
-
-<!-- Email Modal -->
-<div id="email-modal">
-    <h3 style="color:#2ecc71; margin-bottom:10px;">Email Login</h3>
-    <div class="btn-group">
-        <input type="email" placeholder="Email Address">
-        <input type="password" placeholder="Password">
-        <button onclick="closeEmailModal(); startGame();">Login & Play</button>
-        <button class="guest-btn" onclick="closeEmailModal()">Cancel</button>
     </div>
 </div>
 
@@ -182,15 +126,21 @@
 <div id="settings-modal">
     <h3 style="color:#e67e22; margin-bottom:10px;">Settings ⚙️</h3>
     <div class="btn-group">
-        <button onclick="closeSettings()">Save & Close</button>
+        <label style="font-size:11px;">Control Style:</label>
+        <select id="controlTypeSelect">
+            <option value="touch">Touch / Mouse Angle</option>
+        </select>
+        <button onclick="closeSettings()">Save & Back</button>
     </div>
 </div>
 
 <!-- Shop Modal -->
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Flags Shop 🛒</h3>
-    <div style="font-size:12px;">Balance: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    <h3 style="color:#f39c12; margin-bottom:5px;">Shop & Garages 🛒</h3>
+    <div style="font-size:12px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    
     <div class="shop-list" id="shopItemsContainer"></div>
+
     <button onclick="closeShop()" style="width:120px;">Close</button>
 </div>
 
@@ -202,22 +152,25 @@
     const radarCanvas = document.getElementById('radar-canvas');
     const radarCtx = radarCanvas.getContext('2d');
 
-    const MAP_SIZE = 16000;
+    const MAP_SIZE = 14000;
     let cameraScale = 0.65;
     let gameRunning = false;
-    let score = 0, coins = 0;
     
-    let isMagnetActive = false;
-    let isBoostActive = false;
-    let boostCharge = false;
-    let turnAgility = 0.12;
+    // Load saved coins & high score
+    let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
+    let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
+    let score = 0;
 
-    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, thickness: 11 };
+    let currentMultiplier = 1;
+    let speedBoost = false;
+    let isMagnetActive = false;
+    let magnetTimer = null;
+
+    let player = { x: MAP_SIZE/2, y: MAP_SIZE/2, angle: 0, targetAngle: 0, body: [], alive: true, sizeRadius: 16 };
     let bots = [];
     let fruits = [];
     let coinItems = [];
     let powerups = [];
-    let deadRemains = [];
 
     const garages = [
         { x: 500, y: 500 },
@@ -226,77 +179,22 @@
         { x: MAP_SIZE - 500, y: MAP_SIZE - 500 }
     ];
 
-    const skinsDatabase = [
-        { id: 'free1', name: '🟢 Lime Green', price: 0, color: '#2ecc71' },
-        { id: 'free2', name: '🔵 Sky Blue', price: 0, color: '#3498db' },
-        { id: 'free3', name: '🔴 Ruby Red', price: 0, color: '#e74c3c' },
-        { id: 'free4', name: '🟡 Bright Yellow', price: 0, color: '#f1c40f' },
-        { id: 'kurdish', name: '✌️ Kurdistan', price: 100, color: '#00A859' },
-        { id: 'brazil', name: '🇧🇷 Brazil', price: 100, color: '#FFDF00' }
-    ];
-
-    let ownedSkins = skinsDatabase.filter(s => s.price === 0).map(s => s.id);
-
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
 
-    function openShop() { document.getElementById('shop-modal').style.display = 'flex'; }
+    document.getElementById('coinVal').innerText = `🪙 ${coins}`;
+
+    function openShop() {
+        document.getElementById('shopCoinVal').innerText = `🪙 ${coins}`;
+        document.getElementById('shop-modal').style.display = 'flex';
+    }
     function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
-    function openEmailModal() { document.getElementById('email-modal').style.display = 'flex'; }
-    function closeEmailModal() { document.getElementById('email-modal').style.display = 'none'; }
     function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
     function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
-
-    function returnToMenu() {
-        gameRunning = false;
-        document.getElementById('menu-overlay').style.display = 'flex';
-    }
-
-    function triggerEmoji(emoji) {
-        alert("Emoji sent: " + emoji);
-    }
-
-    // Working 360 Degree Joystick Logic
-    const joyZone = document.getElementById('joystick-zone');
-    const joyKnob = document.getElementById('joystick-knob');
-    let joyActive = false;
-
-    function handleJoyMove(e) {
-        if(!joyActive) return;
-        const rect = joyZone.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        const touchX = e.touches ? e.touches[0].clientX : e.clientX;
-        const touchY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        const dx = touchX - centerX;
-        const dy = touchY - centerY;
-        const dist = Math.hypot(dx, dy);
-        const maxDist = 35;
-
-        let knobX = dx;
-        let knobY = dy;
-        if(dist > maxDist) {
-            knobX = (dx / dist) * maxDist;
-            knobY = (dy / dist) * maxDist;
-        }
-
-        joyKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
-        player.targetAngle = Math.atan2(dy, dx);
-    }
-
-    joyZone.addEventListener('touchstart', (e) => { joyActive = true; handleJoyMove(e); });
-    joyZone.addEventListener('touchmove', handleJoyMove);
-    joyZone.addEventListener('touchend', () => { joyActive = false; joyKnob.style.transform = 'translate(0px, 0px)'; });
-    joyZone.addEventListener('mousedown', (e) => { joyActive = true; handleJoyMove(e); });
-    window.addEventListener('mousemove', handleJoyMove);
-    window.addEventListener('mouseup', () => { joyActive = false; joyKnob.style.transform = 'translate(0px, 0px)'; });
 
     function startGame() {
         document.getElementById('menu-overlay').style.display = 'none';
@@ -305,28 +203,42 @@
         gameLoop();
     }
 
+    function saveStats() {
+        localStorage.setItem('dodio_coins', coins.toString());
+        if(score > highScore) {
+            localStorage.setItem('dodio_highscore', score.toString());
+        }
+    }
+
     function initGame() {
+        score = 0;
+        document.getElementById('scoreVal').innerText = score;
+        
         player.alive = true;
         player.x = MAP_SIZE/2; player.y = MAP_SIZE/2;
+        player.sizeRadius = 16;
         player.body = [];
-        player.thickness = 11;
         for(let i=0; i<30; i++) player.body.push({x: player.x - i*6, y: player.y});
 
+        // 10 Aggressive Smart Bots
         bots = [];
         for(let i=0; i<10; i++) spawnBot(i);
 
+        // Fruits
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
         for(let i=0; i<3500; i++) {
             fruits.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, type: fTypes[Math.floor(Math.random()*fTypes.length)] });
         }
 
+        // Coins
         coinItems = [];
         for(let i=0; i<200; i++) coinItems.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE });
 
+        // Power-ups
         powerups = [];
-        const pTypes = ['🧲', '🚀', '☸️', '🎯'];
-        for(let i=0; i<200; i++) {
+        const pTypes = ['🧲', '⚡2X', '⚡4X', '⚡6X', '⚡10X', '🚀', '📷'];
+        for(let i=0; i<220; i++) {
             powerups.push({ x: Math.random() * MAP_SIZE, y: Math.random() * MAP_SIZE, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
     }
@@ -336,114 +248,152 @@
         let by = Math.random() * (MAP_SIZE - 2000) + 1000;
         let body = [];
         for(let j=0; j<25; j++) body.push({x: bx - j*6, y: by});
-        const botNames = ['Pro_Snake', 'Viper_X', 'Anaconda_CN', 'Shadow_99', 'Kurd_King', 'Hunter', 'Toxic_Bite', 'Speedy', 'Alpha_Bot', 'Slayer'];
-        bots[id] = { id, name: botNames[id] || 'Bot_'+id, x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: Math.floor(Math.random()*600+100), alive: true };
+        const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X'];
+        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: Math.floor(Math.random()*300+50), alive: true, circleAngle: 0, sizeRadius: 14 };
+    }
+
+    // Touch Boost Controls
+    const boostBtn = document.getElementById('boost-btn');
+    boostBtn.addEventListener('touchstart', () => speedBoost = true);
+    boostBtn.addEventListener('touchend', () => speedBoost = false);
+    boostBtn.addEventListener('mousedown', () => speedBoost = true);
+    boostBtn.addEventListener('mouseup', () => speedBoost = false);
+
+    function handlePointer(e) {
+        if(!gameRunning || !player.alive) return;
+        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        player.targetAngle = Math.atan2(cy - canvas.height/2, cx - canvas.width/2);
+    }
+    window.addEventListener('touchmove', handlePointer);
+    window.addEventListener('mousemove', handlePointer);
+
+    function drawAnacondaHead(p, angle, mainColor, radius) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
+        
+        // Anaconda Head Outer
+        ctx.fillStyle = mainColor;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, radius * 1.5, radius * 1.1, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(radius*0.5, -radius*0.4, radius*0.25, 0, Math.PI * 2);
+        ctx.arc(radius*0.5, radius*0.4, radius*0.25, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(radius*0.6, -radius*0.4, radius*0.12, 0, Math.PI * 2);
+        ctx.arc(radius*0.6, radius*0.4, radius*0.12, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Forked Tongue
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(radius*1.5, 0); ctx.lineTo(radius*2.2, 0);
+        ctx.lineTo(radius*2.5, -4); ctx.moveTo(radius*2.2, 0); ctx.lineTo(radius*2.5, 4);
+        ctx.stroke();
+
+        // 4 RED MAGNET LINES IN FRONT OF HEAD
+        if(isMagnetActive) {
+            ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2.5;
+            for(let i = -1.5; i <= 1.5; i += 1) {
+                ctx.beginPath();
+                ctx.moveTo(radius*1.8, i * 6);
+                ctx.lineTo(radius*3.2, i * 10);
+                ctx.stroke();
+            }
+        }
+
+        ctx.restore();
     }
 
     function updateLeaderboard() {
-        let list = [{ name: document.getElementById('playerName').value || "Player", score: score }];
+        let list = [{ name: document.getElementById('playerName').value || "You (Player)", score: score }];
         bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score }); });
         list.sort((a, b) => b.score - a.score);
 
         let html = "";
         list.slice(0, 10).forEach((item, idx) => {
-            let isPlayer = item.name === (document.getElementById('playerName').value || "Player");
+            let isPlayer = item.name.includes("Player");
             html += `<div style="color:${isPlayer ? '#2ecc71' : '#fff'}; font-weight:${isPlayer ? 'bold' : 'normal'}">${idx+1}. ${item.name} - ${item.score}</div>`;
         });
         document.getElementById('topList').innerHTML = html;
     }
 
-    function drawAnacondaHead(p, angle, mainColor, sizeRadius) {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(angle);
-        
-        ctx.fillStyle = mainColor;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, sizeRadius * 1.5, sizeRadius * 1.2, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.2; ctx.stroke();
-
-        ctx.fillStyle = '#fff';
-        ctx.beginPath();
-        ctx.arc(sizeRadius * 0.5, -sizeRadius * 0.4, sizeRadius * 0.25, 0, Math.PI * 2);
-        ctx.arc(sizeRadius * 0.5, sizeRadius * 0.4, sizeRadius * 0.25, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#000';
-        ctx.beginPath();
-        ctx.arc(sizeRadius * 0.6, -sizeRadius * 0.4, sizeRadius * 0.12, 0, Math.PI * 2);
-        ctx.arc(sizeRadius * 0.6, sizeRadius * 0.4, sizeRadius * 0.12, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(sizeRadius * 1.5, 0); ctx.lineTo(sizeRadius * 2.2, 0);
-        ctx.lineTo(sizeRadius * 2.5, -3); ctx.moveTo(sizeRadius * 2.2, 0); ctx.lineTo(sizeRadius * 2.5, 3);
-        ctx.stroke();
-
-        ctx.restore();
-    }
-
     function gameLoop() {
         if(!gameRunning) return;
-
-        let now = Date.now();
-        deadRemains = deadRemains.filter(r => now - r.spawnTime < 20000);
 
         if(player.alive) {
             let diff = player.targetAngle - player.angle;
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
-            player.angle += diff * turnAgility;
+            player.angle += diff * 0.14;
 
-            let currentSpeed = 3.8;
+            // Base Speed + Boost
+            let currentSpeed = speedBoost ? 7.8 : 4.8;
             player.x += Math.cos(player.angle) * currentSpeed;
             player.y += Math.sin(player.angle) * currentSpeed;
             player.body.unshift({x: player.x, y: player.y});
             player.body.pop();
 
-            player.thickness = Math.min(18, 11 + Math.floor(player.body.length / 25));
-
+            // Red Zone Death
             if(player.x <= 20 || player.x >= MAP_SIZE - 20 || player.y <= 20 || player.y >= MAP_SIZE - 20) {
                 player.alive = false;
-                alert("Game Over! You hit the Red Zone border!");
-                returnToMenu();
-                return;
+                saveStats();
+                alert("Game Over! You hit the Red Zone!");
+                location.reload();
             }
 
-            // Magnet Attraction (Pulling everything)
+            // Player Crashes into Bots
+            bots.forEach(b => {
+                if(!b.alive) return;
+                b.body.forEach((seg, idx) => {
+                    if(idx > 2 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + 2) {
+                        player.alive = false;
+                        saveStats();
+                        alert("Game Over! You crashed into a bot!");
+                        location.reload();
+                    }
+                });
+            });
+
+            // MAGNET ATTRACTS ALL ITEMS
             if(isMagnetActive) {
-                fruits.forEach(f => {
-                    if(Math.hypot(player.x - f.x, player.y - f.y) < 400) {
-                        f.x += (player.x - f.x) * 0.15;
-                        f.y += (player.y - f.y) * 0.15;
-                    }
-                });
-                coinItems.forEach(c => {
-                    if(Math.hypot(player.x - c.x, player.y - c.y) < 400) {
-                        c.x += (player.x - c.x) * 0.15;
-                        c.y += (player.y - c.y) * 0.15;
-                    }
+                [fruits, coinItems, powerups].forEach(group => {
+                    group.forEach(item => {
+                        let d = Math.hypot(player.x - item.x, player.y - item.y);
+                        if(d < 350) {
+                            item.x += (player.x - item.x) * 0.12;
+                            item.y += (player.y - item.y) * 0.12;
+                        }
+                    });
                 });
             }
 
-            // Eat Fruits (Fixed Collision distance)
+            // Eat Fruits
             fruits.forEach((f, i) => {
-                if(Math.hypot(player.x - f.x, player.y - f.y) < player.thickness + 20) {
-                    score += 5;
+                if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 10) {
+                    score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     fruits[i].x = Math.random() * MAP_SIZE;
                     fruits[i].y = Math.random() * MAP_SIZE;
                     player.body.push({...player.body[player.body.length-1]});
+                    if(player.body.length % 20 === 0) player.sizeRadius += 0.5;
                 }
             });
 
             // Eat Coins
             coinItems.forEach((c, i) => {
-                if(Math.hypot(player.x - c.x, player.y - c.y) < player.thickness + 18) {
+                if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 8) {
                     coins += 1;
                     document.getElementById('coinVal').innerText = `🪙 ${coins}`;
+                    saveStats();
                     coinItems[i].x = Math.random() * MAP_SIZE;
                     coinItems[i].y = Math.random() * MAP_SIZE;
                 }
@@ -451,25 +401,68 @@
 
             // Eat Power-ups
             powerups.forEach((p, i) => {
-                if(Math.hypot(player.x - p.x, player.y - p.y) < player.thickness + 22) {
+                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 10) {
                     if(p.icon === '🧲') {
                         isMagnetActive = true;
-                        setTimeout(() => isMagnetActive = false, 15000);
+                        if(magnetTimer) clearTimeout(magnetTimer);
+                        magnetTimer = setTimeout(() => isMagnetActive = false, 15000);
                     }
+                    if(p.icon.includes('2X')) currentMultiplier = 2;
+                    if(p.icon.includes('4X')) currentMultiplier = 4;
+                    if(p.icon.includes('6X')) currentMultiplier = 6;
+                    if(p.icon.includes('10X')) currentMultiplier = 10;
+                    if(p.icon === '📷') cameraScale = 0.42; // Sniper scope zoom out
+
+                    let badge = document.getElementById('multiplier-badge');
+                    badge.innerText = `Active Power: ${p.icon}`;
+                    badge.style.display = 'block';
+
                     powerups[i].x = Math.random() * MAP_SIZE;
                     powerups[i].y = Math.random() * MAP_SIZE;
                 }
             });
         }
 
+        // AGGRESSIVE BOTS + AUTO RESPAWN + GROWING
         bots.forEach(b => {
             if(!b.alive) return;
-            b.x += Math.cos(b.angle) * 3.4;
-            b.y += Math.sin(b.angle) * 3.4;
+
+            // Bots eat fruits & grow
+            fruits.forEach((f, fi) => {
+                if(Math.hypot(b.x - f.x, b.y - f.y) < b.sizeRadius + 8) {
+                    b.score += 5;
+                    fruits[fi].x = Math.random() * MAP_SIZE;
+                    fruits[fi].y = Math.random() * MAP_SIZE;
+                    b.body.push({...b.body[b.body.length-1]});
+                    if(b.body.length % 20 === 0) b.sizeRadius += 0.4;
+                }
+            });
+
+            let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
+            if(distToPlayer < 850 && player.alive) {
+                b.circleAngle += 0.05;
+                let targetX = player.x + Math.cos(b.circleAngle) * 170;
+                let targetY = player.y + Math.sin(b.circleAngle) * 170;
+                b.angle = Math.atan2(targetY - b.y, targetX - b.x);
+            } else {
+                b.angle += (Math.random() - 0.5) * 0.12;
+            }
+
+            b.x += Math.cos(b.angle) * 4.2;
+            b.y += Math.sin(b.angle) * 4.2;
             b.body.unshift({x: b.x, y: b.y});
             b.body.pop();
+
+            // Bot Dies if hits player -> Auto Respawn!
+            player.body.forEach((pSeg, idx) => {
+                if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius + 2) {
+                    b.alive = false;
+                    setTimeout(() => spawnBot(b.id), 3000); // Respawns in 3s
+                }
+            });
         });
 
+        // CAMERA TRANSFORM
         const camX = canvas.width / 2 - player.x * cameraScale;
         const camY = canvas.height / 2 - player.y * cameraScale;
 
@@ -480,6 +473,7 @@
         ctx.translate(camX, camY);
         ctx.scale(cameraScale, cameraScale);
 
+        // GRID LINES
         ctx.strokeStyle = '#18202d'; ctx.lineWidth = 2;
         for(let x = 0; x < MAP_SIZE; x += 150) {
             ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, MAP_SIZE); ctx.stroke();
@@ -488,44 +482,67 @@
             ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(MAP_SIZE, y); ctx.stroke();
         }
 
+        // RED ZONE BORDER
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 20;
         ctx.strokeRect(0, 0, MAP_SIZE, MAP_SIZE);
 
-        // Larger Fruits (34px)
-        fruits.forEach(f => { ctx.font = "34px Arial"; ctx.fillText(f.type, f.x, f.y); });
-        coinItems.forEach(c => { ctx.font = "30px Arial"; ctx.fillText("🪙", c.x, c.y); });
-        powerups.forEach(p => { ctx.font = "bold 38px Arial"; ctx.fillText(p.icon, p.x, p.y); });
+        // GARAGES
+        garages.forEach(g => {
+            ctx.fillStyle = '#2ecc71';
+            ctx.fillRect(g.x - 120, g.y - 120, 240, 240);
+            ctx.fillStyle = '#fff'; ctx.font = "bold 22px Arial";
+            ctx.fillText("GARAGE 🚗", g.x - 60, g.y + 8);
+        });
 
+        // Draw Fruits & Coins
+        fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
+        coinItems.forEach(c => { ctx.font = "20px Arial"; ctx.fillText("🪙", c.x, c.y); });
+
+        // Draw Power-ups
+        powerups.forEach(p => {
+            ctx.shadowColor = "#f1c40f"; ctx.shadowBlur = 12;
+            ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y);
+            ctx.shadowBlur = 0;
+        });
+
+        // Draw Player Snake
         if(player.alive) {
             player.body.forEach((p, i) => {
                 if(i === 0) {
-                    drawAnacondaHead(p, player.angle, '#00A859', player.thickness);
+                    drawAnacondaHead(p, player.angle, '#00A859', player.sizeRadius);
                 } else {
                     ctx.fillStyle = i % 2 === 0 ? '#00A859' : '#ffffff';
-                    ctx.beginPath(); ctx.arc(p.x, p.y, player.thickness, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(p.x, p.y, player.sizeRadius * 0.7, 0, Math.PI*2); ctx.fill();
                 }
             });
         }
 
+        // Draw Bots
         bots.forEach(b => {
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
                 if(j === 0) {
-                    drawAnacondaHead(bp, b.angle, '#e74c3c', 10);
+                    drawAnacondaHead(bp, b.angle, '#e74c3c', b.sizeRadius);
                 } else {
                     ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#f39c12';
-                    ctx.beginPath(); ctx.arc(bp.x, bp.y, 9, 0, Math.PI*2); ctx.fill();
+                    ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.65, 0, Math.PI*2); ctx.fill();
                 }
             });
         });
 
         ctx.restore();
 
+        // Update Radar
         radarCtx.clearRect(0, 0, 75, 75);
         if(player.alive) {
             radarCtx.fillStyle = '#2ecc71'; radarCtx.beginPath();
             radarCtx.arc((player.x/MAP_SIZE)*75, (player.y/MAP_SIZE)*75, 3.5, 0, Math.PI*2); radarCtx.fill();
         }
+        bots.forEach(b => {
+            if(!b.alive) return;
+            radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
+            radarCtx.arc((b.x/MAP_SIZE)*75, (b.y/MAP_SIZE)*75, 2, 0, Math.PI*2); radarCtx.fill();
+        });
 
         updateLeaderboard();
         requestAnimationFrame(gameLoop);
