@@ -581,54 +581,122 @@
         container.innerHTML = html;
     }
 
-    // ---- سەری مارێکی جوان و نەرم (کۆبرا/ئەژدیها) ----
+    // ---- سەری ماری کوبرای سەرەکی لەسەر ستایلی وێنە نوێیەکە ----
     function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
-        
-        // بەشی ئەستوورەکەی پشتەوەی سەر (نەرم)
-        ctx.fillStyle = mainColor; 
-        ctx.beginPath(); 
-        ctx.ellipse(radius * 0.2, 0, radius * 0.9, radius * 0.8, 0, 0, Math.PI * 2); 
-        ctx.fill();
-        
-        // شێوەی سەر (تیژ وەک کۆبرا)
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
+
+        // 1. گەشە و سێبەری سەر لەگەڵ تریفەی ئاڵتونی
+        ctx.shadowColor = '#d4af37';
+        ctx.shadowBlur = 12;
+
+        // 2. بەشی پشتەوەی سەری کوبرا (کەپشۆن/تاجی تەنیشتەکان)
+        ctx.fillStyle = '#b8860b'; // ئاڵتونی تاریک
         ctx.beginPath();
-        ctx.moveTo(radius * 1.6, 0);          // لوت
-        ctx.lineTo(radius * 0.5, -radius * 1.3); // سەرەوەی چەپ
-        ctx.lineTo(-radius * 0.9, -radius * 0.9); // پشتەوەی سەرەوە
-        ctx.lineTo(-radius * 0.9, radius * 0.9);  // پشتەوەی خوارەوە
-        ctx.lineTo(radius * 0.5, radius * 1.3);  // خوارەوەی چەپ
-        ctx.closePath(); 
+        ctx.moveTo(radius * 1.8, 0);
+        ctx.quadraticCurveTo(radius * 0.8, -radius * 1.9, -radius * 1.2, -radius * 1.6);
+        ctx.quadraticCurveTo(-radius * 0.8, 0, -radius * 1.2, radius * 1.6);
+        ctx.quadraticCurveTo(radius * 0.8, radius * 1.9, radius * 1.8, 0);
+        ctx.closePath();
         ctx.fill();
-        
-        // هێڵی دەوروبەر بۆ ڕوونی
-        ctx.strokeStyle = 'rgba(255,255,255,0.7)'; 
-        ctx.lineWidth = 2.5; 
+
+        // 3. دروستکردنی شێوەی سەرەکی زێڕین و سووری سەر (Pentagon Cobra Shape)
+        let headGrad = ctx.createLinearGradient(-radius, 0, radius * 1.8, 0);
+        headGrad.addColorStop(0, '#8b0000'); // سووری تێۆخ
+        headGrad.addColorStop(0.5, mainColor || '#e74c3c');
+        headGrad.addColorStop(1, '#ffd700'); // ئاڵتونی برەق
+
+        ctx.fillStyle = headGrad;
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3.5;
+
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.8, 0);            // لوت
+        ctx.lineTo(radius * 0.7, -radius * 1.35); // چەپی لوت
+        ctx.lineTo(-radius * 0.9, -radius * 1.1); // شانی چەپ
+        ctx.lineTo(-radius * 0.6, 0);            // ناوەڕاستی پشتەوە
+        ctx.lineTo(-radius * 0.9, radius * 1.1);  // شانی ڕاست
+        ctx.lineTo(radius * 0.7, radius * 1.35);  // ڕاستی لوت
+        ctx.closePath();
+        ctx.fill();
         ctx.stroke();
 
-        // چاوەکان (زەرد)
-        ctx.fillStyle = '#f1c40f'; 
-        ctx.beginPath(); 
-        ctx.ellipse(radius * 0.75, -radius * 0.3, radius * 0.3, radius * 0.15, 0.1, 0, Math.PI * 2); 
-        ctx.fill();
-        ctx.beginPath(); 
-        ctx.ellipse(radius * 0.75, radius * 0.3, radius * 0.3, radius * 0.15, -0.1, 0, Math.PI * 2); 
-        ctx.fill();
+        ctx.shadowBlur = 0; // لادانی سێبەرەکە بۆ وردەکاریەکان
+
+        // 4. نەقشی ئاڵتونی و نەقشکاری ناو سەری کوبراکە
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)';
+        ctx.lineWidth = 2.5;
         
-        // بڕبڕە (ڕەش)
-        ctx.fillStyle = '#000'; 
-        ctx.beginPath(); 
-        ctx.arc(radius * 0.8, -radius * 0.3, radius * 0.08, 0, Math.PI * 2); 
+        // نەقشی چەپ
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, -radius * 0.2);
+        ctx.quadraticCurveTo(radius * 0.3, -radius * 0.9, -radius * 0.4, -radius * 0.6);
+        ctx.stroke();
+
+        // نەقشی ڕاست
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, radius * 0.2);
+        ctx.quadraticCurveTo(radius * 0.3, radius * 0.9, -radius * 0.4, radius * 0.6);
+        ctx.stroke();
+
+        // کریستاڵی ناوەڕاستی سەر
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.3, 0);
+        ctx.lineTo(radius * 0.6, -radius * 0.25);
+        ctx.lineTo(radius * 0.9, 0);
+        ctx.lineTo(radius * 0.6, radius * 0.25);
+        ctx.closePath();
         ctx.fill();
-        ctx.beginPath(); 
-        ctx.arc(radius * 0.8, radius * 0.3, radius * 0.08, 0, Math.PI * 2); 
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // 5. چاوە سوورە گەشەکان (Red Glowing Eyes)
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#ff1100';
+
+        // چاوی چەپ
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.85, -radius * 0.45, radius * 0.35, radius * 0.18, 0.2, 0, Math.PI * 2);
         ctx.fill();
 
-        // کێشانی ئاڵا لەسەر سەر (بە شەفافیەت)
+        // چاوی ڕاست
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.85, radius * 0.45, radius * 0.35, radius * 0.18, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 6. بڕبڕەی ڕەشی ناو چاوەکان (pupils)
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.9, -radius * 0.45, radius * 0.1, radius * 0.16, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.9, radius * 0.45, radius * 0.1, radius * 0.16, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 7. ددانەکانی کوبراکە (Fangs)
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.7, -radius * 0.2);
+        ctx.lineTo(radius * 2.0, -radius * 0.15);
+        ctx.lineTo(radius * 1.6, 0);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.7, radius * 0.2);
+        ctx.lineTo(radius * 2.0, radius * 0.15);
+        ctx.lineTo(radius * 1.6, 0);
+        ctx.fill();
+
+        // ئاڵا ئەگەر هەبێت
         if(flagKey && loadedFlagImages[flagKey]) {
             try {
-                ctx.globalAlpha = 0.6;
-                ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.5, -radius * 1.0, radius * 1.5, radius * 1.2);
+                ctx.globalAlpha = 0.5;
+                ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.4, -radius * 0.6, radius * 1.0, radius * 1.2);
                 ctx.globalAlpha = 1.0;
             } catch(e){}
         }
@@ -639,7 +707,7 @@
             ctx.fillText(activeEmojiText, 0, -radius * 2.2);
         }
 
-        // هەڵبژاردنی موگناتیسی (بۆ جوانی)
+        // شوێنپێی موگناتیسی
         if(isMagnetActive) {
             let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
             ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
@@ -933,7 +1001,7 @@
                     } catch(e){}
                 }
             }
-            // کێشانی سەر
+            // کێشانی سەر بە دیزاینە نوێیەکە
             drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, skinObj.flagKey);
         }
 
