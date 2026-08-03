@@ -278,8 +278,8 @@
 
     const MAP_RADIUS = 18000;
     const MAP_CENTER = 20000;
-    let cameraScale = 0.50;
-    let baseCameraScale = 0.50;
+    let cameraScale = 0.25;
+    let baseCameraScale = 0.25;
     let gameRunning = false;
     let controlType = 'touch';
     let activeShopTab = 'free';
@@ -567,7 +567,7 @@
     }
 
     function initGame() {
-        score = 0; currentMultiplier = 1; cameraScale = 0.50; baseCameraScale = 0.50; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
+        score = 0; currentMultiplier = 1; cameraScale = 0.25; baseCameraScale = 0.25; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
         document.getElementById('scoreVal').innerText = score;
         document.getElementById('boost-btn').style.display = 'none';
         
@@ -580,7 +580,7 @@
 
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<9000; i++) {
+        for(let i=0; i<18000; i++) {
             let pos = getRandomMapPos();
             fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
         }
@@ -779,9 +779,9 @@
         let isGarageRented = Date.now() < garageRentEndTime;
 
         if(player.alive) {
-            /* Dynamic Camera Zoom Out as Snake Grows */
-            baseCameraScale = Math.max(0.18, 0.50 - (player.sizeRadius - 28) * 0.004);
-            cameraScale = isSniperActive ? 0.30 : baseCameraScale;
+            /* Dynamic Extra Zoom Out as Snake Grows */
+            baseCameraScale = Math.max(0.12, 0.25 - (player.sizeRadius - 28) * 0.002);
+            cameraScale = isSniperActive ? 0.18 : baseCameraScale;
 
             let inAnyGarage = false;
             garages.forEach(g => {
