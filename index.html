@@ -1,35 +1,144 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>dod.io</title>
+    <!-- لۆگۆی فەرمی ماری ئالتوونی -->
+    <link rel="icon" type="image/png" href="https://i.ibb.co/3s719wZ/8909.png">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; touch-action: none; }
-        html, body { width: 100vw; height: 100vh; background-color: #0b0d12; color: #fff; font-family: Arial, sans-serif; overflow: hidden; }
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        html, body {
+            width: 100vw; height: 100vh;
+            background-color: #0b0d12;
+            color: #fff; font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
-        #radar-wrapper { position: absolute; top: 8px; left: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; z-index: 5; }
-        #radar-canvas { width: 65px; height: 65px; background: rgba(0, 0, 0, 0.85); border: 1.5px solid #2ecc71; border-radius: 50%; }
-        #hud-stats { background: rgba(0,0,0,0.75); padding: 3px 6px; border-radius: 6px; border: 1px solid #2ecc71; font-size: 9px; text-align: left; width: 65px; }
-        #emoji-reaction-box { display: flex; flex-direction: row; gap: 4px; margin-top: 2px; }
-        .reaction-btn { width: 28px; height: 28px; background: rgba(0,0,0,0.8); border: 1px solid #f1c40f; border-radius: 50%; font-size: 14px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,0.5); }
-        #left-bottom-container { position: absolute; bottom: 12px; left: 12px; display: flex; flex-direction: column; gap: 4px; z-index: 10; }
-        #ingame-garage-btn { background: rgba(243, 156, 18, 0.9); border: 1px solid #fff; color: #fff; padding: 5px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; width: 75px; }
-        #exit-btn { background: #e74c3c; color: #fff; font-weight: bold; border: 1px solid #fff; padding: 5px 8px; border-radius: 8px; font-size: 10px; cursor: pointer; text-align: center; width: 75px; }
-        #joystick-zone { position: absolute; width: 70px; height: 70px; background: rgba(255, 255, 255, 0.15); border: 1.5px solid rgba(46, 204, 113, 0.8); border-radius: 50%; z-index: 10; display: none; pointer-events: none; transform: translate(-50%, -50%); }
-        #joystick-knob { position: absolute; top: 18px; left: 18px; width: 34px; height: 34px; background: #2ecc71; border-radius: 50%; box-shadow: 0 0 6px #2ecc71; pointer-events: none; }
-        #btn-controls { position: absolute; bottom: 20px; right: 20px; display: none; grid-template-columns: repeat(3, 36px); grid-template-rows: repeat(3, 36px); gap: 4px; z-index: 10; }
-        .ctrl-btn { background: rgba(46, 204, 113, 0.75); border: 1px solid #fff; color: #fff; font-weight: bold; border-radius: 6px; font-size: 13px; }
-        #red-zone-alert { position: absolute; top: 15%; left: 50%; transform: translate(-50%, -50%); color: #e74c3c; font-size: 13px; font-weight: bold; background: rgba(0,0,0,0.85); padding: 4px 10px; border-radius: 6px; border: 1.5px solid #e74c3c; display: none; z-index: 8; animation: blinker 0.5s linear infinite; }
-        #garage-safe-status { position: absolute; top: 12%; left: 50%; transform: translate(-50%, -50%); color: #2ecc71; font-size: 13px; font-weight: bold; background: rgba(0,0,0,0.92); padding: 8px 14px; border-radius: 10px; border: 2px solid #2ecc71; display: none; z-index: 8; text-align: center; }
-        #exit-garage-btn { background: #e74c3c; color: #fff; font-size: 11px; font-weight: bold; padding: 5px 12px; border-radius: 6px; border: 1px solid #fff; cursor: pointer; margin-top: 5px; display: inline-block; }
-        #leaderboard-box { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.85); padding: 5px 8px; border-radius: 6px; border: 1px solid #f1c40f; font-size: 8px; z-index: 5; min-width: 110px; pointer-events: none; }
-        #active-powers-container { position: absolute; top: 175px; left: 8px; display: flex; flex-direction: column; gap: 3px; z-index: 5; }
-        .power-badge { background: rgba(241, 196, 15, 0.95); color: #111; padding: 3px 6px; border-radius: 6px; font-weight: bold; font-size: 9px; box-shadow: 0 0 4px #f1c40f; width: fit-content; }
-        #boost-btn { position: absolute; bottom: 20px; right: 20px; width: 60px; height: 60px; background: rgba(231, 76, 60, 0.95); border: 2px solid #fff; border-radius: 50%; color: #fff; font-weight: bold; font-size: 11px; z-index: 10; display: none; justify-content: center; align-items: center; box-shadow: 0 0 10px #e74c3c; cursor: pointer; }
-        #menu-overlay, #shop-modal, #exit-modal, #settings-modal { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 12, 16, 0.96); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; }
+        /* HUD Top Left */
+        #radar-wrapper {
+            position: absolute; top: 8px; left: 8px;
+            display: flex; flex-direction: column; align-items: flex-start;
+            gap: 4px; z-index: 5;
+        }
+        #radar-canvas {
+            width: 65px; height: 65px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1.5px solid #2ecc71; border-radius: 50%;
+        }
+        #hud-stats {
+            background: rgba(0,0,0,0.75); padding: 3px 6px;
+            border-radius: 6px; border: 1px solid #2ecc71;
+            font-size: 9px; text-align: left; width: 65px;
+        }
+
+        #emoji-reaction-box {
+            display: flex; flex-direction: row; gap: 4px; margin-top: 2px;
+        }
+        .reaction-btn {
+            width: 28px; height: 28px; background: rgba(0,0,0,0.8);
+            border: 1px solid #f1c40f; border-radius: 50%; font-size: 14px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,0.5);
+        }
+
+        #left-bottom-container {
+            position: absolute; bottom: 12px; left: 12px;
+            display: flex; flex-direction: column; gap: 4px; z-index: 10;
+        }
+        #ingame-garage-btn {
+            background: rgba(243, 156, 18, 0.9); border: 1px solid #fff;
+            color: #fff; padding: 5px 8px; border-radius: 8px;
+            font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
+        }
+        #exit-btn {
+            background: #e74c3c; color: #fff; font-weight: bold;
+            border: 1px solid #fff; padding: 5px 8px; border-radius: 8px;
+            font-size: 10px; cursor: pointer; text-align: center; width: 75px;
+        }
+
+        #joystick-zone {
+            position: absolute; width: 70px; height: 70px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1.5px solid rgba(46, 204, 113, 0.8);
+            border-radius: 50%; z-index: 10; display: none;
+            pointer-events: none; transform: translate(-50%, -50%);
+        }
+        #joystick-knob {
+            position: absolute; top: 18px; left: 18px;
+            width: 34px; height: 34px;
+            background: #2ecc71; border-radius: 50%;
+            box-shadow: 0 0 6px #2ecc71; pointer-events: none;
+        }
+
+        #btn-controls {
+            position: absolute; bottom: 20px; right: 20px;
+            display: none; grid-template-columns: repeat(3, 36px);
+            grid-template-rows: repeat(3, 36px); gap: 4px; z-index: 10;
+        }
+        .ctrl-btn {
+            background: rgba(46, 204, 113, 0.75); border: 1px solid #fff;
+            color: #fff; font-weight: bold; border-radius: 6px; font-size: 13px;
+        }
+
+        #red-zone-alert {
+            position: absolute; top: 15%; left: 50%; transform: translate(-50%, -50%);
+            color: #e74c3c; font-size: 13px; font-weight: bold;
+            background: rgba(0,0,0,0.85); padding: 4px 10px; border-radius: 6px;
+            border: 1.5px solid #e74c3c; display: none; z-index: 8;
+            animation: blinker 0.5s linear infinite;
+        }
+
+        #garage-safe-status {
+            position: absolute; top: 12%; left: 50%; transform: translate(-50%, -50%);
+            color: #2ecc71; font-size: 13px; font-weight: bold;
+            background: rgba(0,0,0,0.92); padding: 8px 14px; border-radius: 10px;
+            border: 2px solid #2ecc71; display: none; z-index: 8; text-align: center;
+        }
+        #exit-garage-btn {
+            background: #e74c3c; color: #fff; font-size: 11px; font-weight: bold;
+            padding: 5px 12px; border-radius: 6px; border: 1px solid #fff;
+            cursor: pointer; margin-top: 5px; display: inline-block;
+        }
+
+        #leaderboard-box {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,0.85); padding: 5px 8px;
+            border-radius: 6px; border: 1px solid #f1c40f;
+            font-size: 8px; z-index: 5; min-width: 110px; pointer-events: none;
+        }
+
+        #active-powers-container {
+            position: absolute; top: 175px; left: 8px;
+            display: flex; flex-direction: column; gap: 3px; z-index: 5;
+        }
+        .power-badge {
+            background: rgba(241, 196, 15, 0.95); color: #111;
+            padding: 3px 6px; border-radius: 6px; font-weight: bold;
+            font-size: 9px; box-shadow: 0 0 4px #f1c40f; width: fit-content;
+        }
+
+        #boost-btn {
+            position: absolute; bottom: 20px; right: 20px;
+            width: 60px; height: 60px; background: rgba(231, 76, 60, 0.95);
+            border: 2px solid #fff; border-radius: 50%;
+            color: #fff; font-weight: bold; font-size: 11px;
+            z-index: 10; display: none; justify-content: center; align-items: center;
+            box-shadow: 0 0 10px #e74c3c; cursor: pointer;
+        }
+
+        #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(10, 12, 16, 0.96); display: flex;
+            flex-direction: column; justify-content: center; align-items: center; z-index: 20;
+        }
         #shop-modal, #exit-modal, #settings-modal { display: none; z-index: 30; }
 
         h1 { font-size: 32px; color: #2ecc71; margin-bottom: 2px; }
@@ -44,8 +153,15 @@
         .shop-tabs { display: flex; gap: 4px; width: 90%; max-width: 320px; margin-bottom: 6px; }
         .shop-tab-btn { flex: 1; padding: 5px; background: #181c24; color: #888; border: 1px solid #333; border-radius: 6px; font-weight: bold; font-size: 10px; cursor: pointer; }
         .shop-tab-btn.active { background: #f39c12; color: #fff; border-color: #f39c12; }
-        .shop-list { display: flex; flex-direction: column; gap: 5px; height: 48vh; overflow-y: auto; width: 90%; max-width: 320px; padding: 4px; -webkit-overflow-scrolling: touch; }
-        .shop-item { display: flex; justify-content: space-between; align-items: center; background: #181c24; padding: 8px 10px; border-radius: 6px; border: 1px solid #333; font-size: 11px; }
+        .shop-list {
+            display: flex; flex-direction: column; gap: 5px;
+            height: 48vh; overflow-y: auto; width: 90%; max-width: 320px;
+            padding: 4px; -webkit-overflow-scrolling: touch;
+        }
+        .shop-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #181c24; padding: 8px 10px; border-radius: 6px; border: 1px solid #333; font-size: 11px;
+        }
         .flag-img { width: 22px; height: 15px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
         @keyframes blinker { 50% { opacity: 0; } }
     </style>
@@ -95,8 +211,9 @@
 
 <!-- Main Menu -->
 <div id="menu-overlay">
+    <!-- لۆگۆی وێنەی مار لە مێنۆی سەرەکیدا -->
+    <img src="https://i.ibb.co/3s719wZ/8909.png" alt="dod.io Logo" style="width:75px; height:75px; border-radius:50%; border:2px solid #2ecc71; object-fit:cover; margin-bottom:4px; box-shadow:0 0 10px #2ecc71;">
     <h1>dod.io</h1>
-    <div style="font-size:24px; margin-bottom:2px;">🐍</div>
     <div style="font-size:10px; color:#f1c40f; margin-bottom:6px;">
         High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">1500</span> 🪙
     </div>
@@ -465,32 +582,24 @@
         for(let i=0; i<12; i++) spawnBot(i);
 
         fruits = [];
-        const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓', '🍊', '🍇', '🍑', '🍍', '🥝'];
-        for(let i=0; i<8000; i++) {
+        const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
+        for(let i=0; i<5000; i++) {
             let pos = getRandomMapPos();
             fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
         }
 
         coinItems = [];
-        for(let i=0; i<1000; i++) {
+        for(let i=0; i<800; i++) {
             let pos = getRandomMapPos();
             coinItems.push({ x: pos.x, y: pos.y });
         }
 
         powerups = [];
         const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2', 'x4', 'x6'];
-        for(let i=0; i<800; i++) {
+        for(let i=0; i<600; i++) {
             let pos = getRandomMapPos();
             powerups.push({ x: pos.x, y: pos.y, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
-        
-        if(window.foodSpawnInterval) clearInterval(window.foodSpawnInterval);
-        window.foodSpawnInterval = setInterval(() => {
-            for(let i=0; i<8; i++) {
-                let pos = getRandomMapPos();
-                fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
-            }
-        }, 2000);
     }
 
     function spawnBot(id) {
@@ -582,138 +691,41 @@
         container.innerHTML = html;
     }
 
-    // ---- سەری ماری کوبرای سەرەکی لەسەر ستایلی وێنە نوێیەکە ----
     function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(angle);
-
-        // 1. گەشە و سێبەری سەر لەگەڵ تریفەی ئاڵتونی
-        ctx.shadowColor = '#d4af37';
-        ctx.shadowBlur = 12;
-
-        // 2. بەشی پشتەوەی سەری کوبرا (کەپشۆن/تاجی تەنیشتەکان)
-        ctx.fillStyle = '#b8860b'; // ئاڵتونی تاریک
-        ctx.beginPath();
-        ctx.moveTo(radius * 1.8, 0);
-        ctx.quadraticCurveTo(radius * 0.8, -radius * 1.9, -radius * 1.2, -radius * 1.6);
-        ctx.quadraticCurveTo(-radius * 0.8, 0, -radius * 1.2, radius * 1.6);
-        ctx.quadraticCurveTo(radius * 0.8, radius * 1.9, radius * 1.8, 0);
-        ctx.closePath();
-        ctx.fill();
-
-        // 3. دروستکردنی شێوەی سەرەکی زێڕین و سووری سەر (Pentagon Cobra Shape)
-        let headGrad = ctx.createLinearGradient(-radius, 0, radius * 1.8, 0);
-        headGrad.addColorStop(0, '#8b0000'); // سووری تێۆخ
-        headGrad.addColorStop(0.5, mainColor || '#e74c3c');
-        headGrad.addColorStop(1, '#ffd700'); // ئاڵتونی برەق
-
-        ctx.fillStyle = headGrad;
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 3.5;
-
-        ctx.beginPath();
-        ctx.moveTo(radius * 1.8, 0);            // لوت
-        ctx.lineTo(radius * 0.7, -radius * 1.35); // چەپی لوت
-        ctx.lineTo(-radius * 0.9, -radius * 1.1); // شانی چەپ
-        ctx.lineTo(-radius * 0.6, 0);            // ناوەڕاستی پشتەوە
-        ctx.lineTo(-radius * 0.9, radius * 1.1);  // شانی ڕاست
-        ctx.lineTo(radius * 0.7, radius * 1.35);  // ڕاستی لوت
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.shadowBlur = 0; // لادانی سێبەرەکە بۆ وردەکاریەکان
-
-        // 4. نەقشی ئاڵتونی و نەقشکاری ناو سەری کوبراکە
-        ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)';
-        ctx.lineWidth = 2.5;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
         
-        // نەقشی چەپ
-        ctx.beginPath();
-        ctx.moveTo(radius * 1.2, -radius * 0.2);
-        ctx.quadraticCurveTo(radius * 0.3, -radius * 0.9, -radius * 0.4, -radius * 0.6);
-        ctx.stroke();
+        ctx.fillStyle = mainColor; ctx.beginPath();
+        ctx.moveTo(radius * 2.4, 0); 
+        ctx.lineTo(-radius * 0.4, -radius * 1.6); 
+        ctx.lineTo(-radius * 0.9, 0); 
+        ctx.lineTo(-radius * 0.4, radius * 1.6); 
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
 
-        // نەقشی ڕاست
-        ctx.beginPath();
-        ctx.moveTo(radius * 1.2, radius * 0.2);
-        ctx.quadraticCurveTo(radius * 0.3, radius * 0.9, -radius * 0.4, radius * 0.6);
-        ctx.stroke();
+        ctx.fillStyle = '#f1c40f'; ctx.beginPath();
+        ctx.ellipse(radius*0.7, -radius*0.5, radius*0.3, radius*0.16, Math.PI*0.1, 0, Math.PI * 2);
+        ctx.ellipse(radius*0.7, radius*0.5, radius*0.3, radius*0.16, -Math.PI*0.1, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.beginPath();
+        ctx.arc(radius*0.75, -radius*0.5, radius*0.09, 0, Math.PI * 2);
+        ctx.arc(radius*0.75, radius*0.5, radius*0.09, 0, Math.PI * 2); ctx.fill();
 
-        // کریستاڵی ناوەڕاستی سەر
-        ctx.fillStyle = '#2ecc71';
-        ctx.beginPath();
-        ctx.moveTo(radius * 0.3, 0);
-        ctx.lineTo(radius * 0.6, -radius * 0.25);
-        ctx.lineTo(radius * 0.9, 0);
-        ctx.lineTo(radius * 0.6, radius * 0.25);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // 5. چاوە سوورە گەشەکان (Red Glowing Eyes)
-        ctx.shadowColor = '#ff0000';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = '#ff1100';
-
-        // چاوی چەپ
-        ctx.beginPath();
-        ctx.ellipse(radius * 0.85, -radius * 0.45, radius * 0.35, radius * 0.18, 0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // چاوی ڕاست
-        ctx.beginPath();
-        ctx.ellipse(radius * 0.85, radius * 0.45, radius * 0.35, radius * 0.18, -0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 6. بڕبڕەی ڕەشی ناو چاوەکان (pupils)
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#000000';
-        ctx.beginPath();
-        ctx.ellipse(radius * 0.9, -radius * 0.45, radius * 0.1, radius * 0.16, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(radius * 0.9, radius * 0.45, radius * 0.1, radius * 0.16, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 7. ددانەکانی کوبراکە (Fangs)
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.moveTo(radius * 1.7, -radius * 0.2);
-        ctx.lineTo(radius * 2.0, -radius * 0.15);
-        ctx.lineTo(radius * 1.6, 0);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(radius * 1.7, radius * 0.2);
-        ctx.lineTo(radius * 2.0, radius * 0.15);
-        ctx.lineTo(radius * 1.6, 0);
-        ctx.fill();
-
-        // ئاڵا ئەگەر هەبێت
         if(flagKey && loadedFlagImages[flagKey]) {
             try {
-                ctx.globalAlpha = 0.5;
-                ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.4, -radius * 0.6, radius * 1.0, radius * 1.2);
-                ctx.globalAlpha = 1.0;
+                ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.2, -radius * 0.6, radius * 1.2, radius * 0.8);
             } catch(e){}
         }
 
-        // ئیمۆجی ئەگەر هەیە
         if(activeEmojiText) {
             ctx.font = `${radius * 2.2}px Arial`;
             ctx.fillText(activeEmojiText, 0, -radius * 2.2);
         }
 
-        // شوێنپێی موگناتیسی
         if(isMagnetActive) {
             let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
             ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
             ctx.lineWidth = isBlinking ? 4 : 2;
             ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = isBlinking ? 16 : 2;
+
             for(let i = -2; i <= 2; i++) {
                 ctx.beginPath();
                 ctx.arc(radius * 1.8, 0, radius * 1.5 + (i + 2) * 8, -Math.PI * 0.28, Math.PI * 0.28);
@@ -782,9 +794,6 @@
 
             if(inAnyGarage && isGarageRented && isInsideGarageSafe === false) {
                 isInsideGarageSafe = true;
-            } else if(!inAnyGarage && isInsideGarageSafe) {
-                isInsideGarageSafe = false;
-                document.getElementById('garage-safe-status').style.display = 'none';
             }
 
             if(isInsideGarageSafe) {
@@ -796,21 +805,26 @@
                 document.getElementById('garage-safe-status').style.display = 'none';
             }
 
-            // جوڵە (هەمیشە ئازادە بۆ دەرچوون لە گەراج)
-            let diff = player.targetAngle - player.angle;
-            while (diff < -Math.PI) diff += Math.PI * 2;
-            while (diff > Math.PI) diff -= Math.PI * 2;
+            if(!isInsideGarageSafe) {
+                let diff = player.targetAngle - player.angle;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
 
-            player.angle += diff * (isSteeringActive ? 12.0 : 6.0) * dt;
+                player.angle += diff * (isSteeringActive ? 12.0 : 6.0) * dt;
 
-            let moveSpeed = (manualSpeedBoost ? 380 : 210) * dt;
-            player.x += Math.cos(player.angle) * moveSpeed;
-            player.y += Math.sin(player.angle) * moveSpeed;
-            
-            player.body.unshift({x: player.x, y: player.y});
+                let moveSpeed = (manualSpeedBoost ? 380 : 210) * dt;
+                player.x += Math.cos(player.angle) * moveSpeed;
+                player.y += Math.sin(player.angle) * moveSpeed;
+                player.body.unshift({x: player.x, y: player.y});
 
-            let maxAllowedSegments = Math.min(3500, 60 + Math.floor((score * currentMultiplier) / 4));
-            while(player.body.length > maxAllowedSegments) player.body.pop();
+                let maxAllowedSegments = Math.min(3500, 60 + Math.floor((score * currentMultiplier) / 4));
+                while(player.body.length > maxAllowedSegments) player.body.pop();
+            } else {
+                for(let i=1; i<player.body.length; i++) {
+                    player.body[i].x += (player.x - player.body[i].x) * 4.0 * dt;
+                    player.body[i].y += (player.y - player.body[i].y) * 4.0 * dt;
+                }
+            }
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
             if(distFromCenter >= MAP_RADIUS - 50) {
@@ -818,7 +832,6 @@
             }
             document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 1200 ? 'block' : 'none';
 
-            // پێکدادان لەگەڵ بۆتەکان
             if(!isInsideGarageSafe) {
                 bots.forEach(b => {
                     if(!b.alive) return;
@@ -830,7 +843,7 @@
                         spawnBot(b.id);
                         score += 500 * currentMultiplier;
                         headshotTextTimer = Date.now() + 3000;
-                        playHeadshotSound(); 
+                        playHeadshotSound();
                     }
 
                     b.body.forEach((seg, idx) => {
@@ -861,9 +874,9 @@
                     f.x = pos.x; f.y = pos.y;
                     f.eatenTime = null;
                 }
-                else if(!f.eatenTime && Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 32) {
-                    score += (10 * currentMultiplier);
-                    document.getElementById('scoreVal').innerText = Math.floor(score);
+                else if(!f.eatenTime && Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
+                    score += 5 * currentMultiplier;
+                    document.getElementById('scoreVal').innerText = score;
                     f.eatenTime = Date.now();
                     f.x = -99999; f.y = -99999;
                     if(player.sizeRadius < 95) player.sizeRadius += (0.35 * currentMultiplier);
@@ -872,7 +885,7 @@
 
             coinItems.forEach((c) => {
                 if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
-                    coins += (0.5 * currentMultiplier);
+                    coins += 0.5 * currentMultiplier;
                     document.getElementById('coinVal').innerText = `🪙 ${Math.floor(coins)}`;
                     saveStats();
                     let pos = getRandomMapPos();
@@ -883,7 +896,7 @@
             deadRemains.forEach((r, i) => {
                 if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
                     score += 15 * currentMultiplier;
-                    document.getElementById('scoreVal').innerText = Math.floor(score);
+                    document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
                     if(player.sizeRadius < 95) player.sizeRadius += (0.45 * currentMultiplier);
                 }
@@ -953,7 +966,6 @@
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-        // گەراجەکان
         garages.forEach(g => {
             let half = g.size / 2;
             ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
@@ -966,47 +978,32 @@
 
             ctx.fillStyle = '#fff'; ctx.font = "bold 26px Arial"; 
             ctx.fillText(isGarageRented ? "GARAGE 🛞 (SAFE ZONE)" : "GARAGE 🔒 (RENT REQUIRED)", g.x - 140, g.y + 10);
-
-            // دیواری دەوروبەری گەراج (بەرگری لە هێرشی دەرەوە)
-            ctx.strokeStyle = 'rgba(46, 204, 113, 0.6)';
-            ctx.lineWidth = 20;
-            ctx.strokeRect(g.x - half - 60, g.y - half - 60, g.size + 120, g.size + 120);
         });
 
-        fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "bold 34px Arial"; ctx.fillText(f.type, f.x, f.y); } });
-        coinItems.forEach(c => { ctx.font = "bold 28px Arial"; ctx.fillText("🪙", c.x, c.y); });
+        fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); } });
+        coinItems.forEach(c => { ctx.font = "22px Arial"; ctx.fillText("🪙", c.x, c.y); });
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
-        powerups.forEach(p => { ctx.font = "bold 32px Arial"; ctx.fillText(p.icon, p.x, p.y); });
+        powerups.php = powerups; // safety
+        powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             
-            // کێشانی لەش و ئاڵاکان
             for(let i = player.body.length - 1; i >= 2; i--) {
                 let p = player.body[i];
                 let color = skinObj.colors[i % skinObj.colors.length];
                 ctx.fillStyle = color; ctx.beginPath();
                 ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
 
-                // زیادکردنی ئاڵا بە شێوەی بڵاو لەسەر لەش
-                if(skinObj.flagKey && loadedFlagImages[skinObj.flagKey] && i % 3 === 0) {
+                if(skinObj.flagKey && loadedFlagImages[skinObj.flagKey] && i % 4 === 0) {
                     try {
-                        ctx.globalAlpha = 0.5;
-                        ctx.drawImage(loadedFlagImages[skinObj.flagKey], 
-                            p.x - player.sizeRadius * 0.7, 
-                            p.y - player.sizeRadius * 0.5, 
-                            player.sizeRadius * 1.4, 
-                            player.sizeRadius * 1.0
-                        );
-                        ctx.globalAlpha = 1.0;
+                        ctx.drawImage(loadedFlagImages[skinObj.flagKey], p.x - player.sizeRadius * 0.6, p.y - player.sizeRadius * 0.4, player.sizeRadius * 1.2, player.sizeRadius * 0.8);
                     } catch(e){}
                 }
             }
-            // کێشانی سەر بە دیزاینە نوێیەکە
             drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, skinObj.flagKey);
         }
 
-        // کێشانی بۆتەکان
         bots.forEach(b => {
             if(!b.alive) return;
             for(let j = b.body.length - 1; j >= 2; j--) {
