@@ -53,7 +53,7 @@
             font-size: 11px; cursor: pointer; text-align: center; width: 80px;
         }
 
-        /* Dynamic Floating Joystick Zone */
+        /* Dynamic Floating Joystick */
         #joystick-zone {
             position: absolute; width: 90px; height: 90px;
             background: rgba(255, 255, 255, 0.15);
@@ -68,7 +68,7 @@
             box-shadow: 0 0 10px #2ecc71; pointer-events: none;
         }
 
-        /* 4-Direction Control Buttons */
+        /* 4-Direction Buttons */
         #btn-controls {
             position: absolute; bottom: 20px; right: 20px;
             display: none; grid-template-columns: repeat(3, 42px);
@@ -172,7 +172,7 @@
 
 <div id="boost-btn">BOOST 🚀</div>
 
-<!-- Full Main Menu -->
+<!-- Main Menu -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
     <div style="font-size:32px; margin-bottom:8px;">🐍</div>
@@ -196,7 +196,7 @@
         <label style="font-size:11px;">Control Style:</label>
         <select id="controlTypeSelect" onchange="changeControlType()" style="border:1px solid #e67e22; background:#181c24; color:#fff;">
             <option value="touch">Touch Pointer Target</option>
-            <option value="joystick">Floating Anywhere Joystick</option>
+            <option value="joystick">Floating Joystick Anywhere</option>
             <option value="buttons">4-Direction Buttons</option>
         </select>
         <button onclick="closeSettings()">Save & Back</button>
@@ -212,7 +212,7 @@
     </div>
 </div>
 
-<!-- Full Shop Modal with Free & Country Flag Skins -->
+<!-- Shop Modal -->
 <div id="shop-modal">
     <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Country Flags 🛒</h3>
     <div style="font-size:12px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
@@ -228,11 +228,12 @@
     const radarCanvas = document.getElementById('radar-canvas');
     const radarCtx = radarCanvas.getContext('2d');
 
-    const MAP_RADIUS = 6000;
-    const MAP_CENTER = 7000;
+    const MAP_RADIUS = 7000;
+    const MAP_CENTER = 8000;
     let cameraScale = 0.55;
     let gameRunning = false;
     let controlType = 'touch';
+    let lastFrameTime = performance.now();
 
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
@@ -245,13 +246,13 @@
     let activePowers = [];
     let deadRemains = [];
 
-    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 16 };
+    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 18 };
     let bots = [];
     let fruits = [];
     let coinItems = [];
     let powerups = [];
 
-    // Complete Flag Skins & Free Skins
+    // Country Flags & Skins Database
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', price: 0, colors: ['#2ecc71', '#27ae60'] },
         { id: 'free2', name: '🔵 Sky Blue', price: 0, colors: ['#3498db', '#2980b9'] },
@@ -275,11 +276,12 @@
 
     let ownedSkins = skinsDatabase.map(s => s.id);
 
+    // 4 Garages in 4 Directions
     const garages = [
-        { x: MAP_CENTER - 3200, y: MAP_CENTER - 3200 },
-        { x: MAP_CENTER + 3200, y: MAP_CENTER - 3200 },
-        { x: MAP_CENTER - 3200, y: MAP_CENTER + 3200 },
-        { x: MAP_CENTER + 3200, y: MAP_CENTER + 3200 }
+        { x: MAP_CENTER - 3800, y: MAP_CENTER - 3800 },
+        { x: MAP_CENTER + 3800, y: MAP_CENTER - 3800 },
+        { x: MAP_CENTER - 3800, y: MAP_CENTER + 3800 },
+        { x: MAP_CENTER + 3800, y: MAP_CENTER + 3800 }
     ];
 
     function resize() {
@@ -313,7 +315,6 @@
     }
 
     function setDir(x, y) { player.targetAngle = Math.atan2(y, x); }
-
     function loginFacebook() { alert("Connected with Facebook successfully! 📘"); }
     function loginGuest() { alert("Logged in as Guest / Email successfully! 👤"); }
 
@@ -336,7 +337,14 @@
     function startGame() {
         document.getElementById('menu-overlay').style.display = 'none';
         gameRunning = true; initGame();
+        lastFrameTime = performance.now();
         requestAnimationFrame(gameLoop);
+    }
+
+    function saveStats() {
+        localStorage.setItem('dodio_coins', coins.toString());
+        if(score > highScore) { highScore = score; localStorage.setItem('dodio_highscore', highScore.toString()); }
+        updateMenuStats();
     }
 
     function initGame() {
@@ -344,7 +352,7 @@
         document.getElementById('scoreVal').innerText = score;
         
         player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
-        player.sizeRadius = 16; player.body = [];
+        player.sizeRadius = 18; player.body = [];
         for(let i=0; i<30; i++) player.body.push({x: player.x - i*6, y: player.y});
 
         bots = [];
@@ -352,37 +360,37 @@
 
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<600; i++) {
+        for(let i=0; i<750; i++) {
             let angle = Math.random() * Math.PI * 2;
-            let r = Math.random() * (MAP_RADIUS - 100);
+            let r = Math.random() * (MAP_RADIUS - 150);
             fruits.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, type: fTypes[Math.floor(Math.random()*fTypes.length)] });
         }
 
         coinItems = [];
-        for(let i=0; i<100; i++) {
+        for(let i=0; i<150; i++) {
             let angle = Math.random() * Math.PI * 2;
-            let r = Math.random() * (MAP_RADIUS - 100);
+            let r = Math.random() * (MAP_RADIUS - 150);
             coinItems.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r });
         }
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🏎️', '🏎️']; // 🏎️ Steering Wheel Icon for Zoom/Steer
-        for(let i=0; i<80; i++) {
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🏎️', '🏎️'];
+        for(let i=0; i<100; i++) {
             let angle = Math.random() * Math.PI * 2;
-            let r = Math.random() * (MAP_RADIUS - 100);
+            let r = Math.random() * (MAP_RADIUS - 150);
             powerups.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
     }
 
     function spawnBot(id) {
         let angle = Math.random() * Math.PI * 2;
-        let r = Math.random() * (MAP_RADIUS - 1200);
+        let r = Math.random() * (MAP_RADIUS - 1500);
         let bx = MAP_CENTER + Math.cos(angle)*r;
         let by = MAP_CENTER + Math.sin(angle)*r;
         let body = [];
-        for(let j=0; j<50; j++) body.push({x: bx - j*8, y: by});
+        for(let j=0; j<55; j++) body.push({x: bx - j*8, y: by});
         const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X'];
-        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 1500, alive: true, sizeRadius: 20 };
+        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 1500, alive: true, sizeRadius: 22 };
     }
 
     function explodeSnake(body) {
@@ -390,7 +398,7 @@
         body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
     }
 
-    // FLOATING JOYSTICK LOGIC
+    // Floating Joystick
     const joyZone = document.getElementById('joystick-zone');
     const joyKnob = document.getElementById('joystick-knob');
     let joyActive = false, joyCenterX = 0, joyCenterY = 0;
@@ -398,7 +406,7 @@
     window.addEventListener('touchstart', (e) => {
         if(!gameRunning || !player.alive || controlType !== 'joystick') return;
         const touch = e.touches[0];
-        if(touch.clientX < 110 && touch.clientY < 110) return; // Skip HUD area
+        if(touch.clientX < 110 && touch.clientY < 110) return;
 
         joyCenterX = touch.clientX; joyCenterY = touch.clientY;
         joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
@@ -449,19 +457,40 @@
         container.innerHTML = html;
     }
 
+    // Awesome Cobra Snake Head + 5 Glowing/Blinking Magnet Light Rays
     function drawSnakeHead(p, angle, mainColor, radius) {
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
+        
         ctx.fillStyle = mainColor; ctx.beginPath();
-        ctx.ellipse(0, 0, radius * 1.7, radius * 1.25, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.8; ctx.stroke();
+        ctx.ellipse(0, 0, radius * 1.85, radius * 1.35, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
         ctx.fillStyle = '#f1c40f'; ctx.beginPath();
-        ctx.ellipse(radius*0.5, -radius*0.4, radius*0.35, radius*0.2, Math.PI*0.1, 0, Math.PI * 2);
-        ctx.ellipse(radius*0.5, radius*0.4, radius*0.35, radius*0.2, -Math.PI*0.1, 0, Math.PI * 2); ctx.fill();
-
+        ctx.ellipse(radius*0.5, -radius*0.45, radius*0.35, radius*0.2, Math.PI*0.1, 0, Math.PI * 2);
+        ctx.ellipse(radius*0.5, radius*0.45, radius*0.35, radius*0.2, -Math.PI*0.1, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#000'; ctx.beginPath();
-        ctx.arc(radius*0.55, -radius*0.4, radius*0.12, 0, Math.PI * 2);
-        ctx.arc(radius*0.55, radius*0.4, radius*0.12, 0, Math.PI * 2); ctx.fill();
+        ctx.arc(radius*0.55, -radius*0.45, radius*0.12, 0, Math.PI * 2);
+        ctx.arc(radius*0.55, radius*0.45, radius*0.12, 0, Math.PI * 2); ctx.fill();
+
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3; ctx.beginPath();
+        ctx.moveTo(radius*1.85, 0); ctx.lineTo(radius*2.6, 0);
+        ctx.lineTo(radius*2.95, -6); ctx.moveTo(radius*2.6, 0); ctx.lineTo(radius*2.95, 6); ctx.stroke();
+
+        // 5 Blinking Glowing Magnet Arcs in Front of Head
+        if(isMagnetActive) {
+            let isBlinking = (Math.floor(Date.now() / 150) % 2 === 0);
+            ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
+            ctx.lineWidth = isBlinking ? 4 : 2;
+            ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = isBlinking ? 14 : 2;
+
+            for(let i = -2; i <= 2; i++) {
+                ctx.beginPath();
+                ctx.arc(radius * 1.5, 0, radius * 1.6 + (i + 2) * 6, -Math.PI * 0.25, Math.PI * 0.25);
+                ctx.stroke();
+            }
+            ctx.shadowBlur = 0;
+        }
+
         ctx.restore();
     }
 
@@ -478,8 +507,11 @@
         document.getElementById('topList').innerHTML = html;
     }
 
-    function gameLoop() {
+    function gameLoop(now) {
         if(!gameRunning) return;
+        let dt = (now - lastFrameTime) / 1000;
+        if(dt > 0.1) dt = 0.1;
+        lastFrameTime = now;
 
         deadRemains = deadRemains.filter(r => Date.now() - r.spawnTime < 25000);
 
@@ -488,22 +520,22 @@
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
 
-            player.angle += diff * (isSteeringActive ? 0.42 : 0.20);
+            player.angle += diff * (isSteeringActive ? 0.45 : 0.22);
 
-            let moveSpeed = manualSpeedBoost ? 6.5 : 3.8;
-            player.x += Math.cos(player.angle) * moveSpeed;
-            player.y += Math.sin(player.angle) * moveSpeed;
+            let moveSpeed = (manualSpeedBoost ? 390 : 230) * (dt * 60);
+            player.x += Math.cos(player.angle) * (moveSpeed * 0.08);
+            player.y += Math.sin(player.angle) * (moveSpeed * 0.08);
             player.body.unshift({x: player.x, y: player.y});
 
-            // PROPORTIONAL SEGMENT LENGTH (Max 100 Segments)
-            let maxAllowedSegments = Math.min(100, 30 + Math.floor(score / 100));
+            // Segment Cap (Max 110 Segments)
+            let maxAllowedSegments = Math.min(110, 35 + Math.floor(score / 90));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
             if(distFromCenter >= MAP_RADIUS - 40) {
                 player.alive = false; alert("Game Over! You hit the Red Zone!"); location.reload();
             }
-            document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 800 ? 'block' : 'none';
+            document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 850 ? 'block' : 'none';
 
             bots.forEach(b => {
                 if(!b.alive) return;
@@ -514,41 +546,55 @@
                 });
             });
 
-            // WORKING MAGNET PULL LOGIC
+            // Magnet Attraction Effect
             if(isMagnetActive) {
                 [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
                         let d = Math.hypot(player.x - item.x, player.y - item.y);
-                        if(d < 450) {
-                            item.x += (player.x - item.x) * 0.12;
-                            item.y += (player.y - item.y) * 0.12;
+                        if(d < 480) {
+                            item.x += (player.x - item.x) * 0.14;
+                            item.y += (player.y - item.y) * 0.14;
                         }
                     });
                 });
             }
 
-            // EATING FRUITS (Balanced Growth)
-            fruits.forEach((f, i) => {
+            // Fruits Eating
+            fruits.forEach((f) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
                     score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
-                    f.x = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
-                    f.y = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
-                    if(player.sizeRadius < 28) player.sizeRadius += 0.035;
+                    let angle = Math.random() * Math.PI * 2;
+                    let r = Math.random() * (MAP_RADIUS - 200);
+                    f.x = MAP_CENTER + Math.cos(angle)*r; f.y = MAP_CENTER + Math.sin(angle)*r;
+                    if(player.sizeRadius < 32) player.sizeRadius += 0.04;
                 }
             });
 
-            // EATING DEAD REMAINS
+            // Coins Eating
+            coinItems.forEach((c) => {
+                if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
+                    coins += 1;
+                    document.getElementById('coinVal').innerText = `🪙 ${coins}`;
+                    saveStats();
+                    let angle = Math.random() * Math.PI * 2;
+                    let r = Math.random() * (MAP_RADIUS - 200);
+                    c.x = MAP_CENTER + Math.cos(angle)*r; c.y = MAP_CENTER + Math.sin(angle)*r;
+                }
+            });
+
+            // Dead Remains Eating
             deadRemains.forEach((r, i) => {
                 if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
                     score += 15 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
-                    if(player.sizeRadius < 28) player.sizeRadius += 0.05;
+                    if(player.sizeRadius < 32) player.sizeRadius += 0.06;
                 }
             });
 
-            powerups.forEach((p, i) => {
+            // Powerups Eating
+            powerups.forEach((p) => {
                 if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
                     if(p.icon === '🧲') {
                         isMagnetActive = true;
@@ -565,21 +611,21 @@
                             document.getElementById('boost-btn').style.display = 'none'; manualSpeedBoost = false;
                         });
                     }
-                    if(p.icon === '🏎️') { // Steering Wheel Icon Zoom Out & Steering
-                        isSteeringActive = true;
-                        cameraScale = 0.35;
+                    if(p.icon === '🏎️') {
+                        isSteeringActive = true; cameraScale = 0.38;
                         addPowerupTimer('Steering Wheel Zoom', '🏎️', 15000, () => {
-                            isSteeringActive = false;
-                            cameraScale = 0.55;
+                            isSteeringActive = false; cameraScale = 0.55;
                         });
                     }
 
-                    p.x = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
-                    p.y = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
+                    let angle = Math.random() * Math.PI * 2;
+                    let r = Math.random() * (MAP_RADIUS - 200);
+                    p.x = MAP_CENTER + Math.cos(angle)*r; p.y = MAP_CENTER + Math.sin(angle)*r;
                 }
             });
         }
 
+        // Fast Respawning Bots Logic
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
@@ -587,12 +633,12 @@
                 b.angle = Math.atan2(player.y - b.y, player.x - b.x);
             } else { b.angle += (Math.random() - 0.5) * 0.1; }
 
-            b.x += Math.cos(b.angle) * 3.4; b.y += Math.sin(b.angle) * 3.4;
+            b.x += Math.cos(b.angle) * 3.6; b.y += Math.sin(b.angle) * 3.6;
             b.body.unshift({x: b.x, y: b.y}); b.body.pop();
 
             player.body.forEach((pSeg, idx) => {
                 if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
-                    b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 500);
+                    b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 400);
                 }
             });
         });
@@ -603,20 +649,22 @@
         ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
 
-        // Circular Map Edge
+        // Red Zone Circle
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 25; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
+        // 4 Garages
         garages.forEach(g => {
-            ctx.fillStyle = '#2ecc71'; ctx.fillRect(g.x - 100, g.y - 100, 200, 200);
-            ctx.fillStyle = '#fff'; ctx.font = "bold 20px Arial"; ctx.fillText("GARAGE 🚗", g.x - 50, g.y + 5);
+            ctx.fillStyle = '#2ecc71'; ctx.fillRect(g.x - 110, g.y - 110, 220, 220);
+            ctx.fillStyle = '#fff'; ctx.font = "bold 22px Arial"; ctx.fillText("GARAGE 🚗", g.x - 55, g.y + 6);
         });
 
         fruits.forEach(f => { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); });
+        coinItems.forEach(c => { ctx.font = "22px Arial"; ctx.fillText("🪙", c.x, c.y); });
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
-        // Draw Player Snake with Full Country Flag Colors
+        // Draw Player Body (Flag Pattern)
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             player.body.forEach((p, i) => {
@@ -643,11 +691,21 @@
 
         ctx.restore();
 
+        // Radar with Player, Bots, and 4 Garages
         radarCtx.clearRect(0, 0, 75, 75);
+        garages.forEach(g => {
+            radarCtx.fillStyle = '#2ecc71';
+            radarCtx.fillRect(((g.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75 - 2, ((g.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75 - 2, 5, 5);
+        });
         if(player.alive) {
-            radarCtx.fillStyle = '#2ecc71'; radarCtx.beginPath();
-            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, 3.5, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.fillStyle = '#ffffff'; radarCtx.beginPath();
+            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, 4, 0, Math.PI*2); radarCtx.fill();
         }
+        bots.forEach(b => {
+            if(!b.alive) return;
+            radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
+            radarCtx.arc(((b.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, ((b.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, 2.5, 0, Math.PI*2); radarCtx.fill();
+        });
 
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
