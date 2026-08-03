@@ -1,4 +1,3 @@
-
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const radarCanvas = document.getElementById('radar-canvas');
@@ -27,11 +26,34 @@ let deadRemains = [];
 let activeEmojiText = null;
 let emojiTimer = null;
 
+let headshotTextTimer = 0;
+
 let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 28 };
 let bots = [];
 let fruits = [];
 let coinItems = [];
 let powerups = [];
+
+/* Audio Synthesizer for Headshot sound */
+function playHeadshotSound() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if(!AudioCtx) return;
+        const actx = new AudioCtx();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, actx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, actx.currentTime + 0.15);
+        osc.frequency.exponentialRampToValueAtTime(80, actx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.8, actx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.35);
+    } catch(e){}
+}
 
 function resize() {
     canvas.width = window.innerWidth;
@@ -169,7 +191,7 @@ function getRandomMapPos() {
 }
 
 function initGame() {
-    score = 0; currentMultiplier = 1; cameraScale = 0.50; activePowers = {};
+    score = 0; currentMultiplier = 1; cameraScale = 0.50; activePowers = {}; headshotTextTimer = 0;
     document.getElementById('scoreVal').innerText = score;
     
     player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
@@ -309,6 +331,12 @@ function drawSnakeHead(p, angle, mainColor, radius, flagEmoji) {
     ctx.moveTo(radius*2.4, 0); ctx.lineTo(radius*3.2, 0);
     ctx.lineTo(radius*3.5, -6); ctx.moveTo(radius*3.2, 0); ctx.lineTo(radius*3.5, 6); ctx.stroke();
 
+    if(flagEmoji) {
+        ctx.font = `bold ${radius * 1.4}px Arial`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(flagEmoji, radius * 0.2, 0);
+    }
+
     if(activeEmojiText) {
         ctx.font = `${radius * 2.2}px Arial`;
         ctx.fillText(activeEmojiText, 0, -radius * 2.2);
@@ -384,7 +412,8 @@ function gameLoop(now) {
         player.y += Math.sin(player.angle) * moveSpeed;
         player.body.unshift({x: player.x, y: player.y});
 
-        let maxAllowedSegments = Math.min(1500, 60 + Math.floor(score / 15));
+        /* Snake Growth: Increases Max Length & Thickness dynamically */
+        let maxAllowedSegments = Math.min(2500, 60 + Math.floor(score / 8));
         while(player.body.length > maxAllowedSegments) player.body.pop();
 
         let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
@@ -395,6 +424,18 @@ function gameLoop(now) {
 
         bots.forEach(b => {
             if(!b.alive) return;
+            
+            /* Headshot Check: Player Head hits Bot Head */
+            let headDist = Math.hypot(player.x - b.x, player.y - b.y);
+            if(headDist < player.sizeRadius + b.sizeRadius) {
+                b.alive = false;
+                explodeSnake(b.body);
+                spawnBot(b.id);
+                score += 500 * currentMultiplier;
+                headshotTextTimer = Date.now() + 3000; // Display for 3 seconds
+                playHeadshotSound();
+            }
+
             b.body.forEach((seg, idx) => {
                 if(idx > 3 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
                     player.alive = false; alert("Game Over! You crashed into a bot!"); location.reload();
@@ -427,7 +468,8 @@ function gameLoop(now) {
                 document.getElementById('scoreVal').innerText = score;
                 f.eatenTime = Date.now();
                 f.x = -99999; f.y = -99999;
-                if(player.sizeRadius < 55) player.sizeRadius += 0.12;
+                /* Dynamic Thickness Scale */
+                if(player.sizeRadius < 85) player.sizeRadius += 0.15;
             }
         });
 
@@ -446,7 +488,7 @@ function gameLoop(now) {
                 score += 15 * currentMultiplier;
                 document.getElementById('scoreVal').innerText = score;
                 deadRemains.splice(i, 1);
-                if(player.sizeRadius < 55) player.sizeRadius += 0.18;
+                if(player.sizeRadius < 85) player.sizeRadius += 0.25;
             }
         });
 
@@ -524,6 +566,7 @@ function gameLoop(now) {
     deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
     powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
+    /* DRAW PLAYER SNAKE WITH FULL FLAG EMOJIS PRINTED ALONG BODY */
     if(player.alive) {
         let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
         
@@ -533,8 +576,9 @@ function gameLoop(now) {
             ctx.fillStyle = color; ctx.beginPath();
             ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
 
-            if(skinObj.flagEmoji && (i === 5 || i === 15 || i === 25 || i === 35)) {
-                ctx.font = `bold ${player.sizeRadius * 1.6}px Arial`;
+            /* Print Flag Emojis repeatedly on snake body */
+            if(skinObj.flagEmoji && i % 4 === 0) {
+                ctx.font = `bold ${player.sizeRadius * 1.5}px Arial`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText(skinObj.flagEmoji, p.x, p.y);
             }
@@ -554,6 +598,19 @@ function gameLoop(now) {
 
     ctx.restore();
 
+    /* Render 3-second Headshot Banner Overlay */
+    if(Date.now() < headshotTextTimer) {
+        ctx.save();
+        ctx.font = "900 36px Arial";
+        ctx.fillStyle = "#e74c3c";
+        ctx.textAlign = "center";
+        ctx.shadowColor = "#f1c40f";
+        ctx.shadowBlur = 12;
+        ctx.fillText("💥 HEADSHOT! 🎯", canvas.width / 2, canvas.height / 3);
+        ctx.restore();
+    }
+
+    // RADAR DRAWING
     radarCtx.clearRect(0, 0, 65, 65);
     garages.forEach(g => {
         radarCtx.fillStyle = isGarageActive ? '#2ecc71' : '#f1c40f';
