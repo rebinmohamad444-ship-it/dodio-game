@@ -95,10 +95,15 @@
         }
 
         #garage-safe-status {
-            position: absolute; top: 15%; left: 50%; transform: translate(-50%, -50%);
-            color: #2ecc71; font-size: 14px; font-weight: bold;
-            background: rgba(0,0,0,0.9); padding: 6px 14px; border-radius: 8px;
+            position: absolute; top: 12%; left: 50%; transform: translate(-50%, -50%);
+            color: #2ecc71; font-size: 13px; font-weight: bold;
+            background: rgba(0,0,0,0.92); padding: 8px 14px; border-radius: 10px;
             border: 2px solid #2ecc71; display: none; z-index: 8; text-align: center;
+        }
+        #exit-garage-btn {
+            background: #e74c3c; color: #fff; font-size: 11px; font-weight: bold;
+            padding: 5px 12px; border-radius: 6px; border: 1px solid #fff;
+            cursor: pointer; margin-top: 5px; display: inline-block;
         }
 
         #leaderboard-box {
@@ -187,7 +192,11 @@
 </div>
 
 <div id="red-zone-alert">⚠️ WARNING: RED ZONE! ⚠️</div>
-<div id="garage-safe-status">🛡️ INSIDE SAFE GARAGE 🛡️<br><span id="garageTimerVal" style="font-size:11px; color:#f1c40f;"></span></div>
+<div id="garage-safe-status">
+    🛡️ INSIDE SAFE GARAGE 🛡️<br>
+    <span id="garageTimerVal" style="font-size:11px; color:#f1c40f;"></span><br>
+    <div id="exit-garage-btn" onclick="exitGarageManually()">🚪 Exit Garage</div>
+</div>
 <div id="active-powers-container"></div>
 
 <div id="leaderboard-box">
@@ -274,7 +283,6 @@
     let activeShopTab = 'free';
     let lastFrameTime = performance.now();
 
-    // Set initial testing coins to 1500 if less than 1500
     let savedCoins = parseFloat(localStorage.getItem('dodio_coins') || '1500');
     let coins = savedCoins < 1500 ? 1500 : savedCoins;
     localStorage.setItem('dodio_coins', coins.toString());
@@ -380,7 +388,6 @@
         } catch(e){}
     }
 
-    /* Auto Adapt to Landscape/Screen Resize */
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -548,6 +555,12 @@
         };
     }
 
+    function exitGarageManually() {
+        isInsideGarageSafe = false;
+        player.x += 350; // Push player out of garage zone safely
+        document.getElementById('garage-safe-status').style.display = 'none';
+    }
+
     function initGame() {
         score = 0; currentMultiplier = 1; cameraScale = 0.50; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
         document.getElementById('scoreVal').innerText = score;
@@ -689,7 +702,6 @@
         ctx.moveTo(radius*2.4, 0); ctx.lineTo(radius*3.2, 0);
         ctx.lineTo(radius*3.5, -6); ctx.moveTo(radius*3.2, 0); ctx.lineTo(radius*3.5, 6); ctx.stroke();
 
-        /* Print Large Clear Flag Emoji on Snake Head */
         if(flagEmoji) {
             ctx.font = `bold ${radius * 1.8}px Arial`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -699,20 +711,6 @@
         if(activeEmojiText) {
             ctx.font = `${radius * 2.2}px Arial`;
             ctx.fillText(activeEmojiText, 0, -radius * 2.2);
-        }
-
-        if(isMagnetActive) {
-            let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
-            ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
-            ctx.lineWidth = isBlinking ? 4 : 2;
-            ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = isBlinking ? 16 : 2;
-
-            for(let i = -2; i <= 2; i++) {
-                ctx.beginPath();
-                ctx.arc(radius * 1.8, 0, radius * 1.5 + (i + 2) * 8, -Math.PI * 0.28, Math.PI * 0.28);
-                ctx.stroke();
-            }
-            ctx.shadowBlur = 0;
         }
 
         ctx.restore();
@@ -770,14 +768,16 @@
                 }
             });
 
-            if(inAnyGarage && isGarageRented) {
+            if(inAnyGarage && isGarageRented && isInsideGarageSafe === false) {
                 isInsideGarageSafe = true;
+            }
+
+            if(isInsideGarageSafe) {
                 document.getElementById('garage-safe-status').style.display = 'block';
                 let leftSecs = Math.max(0, Math.ceil((garageRentEndTime - Date.now()) / 1000));
                 let m = Math.floor(leftSecs / 60); let s = leftSecs % 60;
                 document.getElementById('garageTimerVal').innerText = `Rent Time Left: ${m}m ${s}s (Safe Zone Active)`;
             } else {
-                isInsideGarageSafe = false;
                 document.getElementById('garage-safe-status').style.display = 'none';
             }
 
@@ -793,7 +793,6 @@
                 player.y += Math.sin(player.angle) * moveSpeed;
                 player.body.unshift({x: player.x, y: player.y});
 
-                /* Multiplier Growth Logic: Length expands x2, x4 times faster */
                 let maxAllowedSegments = Math.min(3500, 60 + Math.floor((score * currentMultiplier) / 4));
                 while(player.body.length > maxAllowedSegments) player.body.pop();
             } else {
@@ -831,20 +830,6 @@
                 });
             }
 
-            if(isMagnetActive && !isInsideGarageSafe) {
-                [fruits, coinItems, powerups, deadRemains].forEach(group => {
-                    group.forEach(item => {
-                        if(!item.eatenTime) {
-                            let d = Math.hypot(player.x - item.x, player.y - item.y);
-                            if(d < 550) {
-                                item.x += (player.x - item.x) * 6.0 * dt;
-                                item.y += (player.y - item.y) * 6.0 * dt;
-                            }
-                        }
-                    });
-                });
-            }
-
             fruits.forEach((f) => {
                 if(f.eatenTime && Date.now() - f.eatenTime > 15000) {
                     let pos = getRandomMapPos();
@@ -856,7 +841,6 @@
                     document.getElementById('scoreVal').innerText = score;
                     f.eatenTime = Date.now();
                     f.x = -99999; f.y = -99999;
-                    /* Dynamic Growth Thickness according to currentMultiplier */
                     if(player.sizeRadius < 95) player.sizeRadius += (0.35 * currentMultiplier);
                 }
             });
@@ -877,37 +861,6 @@
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
                     if(player.sizeRadius < 95) player.sizeRadius += (0.45 * currentMultiplier);
-                }
-            });
-
-            powerups.forEach((p) => {
-                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
-                    if(p.icon === '🧲') {
-                        isMagnetActive = true;
-                        addPowerupTimer('magnet', 'Magnet', '🧲', 15000, () => isMagnetActive = false);
-                    }
-                    if(p.icon.includes('x')) {
-                        let val = parseInt(p.icon.replace('x', '')) || 2;
-                        currentMultiplier = val;
-                        addPowerupTimer('multiplier', `Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
-                    }
-                    if(p.icon === '🚀') {
-                        document.getElementById('boost-btn').style.display = 'flex';
-                        addPowerupTimer('boost', 'Boost Button', '🚀', 15000, () => {
-                            document.getElementById('boost-btn').style.display = 'none'; manualSpeedBoost = false;
-                        });
-                    }
-                    if(p.icon === '🛞') {
-                        isSteeringActive = true;
-                        addPowerupTimer('steering', 'Fast Steering', '🛞', 15000, () => isSteeringActive = false);
-                    }
-                    if(p.icon === '🎯') {
-                        cameraScale = 0.30;
-                        addPowerupTimer('sniper', 'Sniper Zoom Out', '🎯', 15000, () => cameraScale = 0.50);
-                    }
-
-                    let pos = getRandomMapPos();
-                    p.x = pos.x; p.y = pos.y;
                 }
             });
         }
@@ -945,7 +898,6 @@
 
         garages.forEach(g => {
             let half = g.size / 2;
-            
             ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
             ctx.strokeRect(g.x - half - 40, g.y - half - 40, g.size + 80, g.size + 80);
             
@@ -963,7 +915,6 @@
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
-        /* Render Snake Body and Flag Emojis Clearly along body */
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             
