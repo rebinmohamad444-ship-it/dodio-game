@@ -20,21 +20,32 @@
         }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
-        /* HUD Top Left */
+        /* HUD Top Left Stack */
         #radar-wrapper {
             position: absolute; top: 8px; left: 8px;
-            display: flex; flex-direction: column; align-items: center;
-            gap: 2px; z-index: 5;
+            display: flex; flex-direction: column; align-items: flex-start;
+            gap: 4px; z-index: 5;
         }
         #radar-canvas {
-            width: 60px; height: 60px;
+            width: 65px; height: 65px;
             background: rgba(0, 0, 0, 0.85);
             border: 1.5px solid #2ecc71; border-radius: 50%;
         }
         #hud-stats {
-            background: rgba(0,0,0,0.75); padding: 2px 4px;
-            border-radius: 5px; border: 1px solid #2ecc71;
-            font-size: 8px; margin-top: 2px; text-align: center; width: 60px;
+            background: rgba(0,0,0,0.75); padding: 3px 6px;
+            border-radius: 6px; border: 1px solid #2ecc71;
+            font-size: 9px; text-align: left; width: 65px;
+        }
+
+        /* Emoji Reactions Overlay under Radar */
+        #emoji-reaction-box {
+            display: flex; flex-direction: row; gap: 4px; margin-top: 2px;
+        }
+        .reaction-btn {
+            width: 28px; height: 28px; background: rgba(0,0,0,0.8);
+            border: 1px solid #f1c40f; border-radius: 50%; font-size: 14px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,0.5);
         }
 
         /* Left Bottom Stack */
@@ -44,25 +55,13 @@
         }
         #ingame-garage-btn {
             background: rgba(243, 156, 18, 0.9); border: 1px solid #fff;
-            color: #fff; padding: 4px 8px; border-radius: 8px;
-            font-size: 9px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
+            color: #fff; padding: 5px 8px; border-radius: 8px;
+            font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
         }
         #exit-btn {
             background: #e74c3c; color: #fff; font-weight: bold;
-            border: 1px solid #fff; padding: 4px 8px; border-radius: 8px;
-            font-size: 9px; cursor: pointer; text-align: center; width: 75px;
-        }
-
-        /* Quick Reactions Overlay */
-        #emoji-reaction-box {
-            position: absolute; right: 10px; top: 38%;
-            display: flex; flex-direction: column; gap: 6px; z-index: 15;
-        }
-        .reaction-btn {
-            width: 36px; height: 36px; background: rgba(0,0,0,0.7);
-            border: 1px solid #f1c40f; border-radius: 50%; font-size: 16px;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            border: 1px solid #fff; padding: 5px 8px; border-radius: 8px;
+            font-size: 10px; cursor: pointer; text-align: center; width: 75px;
         }
 
         /* Joystick & Controls */
@@ -106,7 +105,7 @@
         }
 
         #active-powers-container {
-            position: absolute; top: 110px; left: 8px;
+            position: absolute; top: 175px; left: 8px;
             display: flex; flex-direction: column; gap: 3px; z-index: 5;
         }
         .power-badge {
@@ -124,7 +123,7 @@
             box-shadow: 0 0 6px #e74c3c; cursor: pointer;
         }
 
-        /* Modals & Main Menu */
+        /* Modals & Main Menu Overlay */
         #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.96); display: flex;
@@ -159,23 +158,23 @@
 <body>
 
 <div id="radar-wrapper">
-    <canvas id="radar-canvas" width="60" height="60"></canvas>
+    <canvas id="radar-canvas" width="65" height="65"></canvas>
     <div id="hud-stats">
         <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
         <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
+    </div>
+    <!-- Emoji Reactions Container moved under Radar -->
+    <div id="emoji-reaction-box">
+        <div class="reaction-btn" onclick="triggerEmoji('😂')">😂</div>
+        <div class="reaction-btn" onclick="triggerEmoji('😭')">😭</div>
+        <div class="reaction-btn" onclick="triggerEmoji('👍')">👍</div>
+        <div class="reaction-btn" onclick="triggerEmoji('🤝')">🤝</div>
     </div>
 </div>
 
 <div id="left-bottom-container">
     <div id="ingame-garage-btn" onclick="openShop()">🛞 Garage</div>
     <div id="exit-btn" onclick="openExitModal()">🏠 Exit</div>
-</div>
-
-<div id="emoji-reaction-box">
-    <div class="reaction-btn" onclick="triggerEmoji('😂')">😂</div>
-    <div class="reaction-btn" onclick="triggerEmoji('😭')">😭</div>
-    <div class="reaction-btn" onclick="triggerEmoji('👍')">👍</div>
-    <div class="reaction-btn" onclick="triggerEmoji('🤝')">🤝</div>
 </div>
 
 <div id="joystick-zone"><div id="joystick-knob"></div></div>
@@ -275,8 +274,6 @@
     let coins = parseFloat(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
     let ownedSkins = JSON.parse(localStorage.getItem('dodio_owned_skins') || '["free1","free2","free3","free4","free5","free6","free7"]');
-    
-    // Garage Rent System Expiration Time
     let garageRentEndTime = parseInt(localStorage.getItem('dodio_garage_rent_end') || '0');
 
     let score = 0;
@@ -322,11 +319,12 @@
         { minutes: 60, price: 230, label: "Rent 1 Hour (🪙230)" }
     ];
 
+    // 4 Garages positioned around the 4 sides of the Map
     const garages = [
-        { x: MAP_CENTER - 11000, y: MAP_CENTER - 11000 },
-        { x: MAP_CENTER + 11000, y: MAP_CENTER - 11000 },
-        { x: MAP_CENTER - 11000, y: MAP_CENTER + 11000 },
-        { x: MAP_CENTER + 11000, y: MAP_CENTER + 11000 }
+        { x: MAP_CENTER - 10000, y: MAP_CENTER - 10000 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER - 10000 },
+        { x: MAP_CENTER - 10000, y: MAP_CENTER + 10000 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER + 10000 }
     ];
 
     function resize() {
@@ -334,6 +332,7 @@
         canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
 
     updateMenuStats();
@@ -486,6 +485,16 @@
         updateMenuStats();
     }
 
+    // Helper for Spreading Items Evenly Across Full Radius
+    function getRandomMapPos() {
+        let angle = Math.random() * Math.PI * 2;
+        let r = Math.sqrt(Math.random()) * (MAP_RADIUS - 400); // Uniform distribution
+        return {
+            x: MAP_CENTER + Math.cos(angle) * r,
+            y: MAP_CENTER + Math.sin(angle) * r
+        };
+    }
+
     function initGame() {
         score = 0; currentMultiplier = 1; cameraScale = 0.50; activePowers = {};
         document.getElementById('scoreVal').innerText = score;
@@ -497,39 +506,34 @@
         bots = [];
         for(let i=0; i<12; i++) spawnBot(i);
 
+        // Huge Food Spawns spread across full map
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<3500; i++) {
-            let angle = Math.random() * Math.PI * 2;
-            let r = Math.random() * (MAP_RADIUS - 300);
-            fruits.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
+        for(let i=0; i<4500; i++) {
+            let pos = getRandomMapPos();
+            fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
         }
 
         coinItems = [];
-        for(let i=0; i<400; i++) {
-            let angle = Math.random() * Math.PI * 2;
-            let r = Math.random() * (MAP_RADIUS - 300);
-            coinItems.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r });
+        for(let i=0; i<600; i++) {
+            let pos = getRandomMapPos();
+            coinItems.push({ x: pos.x, y: pos.y });
         }
 
         powerups = [];
         const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2'];
-        for(let i=0; i<300; i++) {
-            let angle = Math.random() * Math.PI * 2;
-            let r = Math.random() * (MAP_RADIUS - 300);
-            powerups.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
+        for(let i=0; i<400; i++) {
+            let pos = getRandomMapPos();
+            powerups.push({ x: pos.x, y: pos.y, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
     }
 
     function spawnBot(id) {
-        let angle = Math.random() * Math.PI * 2;
-        let r = Math.random() * (MAP_RADIUS - 3000);
-        let bx = MAP_CENTER + Math.cos(angle)*r;
-        let by = MAP_CENTER + Math.sin(angle)*r;
+        let pos = getRandomMapPos();
         let body = [];
-        for(let j=0; j<65; j++) body.push({x: bx - j*10, y: by});
+        for(let j=0; j<65; j++) body.push({x: pos.x - j*10, y: pos.y});
         const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X', 'Titan_Rider', 'Phantom_Bite'];
-        bots[id] = { id, name: botNames[id], x: bx, y: by, angle: Math.random()*Math.PI*2, body, score: 2000, alive: true, sizeRadius: 30 };
+        bots[id] = { id, name: botNames[id], x: pos.x, y: pos.y, angle: Math.random()*Math.PI*2, body, score: 2000, alive: true, sizeRadius: 30 };
     }
 
     function explodeSnake(body) {
@@ -742,10 +746,8 @@
 
             fruits.forEach((f) => {
                 if(f.eatenTime && Date.now() - f.eatenTime > 15000) {
-                    let angle = Math.random() * Math.PI * 2;
-                    let r = Math.random() * (MAP_RADIUS - 300);
-                    f.x = MAP_CENTER + Math.cos(angle)*r; 
-                    f.y = MAP_CENTER + Math.sin(angle)*r;
+                    let pos = getRandomMapPos();
+                    f.x = pos.x; f.y = pos.y;
                     f.eatenTime = null;
                 }
                 else if(!f.eatenTime && Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
@@ -757,15 +759,13 @@
                 }
             });
 
-            // Reduced Coins Collection (Half Coins Rate)
             coinItems.forEach((c) => {
                 if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
-                    coins += 0.5; // Only 0.5 Coin
+                    coins += 0.5;
                     document.getElementById('coinVal').innerText = `🪙 ${Math.floor(coins)}`;
                     saveStats();
-                    let angle = Math.random() * Math.PI * 2;
-                    let r = Math.random() * (MAP_RADIUS - 300);
-                    c.x = MAP_CENTER + Math.cos(angle)*r; c.y = MAP_CENTER + Math.sin(angle)*r;
+                    let pos = getRandomMapPos();
+                    c.x = pos.x; c.y = pos.y;
                 }
             });
 
@@ -804,9 +804,8 @@
                         addPowerupTimer('sniper', 'Sniper Zoom Out', '🎯', 15000, () => cameraScale = 0.50);
                     }
 
-                    let angle = Math.random() * Math.PI * 2;
-                    let r = Math.random() * (MAP_RADIUS - 300);
-                    p.x = MAP_CENTER + Math.cos(angle)*r; p.y = MAP_CENTER + Math.sin(angle)*r;
+                    let pos = getRandomMapPos();
+                    p.x = pos.x; p.y = pos.y;
                 }
             });
         }
@@ -840,13 +839,13 @@
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-        // RENTED GARAGE STATUS & DRAWING
+        // RENTED GARAGE STATUS & DRAWING ON 4 SIDES
         let isGarageActive = Date.now() < garageRentEndTime;
         garages.forEach(g => {
             ctx.fillStyle = isGarageActive ? '#2ecc71' : '#7f8c8d'; 
-            ctx.fillRect(g.x - 120, g.y - 120, 240, 240);
+            ctx.fillRect(g.x - 140, g.y - 140, 280, 280);
             ctx.fillStyle = '#fff'; ctx.font = "bold 22px Arial"; 
-            ctx.fillText(isGarageActive ? "GARAGE 🛞 (ACTIVE)" : "GARAGE 🔒 (EXPIRED)", g.x - 100, g.y + 8);
+            ctx.fillText(isGarageActive ? "GARAGE 🛞 (ACTIVE)" : "GARAGE 🔒 (RENT)", g.x - 110, g.y + 8);
         });
 
         fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); } });
@@ -864,7 +863,6 @@
                 ctx.fillStyle = color; ctx.beginPath();
                 ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
 
-                /* Draw 4 Flag Emojis along the snake length */
                 if(skinObj.flagEmoji && (i === 5 || i === 15 || i === 25 || i === 35)) {
                     ctx.font = `bold ${player.sizeRadius * 1.6}px Arial`;
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -886,19 +884,20 @@
 
         ctx.restore();
 
-        radarCtx.clearRect(0, 0, 60, 60);
+        // RADAR DRAWING
+        radarCtx.clearRect(0, 0, 65, 65);
         garages.forEach(g => {
-            radarCtx.fillStyle = isGarageActive ? '#2ecc71' : '#7f8c8d';
-            radarCtx.fillRect(((g.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60 - 2.5, ((g.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60 - 2.5, 5, 5);
+            radarCtx.fillStyle = isGarageActive ? '#2ecc71' : '#f1c40f';
+            radarCtx.fillRect(((g.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65 - 3, ((g.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65 - 3, 6, 6);
         });
         if(player.alive) {
             radarCtx.fillStyle = '#ffffff'; radarCtx.beginPath();
-            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60, 3.5, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, 3.5, 0, Math.PI*2); radarCtx.fill();
         }
         bots.forEach(b => {
             if(!b.alive) return;
             radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
-            radarCtx.arc(((b.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60, ((b.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60, 2, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc(((b.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, ((b.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, 2, 0, Math.PI*2); radarCtx.fill();
         });
 
         renderPowerBadges(); updateLeaderboard();
