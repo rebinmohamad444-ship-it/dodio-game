@@ -1,1 +1,116 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>dod.io</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="radar-wrapper">
+    <canvas id="radar-canvas" width="65" height="65"></canvas>
+    <div id="hud-stats">
+        <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
+        <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
+    </div>
+    <div id="emoji-reaction-box">
+        <div class="reaction-btn" onclick="triggerEmoji('😂')">😂</div>
+        <div class="reaction-btn" onclick="triggerEmoji('😭')">😭</div>
+        <div class="reaction-btn" onclick="triggerEmoji('👍')">👍</div>
+        <div class="reaction-btn" onclick="triggerEmoji('🤝')">🤝</div>
+    </div>
+</div>
+
+<div id="left-bottom-container">
+    <div id="ingame-garage-btn" onclick="openShop()">🛞 Garage</div>
+    <div id="exit-btn" onclick="openExitModal()">🏠 Exit</div>
+</div>
+
+<div id="joystick-zone"><div id="joystick-knob"></div></div>
+<div id="btn-controls">
+    <div></div><button class="ctrl-btn" onclick="setDir(0, -1)">▲</button><div></div>
+    <button class="ctrl-btn" onclick="setDir(-1, 0)">◀</button><div></div><button class="ctrl-btn" onclick="setDir(1, 0)">▶</button>
+    <div></div><button class="ctrl-btn" onclick="setDir(0, 1)">▼</button><div></div>
+</div>
+
+<div id="red-zone-alert">⚠️ WARNING: RED ZONE! ⚠️</div>
+<div id="active-powers-container"></div>
+
+<div id="leaderboard-box">
+    <h4 style="color:#f1c40f; text-align:center; margin-bottom:3px; font-size:8px;">🏆 TOP 10 PLAYERS</h4>
+    <div id="topList"></div>
+</div>
+
+<div id="boost-btn">BOOST 🚀</div>
+
+<!-- Main Menu -->
+<div id="menu-overlay">
+    <h1>dod.io</h1>
+    <div style="font-size:24px; margin-bottom:2px;">🐍</div>
+    <div style="font-size:10px; color:#f1c40f; margin-bottom:6px;">
+        High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">0</span> 🪙
+    </div>
+
+    <div style="background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; border:1px solid #f1c40f; width:85%; max-width:270px; margin-bottom:8px; font-size:8px;">
+        <div style="color:#f1c40f; font-weight:bold; text-align:center; margin-bottom:2px;">🏆 LEADERBOARD RANKINGS</div>
+        <div id="menuLeaderboardContainer"></div>
+    </div>
+
+    <div class="btn-group">
+        <input type="text" id="playerName" placeholder="Enter Player Name" style="border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
+        <button onclick="startGame()">Play Game 🎮</button>
+        <button class="shop-btn" onclick="openShop()">Skins & Rent Garage 🛒</button>
+        <button class="settings-btn" onclick="openSettings()">Controls Settings ⚙️</button>
+        <button class="fb-btn" onclick="loginFacebook()">Login with Facebook 📘</button>
+        <button class="guest-btn" onclick="loginGuest()">Play as Guest / Email 👤</button>
+    </div>
+</div>
+
+<!-- Controls Settings Modal -->
+<div id="settings-modal">
+    <h3 style="color:#e67e22; margin-bottom:10px; font-size:15px;">Control Settings ⚙️</h3>
+    <div class="btn-group">
+        <label style="font-size:10px;">Select Control Style:</label>
+        <select id="controlTypeSelect" onchange="changeControlType()" style="border:1px solid #e67e22; background:#181c24; color:#fff;">
+            <option value="touch">Touch Pointer Target</option>
+            <option value="joystick">Floating Anywhere Joystick</option>
+            <option value="buttons">4-Direction Buttons</option>
+        </select>
+        <button onclick="closeSettings()" style="background:#e67e22; color:#fff; margin-top:8px;">Save & Back</button>
+    </div>
+</div>
+
+<!-- Exit Confirm Modal -->
+<div id="exit-modal">
+    <h3 style="color:#e74c3c; margin-bottom:10px; font-size:13px;">Exit Game?</h3>
+    <div class="btn-group">
+        <button onclick="confirmExit()" style="background:#e74c3c; color:#fff;">Main Menu 🏠</button>
+        <button onclick="closeExitModal()" style="background:#2ecc71; color:#111;">Continue Playing ▶️</button>
+    </div>
+</div>
+
+<!-- Shop Modal -->
+<div id="shop-modal">
+    <h3 style="color:#f39c12; margin-bottom:4px; font-size:15px;">Skins & Rent Garage 🛒</h3>
+    <div style="font-size:10px; margin-bottom:5px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    
+    <div class="shop-tabs">
+        <button class="shop-tab-btn active" id="tabFreeBtn" onclick="switchShopTab('free')">Free Skins</button>
+        <button class="shop-tab-btn" id="tabFlagsBtn" onclick="switchShopTab('flags')">Flags (🪙100)</button>
+        <button class="shop-tab-btn" id="tabGarageBtn" onclick="switchShopTab('garage')">Rent Garage 🛞</button>
+    </div>
+
+    <div class="shop-list" id="shopItemsContainer"></div>
+    <button onclick="closeShop()" style="width:100px; margin-top:5px; background:#e74c3c; color:#fff;">Close</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<!-- External Scripts Loaded in Order -->
+<script src="skins.js"></script>
+<script src="garage.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
