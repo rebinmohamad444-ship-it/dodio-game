@@ -278,8 +278,8 @@
 
     const MAP_RADIUS = 18000;
     const MAP_CENTER = 20000;
-    let cameraScale = 0.25;
-    let baseCameraScale = 0.25;
+    let cameraScale = 0.35;
+    let baseCameraScale = 0.35;
     let gameRunning = false;
     let controlType = 'touch';
     let activeShopTab = 'free';
@@ -567,7 +567,7 @@
     }
 
     function initGame() {
-        score = 0; currentMultiplier = 1; cameraScale = 0.25; baseCameraScale = 0.25; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
+        score = 0; currentMultiplier = 1; cameraScale = 0.35; baseCameraScale = 0.35; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
         document.getElementById('scoreVal').innerText = score;
         document.getElementById('boost-btn').style.display = 'none';
         
@@ -580,20 +580,20 @@
 
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<18000; i++) {
+        for(let i=0; i<5000; i++) {
             let pos = getRandomMapPos();
             fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
         }
 
         coinItems = [];
-        for(let i=0; i<1200; i++) {
+        for(let i=0; i<800; i++) {
             let pos = getRandomMapPos();
             coinItems.push({ x: pos.x, y: pos.y });
         }
 
         powerups = [];
         const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2', 'x4', 'x6'];
-        for(let i=0; i<1000; i++) {
+        for(let i=0; i<600; i++) {
             let pos = getRandomMapPos();
             powerups.push({ x: pos.x, y: pos.y, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
@@ -717,7 +717,6 @@
             ctx.fillText(activeEmojiText, 0, -radius * 2.2);
         }
 
-        /* Draw 5 Curved Lines for Magnet Effect */
         if(isMagnetActive) {
             let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
             ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
@@ -762,7 +761,7 @@
         }
         for(let y = startX; y <= endX; y += gridSize) {
             ctx.moveTo(MAP_CENTER - MAP_RADIUS, y);
-            ctx.lineTo(MAP_CENTER + MAP_RADIUS);
+            ctx.lineTo(MAP_CENTER + MAP_RADIUS, y);
         }
         ctx.stroke();
     }
@@ -779,9 +778,8 @@
         let isGarageRented = Date.now() < garageRentEndTime;
 
         if(player.alive) {
-            /* Dynamic Extra Zoom Out as Snake Grows */
-            baseCameraScale = Math.max(0.12, 0.25 - (player.sizeRadius - 28) * 0.002);
-            cameraScale = isSniperActive ? 0.18 : baseCameraScale;
+            baseCameraScale = Math.max(0.18, 0.35 - (player.sizeRadius - 28) * 0.002);
+            cameraScale = isSniperActive ? 0.20 : baseCameraScale;
 
             let inAnyGarage = false;
             garages.forEach(g => {
