@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>dod.io</title>
-    <!-- لۆگۆی فەرمی ماری ئالتوونی -->
-    <link rel="icon" type="image/png" href="https://i.ibb.co/3s719wZ/8909.png">
     <style>
         * {
             box-sizing: border-box;
@@ -211,8 +209,10 @@
 
 <!-- Main Menu -->
 <div id="menu-overlay">
-    <!-- لۆگۆی وێنەی مار لە مێنۆی سەرەکیدا -->
-    <img src="https://i.ibb.co/3s719wZ/8909.png" alt="dod.io Logo" style="width:75px; height:75px; border-radius:50%; border:2px solid #2ecc71; object-fit:cover; margin-bottom:4px; box-shadow:0 0 10px #2ecc71;">
+    <!-- لۆگۆی نوێ بە شێوازێکی زۆر پاک و دڵنیاکراوە -->
+    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #2ecc71, #f1c40f); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 15px #2ecc71; margin-bottom: 6px; border: 2px solid #fff;">
+        <span style="font-size: 42px;">🐍</span>
+    </div>
     <h1>dod.io</h1>
     <div style="font-size:10px; color:#f1c40f; margin-bottom:6px;">
         High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">1500</span> 🪙
@@ -983,7 +983,6 @@
         fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); } });
         coinItems.forEach(c => { ctx.font = "22px Arial"; ctx.fillText("🪙", c.x, c.y); });
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
-        powerups.php = powerups; // safety
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
         if(player.alive) {
