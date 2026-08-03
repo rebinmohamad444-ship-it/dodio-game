@@ -53,6 +53,32 @@
             font-size: 11px; cursor: pointer; text-align: center; width: 80px;
         }
 
+        /* Dynamic Floating Joystick Zone */
+        #joystick-zone {
+            position: absolute; width: 90px; height: 90px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(46, 204, 113, 0.8);
+            border-radius: 50%; z-index: 10; display: none;
+            pointer-events: none; transform: translate(-50%, -50%);
+        }
+        #joystick-knob {
+            position: absolute; top: 22px; left: 22px;
+            width: 45px; height: 45px;
+            background: #2ecc71; border-radius: 50%;
+            box-shadow: 0 0 10px #2ecc71; pointer-events: none;
+        }
+
+        /* 4-Direction Control Buttons */
+        #btn-controls {
+            position: absolute; bottom: 20px; right: 20px;
+            display: none; grid-template-columns: repeat(3, 42px);
+            grid-template-rows: repeat(3, 42px); gap: 4px; z-index: 10;
+        }
+        .ctrl-btn {
+            background: rgba(46, 204, 113, 0.75); border: 1px solid #fff;
+            color: #fff; font-weight: bold; border-radius: 8px; font-size: 16px;
+        }
+
         #red-zone-alert {
             position: absolute; top: 18%; left: 50%; transform: translate(-50%, -50%);
             color: #e74c3c; font-size: 16px; font-weight: bold;
@@ -88,16 +114,16 @@
         }
 
         /* Modals & Overlays */
-        #menu-overlay, #shop-modal, #exit-modal {
+        #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.96); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
-        #shop-modal, #exit-modal { display: none; z-index: 30; }
+        #shop-modal, #exit-modal, #settings-modal { display: none; z-index: 30; }
 
         h1 { font-size: 38px; color: #2ecc71; margin-bottom: 5px; }
         .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 280px; }
-        button, input { padding: 10px; font-size: 12px; border-radius: 12px; border: none; outline: none; }
+        button, input, select { padding: 10px; font-size: 12px; border-radius: 12px; border: none; outline: none; }
         button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; }
         button.fb-btn { background: #1877f2; color: #fff; }
         button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
@@ -129,6 +155,13 @@
     <div id="exit-btn" onclick="openExitModal()">🏠 Exit</div>
 </div>
 
+<div id="joystick-zone"><div id="joystick-knob"></div></div>
+<div id="btn-controls">
+    <div></div><button class="ctrl-btn" onclick="setDir(0, -1)">▲</button><div></div>
+    <button class="ctrl-btn" onclick="setDir(-1, 0)">◀</button><div></div><button class="ctrl-btn" onclick="setDir(1, 0)">▶</button>
+    <div></div><button class="ctrl-btn" onclick="setDir(0, 1)">▼</button><div></div>
+</div>
+
 <div id="red-zone-alert">⚠️ WARNING: RED ZONE! ⚠️</div>
 <div id="active-powers-container"></div>
 
@@ -150,8 +183,23 @@
         <input type="text" id="playerName" placeholder="Enter Player Name" style="border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
         <button onclick="startGame()">Play Game 🎮</button>
         <button class="shop-btn" onclick="openShop()">Shop & Country Flags 🛒</button>
+        <button style="background:#e67e22; color:#fff;" onclick="openSettings()">Controls & Settings ⚙️</button>
         <button class="fb-btn" onclick="loginFacebook()">Login with Facebook 📘</button>
         <button class="guest-btn" onclick="loginGuest()">Play as Guest / Email 👤</button>
+    </div>
+</div>
+
+<!-- Controls Settings Modal -->
+<div id="settings-modal">
+    <h3 style="color:#e67e22; margin-bottom:10px;">Control Settings ⚙️</h3>
+    <div class="btn-group">
+        <label style="font-size:11px;">Control Style:</label>
+        <select id="controlTypeSelect" onchange="changeControlType()" style="border:1px solid #e67e22; background:#181c24; color:#fff;">
+            <option value="touch">Touch Pointer Target</option>
+            <option value="joystick">Floating Anywhere Joystick</option>
+            <option value="buttons">4-Direction Buttons</option>
+        </select>
+        <button onclick="closeSettings()">Save & Back</button>
     </div>
 </div>
 
@@ -184,6 +232,7 @@
     const MAP_CENTER = 7000;
     let cameraScale = 0.55;
     let gameRunning = false;
+    let controlType = 'touch';
 
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
@@ -202,7 +251,7 @@
     let coinItems = [];
     let powerups = [];
 
-    // Complete Flag Skins List
+    // Complete Flag Skins & Free Skins
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', price: 0, colors: ['#2ecc71', '#27ae60'] },
         { id: 'free2', name: '🔵 Sky Blue', price: 0, colors: ['#3498db', '#2980b9'] },
@@ -211,6 +260,8 @@
         { id: 'free5', name: '🟣 Royal Purple', price: 0, colors: ['#9b59b6', '#8e44ad'] },
         { id: 'free6', name: '🟠 Sunset Orange', price: 0, colors: ['#e67e22', '#d35400'] },
         { id: 'free7', name: '⚪ Pure White', price: 0, colors: ['#ffffff', '#bdc3c7'] },
+        { id: 'free8', name: '🌊 Cyan Ocean', price: 0, colors: ['#1abc9c', '#16a085'] },
+        { id: 'free9', name: '💖 Neon Pink', price: 0, colors: ['#ff6b81', '#ff4757'] },
         { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
         { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, colors: ['#009c3b', '#ffdf00', '#002776'] },
         { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, colors: ['#74acdf', '#ffffff', '#74acdf'] },
@@ -251,6 +302,17 @@
     function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }
     function closeExitModal() { document.getElementById('exit-modal').style.display = 'none'; }
     function confirmExit() { gameRunning = false; closeExitModal(); document.getElementById('menu-overlay').style.display = 'flex'; }
+
+    function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
+    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
+    function changeControlType() {
+        controlType = document.getElementById('controlTypeSelect').value;
+        document.getElementById('btn-controls').style.display = controlType === 'buttons' ? 'grid' : 'none';
+        document.getElementById('joystick-zone').style.display = 'none';
+    }
+
+    function setDir(x, y) { player.targetAngle = Math.atan2(y, x); }
 
     function loginFacebook() { alert("Connected with Facebook successfully! 📘"); }
     function loginGuest() { alert("Logged in as Guest / Email successfully! 👤"); }
@@ -304,7 +366,7 @@
         }
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🎯', '🏎️'];
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🏎️', '🏎️']; // 🏎️ Steering Wheel Icon for Zoom/Steer
         for(let i=0; i<80; i++) {
             let angle = Math.random() * Math.PI * 2;
             let r = Math.random() * (MAP_RADIUS - 100);
@@ -328,12 +390,40 @@
         body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
     }
 
+    // FLOATING JOYSTICK LOGIC
+    const joyZone = document.getElementById('joystick-zone');
+    const joyKnob = document.getElementById('joystick-knob');
+    let joyActive = false, joyCenterX = 0, joyCenterY = 0;
+
+    window.addEventListener('touchstart', (e) => {
+        if(!gameRunning || !player.alive || controlType !== 'joystick') return;
+        const touch = e.touches[0];
+        if(touch.clientX < 110 && touch.clientY < 110) return; // Skip HUD area
+
+        joyCenterX = touch.clientX; joyCenterY = touch.clientY;
+        joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
+        joyZone.style.display = 'block'; joyActive = true;
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        if(!joyActive || controlType !== 'joystick') return;
+        const touch = e.touches[0];
+        const dx = touch.clientX - joyCenterX; const dy = touch.clientY - joyCenterY;
+        const dist = Math.hypot(dx, dy); const maxDist = 28;
+        let knobX = dx, knobY = dy;
+        if(dist > maxDist) { knobX = (dx / dist) * maxDist; knobY = (dy / dist) * maxDist; }
+        joyKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+        player.targetAngle = Math.atan2(dy, dx);
+    });
+
+    window.addEventListener('touchend', () => { joyActive = false; joyZone.style.display = 'none'; });
+
     const boostBtn = document.getElementById('boost-btn');
     boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
     boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); manualSpeedBoost = false; });
 
     window.addEventListener('touchmove', (e) => {
-        if(!gameRunning || !player.alive) return;
+        if(!gameRunning || !player.alive || controlType !== 'touch') return;
         const touch = e.touches[0];
         player.targetAngle = Math.atan2(touch.clientY - canvas.height/2, touch.clientX - canvas.width/2);
     });
@@ -405,7 +495,8 @@
             player.y += Math.sin(player.angle) * moveSpeed;
             player.body.unshift({x: player.x, y: player.y});
 
-            let maxAllowedSegments = Math.min(85, 30 + Math.floor(score / 120));
+            // PROPORTIONAL SEGMENT LENGTH (Max 100 Segments)
+            let maxAllowedSegments = Math.min(100, 30 + Math.floor(score / 100));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
@@ -423,7 +514,7 @@
                 });
             });
 
-            // MAGNET PULL WORKING
+            // WORKING MAGNET PULL LOGIC
             if(isMagnetActive) {
                 [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
@@ -436,7 +527,7 @@
                 });
             }
 
-            // EATING FRUITS
+            // EATING FRUITS (Balanced Growth)
             fruits.forEach((f, i) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
                     score += 5 * currentMultiplier;
@@ -468,18 +559,19 @@
                         currentMultiplier = val;
                         addPowerupTimer(`Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
                     }
-                    if(p.icon === '🎯') {
-                        cameraScale = 0.32;
-                        addPowerupTimer('Sniper Zoom', '🎯', 15000, () => cameraScale = 0.55);
-                    }
                     if(p.icon === '🚀') {
                         document.getElementById('boost-btn').style.display = 'flex';
                         addPowerupTimer('Boost Button', '🚀', 15000, () => {
                             document.getElementById('boost-btn').style.display = 'none'; manualSpeedBoost = false;
                         });
                     }
-                    if(p.icon === '🏎️') {
-                        isSteeringActive = true; addPowerupTimer('Steering Wheel', '🏎️', 15000, () => isSteeringActive = false);
+                    if(p.icon === '🏎️') { // Steering Wheel Icon Zoom Out & Steering
+                        isSteeringActive = true;
+                        cameraScale = 0.35;
+                        addPowerupTimer('Steering Wheel Zoom', '🏎️', 15000, () => {
+                            isSteeringActive = false;
+                            cameraScale = 0.55;
+                        });
                     }
 
                     p.x = MAP_CENTER + (Math.random()-0.5)*MAP_RADIUS*1.8;
