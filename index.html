@@ -68,7 +68,6 @@
             box-shadow: 0 0 6px #2ecc71; pointer-events: none;
         }
 
-        /* 4-Direction Buttons */
         #btn-controls {
             position: absolute; bottom: 20px; right: 20px;
             display: none; grid-template-columns: repeat(3, 36px);
@@ -113,7 +112,7 @@
             box-shadow: 0 0 6px #e74c3c; cursor: pointer;
         }
 
-        /* Modals & Main Menu Overlay */
+        /* Modals & Main Menu */
         #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.96); display: flex;
@@ -178,7 +177,7 @@
 
 <div id="boost-btn">BOOST 🚀</div>
 
-<!-- Main Menu with Controls Button Visible -->
+<!-- Main Menu -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
     <div style="font-size:24px; margin-bottom:2px;">🐍</div>
@@ -250,7 +249,6 @@
     const MAP_RADIUS = 18000;
     const MAP_CENTER = 20000;
     let cameraScale = 0.50;
-    let baseCameraScale = 0.50;
     let gameRunning = false;
     let controlType = 'touch';
     let activeShopTab = 'free';
@@ -418,7 +416,7 @@
     }
 
     function initGame() {
-        score = 0; currentMultiplier = 1; cameraScale = 0.50;
+        score = 0; currentMultiplier = 1; cameraScale = 0.50; activePowers = [];
         document.getElementById('scoreVal').innerText = score;
         
         player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
@@ -433,7 +431,7 @@
         for(let i=0; i<3500; i++) {
             let angle = Math.random() * Math.PI * 2;
             let r = Math.random() * (MAP_RADIUS - 300);
-            fruits.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, type: fTypes[Math.floor(Math.random()*fTypes.length)] });
+            fruits.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
         }
 
         coinItems = [];
@@ -443,7 +441,6 @@
             coinItems.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r });
         }
 
-        // Includes Magnet 🧲, Steering 🛞, Sniper Target 🎯, Boost 🚀
         powerups = [];
         const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2'];
         for(let i=0; i<300; i++) {
@@ -512,15 +509,26 @@
     function loginFacebook() { alert("Connected with Facebook successfully! 📘"); }
     function loginGuest() { alert("Logged in as Guest / Email successfully! 👤"); }
 
+    /* NO DUPLICATES IN ACTIVE POWERS (REFRESHES TIMER) */
     function addPowerupTimer(name, icon, durationMs, onExpire) {
         let expireTime = Date.now() + durationMs;
-        let powerObj = { name, icon, expireTime };
-        activePowers.push(powerObj);
-        setTimeout(() => {
-            let idx = activePowers.indexOf(powerObj);
-            if(idx > -1) activePowers.splice(idx, 1);
-            if(onExpire) onExpire();
-        }, durationMs);
+        let existing = activePowers.find(p => p.name === name);
+        
+        if(existing) {
+            existing.expireTime = expireTime;
+            clearTimeout(existing.timerId);
+            existing.timerId = setTimeout(() => removePower(existing, onExpire), durationMs);
+        } else {
+            let powerObj = { name, icon, expireTime };
+            powerObj.timerId = setTimeout(() => removePower(powerObj, onExpire), durationMs);
+            activePowers.push(powerObj);
+        }
+    }
+
+    function removePower(powerObj, onExpire) {
+        let idx = activePowers.indexOf(powerObj);
+        if(idx > -1) activePowers.splice(idx, 1);
+        if(onExpire) onExpire();
     }
 
     function renderPowerBadges() {
@@ -585,6 +593,26 @@
         document.getElementById('topList').innerHTML = html;
     }
 
+    // MAP GRID LINES DRAWING FUNCTION
+    function drawMapGrid() {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 2;
+        const gridSize = 120;
+        const startX = MAP_CENTER - MAP_RADIUS;
+        const endX = MAP_CENTER + MAP_RADIUS;
+
+        ctx.beginPath();
+        for(let x = startX; x <= endX; x += gridSize) {
+            ctx.moveTo(x, MAP_CENTER - MAP_RADIUS);
+            ctx.lineTo(x, MAP_CENTER + MAP_RADIUS);
+        }
+        for(let y = startX; y <= endX; y += gridSize) {
+            ctx.moveTo(MAP_CENTER - MAP_RADIUS, y);
+            ctx.lineTo(MAP_CENTER + MAP_RADIUS, y);
+        }
+        ctx.stroke();
+    }
+
     function gameLoop(now) {
         if(!gameRunning) return;
 
@@ -606,7 +634,7 @@
             player.y += Math.sin(player.angle) * moveSpeed;
             player.body.unshift({x: player.x, y: player.y});
 
-            // Extreme Length Growth (Up to 1,000 Segments)
+            // Long Body Growth
             let maxAllowedSegments = Math.min(1000, 50 + Math.floor(score / 25));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
@@ -628,20 +656,24 @@
             if(isMagnetActive) {
                 [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
-                        let d = Math.hypot(player.x - item.x, player.y - item.y);
-                        if(d < 550) {
-                            item.x += (player.x - item.x) * 6.0 * dt;
-                            item.y += (player.y - item.y) * 6.0 * dt;
+                        if(!item.eatenTime) {
+                            let d = Math.hypot(player.x - item.x, player.y - item.y);
+                            if(d < 550) {
+                                item.x += (player.x - item.x) * 6.0 * dt;
+                                item.y += (player.y - item.y) * 6.0 * dt;
+                            }
                         }
                     });
                 });
             }
 
+            // Fruits Respawn exact 15 Seconds Timer Logic
             fruits.forEach((f) => {
                 if(f.eatenTime && Date.now() - f.eatenTime > 15000) {
                     let angle = Math.random() * Math.PI * 2;
                     let r = Math.random() * (MAP_RADIUS - 300);
-                    f.x = MAP_CENTER + Math.cos(angle)*r; f.y = MAP_CENTER + Math.sin(angle)*r;
+                    f.x = MAP_CENTER + Math.cos(angle)*r; 
+                    f.y = MAP_CENTER + Math.sin(angle)*r;
                     f.eatenTime = null;
                 }
                 else if(!f.eatenTime && Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
@@ -695,7 +727,7 @@
                         addPowerupTimer('Fast Steering', '🛞', 15000, () => isSteeringActive = false);
                     }
                     if(p.icon === '🎯') {
-                        cameraScale = 0.30; // Sniper Camera Zoom Out
+                        cameraScale = 0.30;
                         addPowerupTimer('Sniper Zoom Out', '🎯', 15000, () => cameraScale = 0.50);
                     }
 
@@ -730,6 +762,10 @@
         ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
 
+        // Render Map Grid
+        drawMapGrid();
+
+        // Map Border
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
