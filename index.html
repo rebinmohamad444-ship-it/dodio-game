@@ -397,4 +397,578 @@
         if(coins >= price) {
             coins -= price;
             let currentEnd = Date.now() < garageRentEndTime ? garageRentEndTime : Date.now();
-            garageRentEndTime = currentEnd + (minutes * 60 * 1000
+            garageRentEndTime = currentEnd + (minutes * 60 * 1000);
+            localStorage.setItem('dodio_garage_rent_end', garageRentEndTime.toString());
+            saveStats();
+            renderShop();
+            alert(`🎉 Garage rented for ${minutes} minutes!`);
+        } else {
+            alert(`❌ Not enough coins! You need 🪙${price}.`);
+        }
+    }
+
+    function selectSkin(id) { 
+        player.skin = id; 
+        renderShop(); 
+    }
+
+    function buySkin(id, price) {
+        if(coins >= price) {
+            coins -= price;
+            ownedSkins.push(id);
+            localStorage.setItem('dodio_owned_skins', JSON.stringify(ownedSkins));
+            saveStats();
+            selectSkin(id);
+            alert("🎉 Skin unlocked successfully!");
+        } else {
+            alert(`❌ Not enough coins! You need ${price} coins.`);
+        }
+    }
+
+    function startGame() {
+        document.getElementById('menu-overlay').style.display = 'none';
+        gameRunning = true; initGame();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function saveStats() {
+        localStorage.setItem('dodio_coins', coins.toString());
+        if(score > highScore) { highScore = score; localStorage.setItem('dodio_highscore', highScore.toString()); }
+        updateMenuStats();
+    }
+
+    function getRandomMapPos() {
+        let angle = Math.random() * Math.PI * 2;
+        let r = Math.sqrt(Math.random()) * (MAP_RADIUS - 400);
+        return {
+            x: MAP_CENTER + Math.cos(angle) * r,
+            y: MAP_CENTER + Math.sin(angle) * r
+        };
+    }
+
+    function exitGarageManually() {
+        isInsideGarageSafe = false;
+        player.x += 350;
+        document.getElementById('garage-safe-status').style.display = 'none';
+    }
+
+    function initGame() {
+        score = 0; currentMultiplier = 1; cameraScale = 0.35; baseCameraScale = 0.35; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
+        document.getElementById('scoreVal').innerText = score;
+        document.getElementById('boost-btn').style.display = 'none';
+        
+        player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
+        player.sizeRadius = 28; player.body = [];
+        for(let i=0; i<45; i++) player.body.push({x: player.x - i*10, y: player.y});
+
+        bots = [];
+        for(let i=0; i<12; i++) spawnBot(i);
+
+        fruits = [];
+        const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓', '🍊', '🍇', '🍑', '🍍', '🥝'];
+        for(let i=0; i<8000; i++) {
+            let pos = getRandomMapPos();
+            fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
+        }
+
+        coinItems = [];
+        for(let i=0; i<1000; i++) {
+            let pos = getRandomMapPos();
+            coinItems.push({ x: pos.x, y: pos.y });
+        }
+
+        powerups = [];
+        const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2', 'x4', 'x6'];
+        for(let i=0; i<800; i++) {
+            let pos = getRandomMapPos();
+            powerups.push({ x: pos.x, y: pos.y, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
+        }
+        
+        if(window.foodSpawnInterval) clearInterval(window.foodSpawnInterval);
+        window.foodSpawnInterval = setInterval(() => {
+            for(let i=0; i<8; i++) {
+                let pos = getRandomMapPos();
+                fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
+            }
+        }, 2000);
+    }
+
+    function spawnBot(id) {
+        let pos = getRandomMapPos();
+        let body = [];
+        for(let j=0; j<65; j++) body.push({x: pos.x - j*10, y: pos.y});
+        const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X', 'Titan_Rider', 'Phantom_Bite'];
+        bots[id] = { id, name: botNames[id], x: pos.x, y: pos.y, angle: Math.random()*Math.PI*2, body, score: 2000, alive: true, sizeRadius: 30 };
+    }
+
+    function explodeSnake(body) {
+        const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6'];
+        body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
+    }
+
+    const joyZone = document.getElementById('joystick-zone');
+    const joyKnob = document.getElementById('joystick-knob');
+    let joyActive = false, joyCenterX = 0, joyCenterY = 0;
+
+    window.addEventListener('touchstart', (e) => {
+        if(!gameRunning || !player.alive || controlType !== 'joystick') return;
+        const touch = e.touches[0];
+        if(touch.clientX < 110 && touch.clientY < 110) return;
+
+        joyCenterX = touch.clientX; joyCenterY = touch.clientY;
+        joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
+        joyZone.style.display = 'block'; joyActive = true;
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        if(!joyActive || controlType !== 'joystick') return;
+        const touch = e.touches[0];
+        const dx = touch.clientX - joyCenterX; const dy = touch.clientY - joyCenterY;
+        const dist = Math.hypot(dx, dy); const maxDist = 28;
+        let knobX = dx, knobY = dy;
+        if(dist > maxDist) { knobX = (dx / dist) * maxDist; knobY = (dy / dist) * maxDist; }
+        joyKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+        player.targetAngle = Math.atan2(dy, dx);
+    });
+
+    window.addEventListener('touchend', () => { joyActive = false; joyZone.style.display = 'none'; });
+
+    const boostBtn = document.getElementById('boost-btn');
+    boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
+    boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); manualSpeedBoost = false; });
+    boostBtn.addEventListener('mousedown', (e) => { e.preventDefault(); manualSpeedBoost = true; });
+    boostBtn.addEventListener('mouseup', (e) => { e.preventDefault(); manualSpeedBoost = false; });
+
+    window.addEventListener('touchmove', (e) => {
+        if(!gameRunning || !player.alive) return;
+        const touch = e.touches[0];
+        if(controlType === 'touch') {
+            player.targetAngle = Math.atan2(touch.clientY - canvas.height/2, touch.clientX - canvas.width/2);
+        }
+    });
+
+    function setDir(x, y) { player.targetAngle = Math.atan2(y, x); }
+    function loginFacebook() { alert("Connected with Facebook successfully! 📘"); }
+    function loginGuest() { alert("Logged in as Guest / Email successfully! 👤"); }
+
+    function addPowerupTimer(key, name, icon, durationMs, onExpire) {
+        let expireTime = Date.now() + durationMs;
+        
+        if(activePowers[key]) {
+            activePowers[key].expireTime = expireTime;
+            clearTimeout(activePowers[key].timerId);
+            activePowers[key].timerId = setTimeout(() => {
+                delete activePowers[key];
+                if(onExpire) onExpire();
+            }, durationMs);
+        } else {
+            let timerId = setTimeout(() => {
+                delete activePowers[key];
+                if(onExpire) onExpire();
+            }, durationMs);
+
+            activePowers[key] = { name, icon, expireTime, timerId };
+        }
+    }
+
+    function renderPowerBadges() {
+        let container = document.getElementById('active-powers-container');
+        let html = ""; let now = Date.now();
+        Object.keys(activePowers).forEach(key => {
+            let p = activePowers[key];
+            let timeLeft = Math.max(0, Math.ceil((p.expireTime - now) / 1000));
+            html += `<div class="power-badge"><span>${p.icon}</span> <span>${p.name} (${timeLeft}s)</span></div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    // --- FIX 5: BEAUTIFUL DRAGON/COBRA HEAD ---
+    function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
+        
+        // Neck / Base
+        ctx.fillStyle = mainColor; 
+        ctx.beginPath(); ctx.ellipse(0, 0, radius * 0.6, radius * 0.9, 0, 0, Math.PI * 2); ctx.fill();
+        
+        // Cobra/Dragon Head shape (Wider top, sharp bottom)
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, -radius * 0.5); // Top Right
+        ctx.lineTo(radius * 0.6, -radius * 1.3); // Topmost spike
+        ctx.lineTo(-radius * 0.2, -radius * 1.2); // Top Left
+        ctx.lineTo(-radius * 0.9, -radius * 0.4); // Side Left
+        ctx.lineTo(-radius * 0.3, radius * 0.4); // Jaw bottom
+        ctx.lineTo(radius * 0.3, radius * 0.4); // Jaw bottom right
+        ctx.lineTo(radius * 1.2, -radius * 0.5); // Close
+        ctx.closePath(); ctx.fill();
+        
+        // Draw Outline
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
+
+        // Eyes
+        ctx.fillStyle = '#f1c40f'; 
+        ctx.beginPath(); ctx.ellipse(radius*0.6, -radius*0.4, radius*0.25, radius*0.15, 0.1, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(-radius*0.6, -radius*0.4, radius*0.25, radius*0.15, -0.1, 0, Math.PI * 2); ctx.fill();
+        
+        // Pupils (Black)
+        ctx.fillStyle = '#000'; 
+        ctx.beginPath(); ctx.arc(radius*0.65, -radius*0.4, radius*0.08, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-radius*0.55, -radius*0.4, radius*0.08, 0, Math.PI * 2); ctx.fill();
+
+        // Draw Flag on Head if applicable
+        if(flagKey && loadedFlagImages[flagKey]) {
+            try {
+                ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.6, -radius * 0.8, radius * 1.2, radius * 0.7);
+            } catch(e){}
+        }
+
+        // Emoji on top of head
+        if(activeEmojiText) {
+            ctx.font = `${radius * 2.2}px Arial`;
+            ctx.fillText(activeEmojiText, 0, -radius * 2.2);
+        }
+
+        // Magnet active aura
+        if(isMagnetActive) {
+            let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
+            ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
+            ctx.lineWidth = isBlinking ? 4 : 2;
+            ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = isBlinking ? 16 : 2;
+
+            for(let i = -2; i <= 2; i++) {
+                ctx.beginPath();
+                ctx.arc(radius * 1.8, 0, radius * 1.5 + (i + 2) * 8, -Math.PI * 0.28, Math.PI * 0.28);
+                ctx.stroke();
+            }
+            ctx.shadowBlur = 0;
+        }
+
+        ctx.restore();
+    }
+
+    function updateLeaderboard() {
+        let list = [{ name: document.getElementById('playerName').value || "You (Player)", score: score }];
+        bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score }); });
+        list.sort((a, b) => b.score - a.score);
+
+        let html = "";
+        list.slice(0, 10).forEach((item, idx) => {
+            let isPlayer = item.name.includes("Player");
+            html += `<div style="color:${isPlayer ? '#2ecc71' : '#fff'};">${idx+1}. ${item.name} - ${item.score}</div>`;
+        });
+        document.getElementById('topList').innerHTML = html;
+    }
+
+    function drawMapGrid() {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 2;
+        const gridSize = 120;
+        const startX = MAP_CENTER - MAP_RADIUS;
+        const endX = MAP_CENTER + MAP_RADIUS;
+
+        ctx.beginPath();
+        for(let x = startX; x <= endX; x += gridSize) {
+            ctx.moveTo(x, MAP_CENTER - MAP_RADIUS);
+            ctx.lineTo(x, MAP_CENTER + MAP_RADIUS);
+        }
+        for(let y = startX; y <= endX; y += gridSize) {
+            ctx.moveTo(MAP_CENTER - MAP_RADIUS, y);
+            ctx.lineTo(MAP_CENTER + MAP_RADIUS, y);
+        }
+        ctx.stroke();
+    }
+
+    function gameLoop(now) {
+        if(!gameRunning) return;
+
+        let dt = (now - lastFrameTime) / 1000;
+        if(dt > 0.1 || isNaN(dt)) dt = 0.016;
+        lastFrameTime = now;
+
+        deadRemains = deadRemains.filter(r => Date.now() - r.spawnTime < 25000);
+
+        let isGarageRented = Date.now() < garageRentEndTime;
+
+        if(player.alive) {
+            baseCameraScale = Math.max(0.18, 0.35 - (player.sizeRadius - 28) * 0.002);
+            cameraScale = isSniperActive ? 0.20 : baseCameraScale;
+
+            let inAnyGarage = false;
+            garages.forEach(g => {
+                let half = g.size / 2;
+                if(player.x >= g.x - half && player.x <= g.x + half && player.y >= g.y - half && player.y <= g.y + half) {
+                    inAnyGarage = true;
+                }
+            });
+
+            if(inAnyGarage && isGarageRented && isInsideGarageSafe === false) {
+                isInsideGarageSafe = true;
+            } else if(!inAnyGarage && isInsideGarageSafe) {
+                isInsideGarageSafe = false;
+                document.getElementById('garage-safe-status').style.display = 'none';
+            }
+
+            if(isInsideGarageSafe) {
+                document.getElementById('garage-safe-status').style.display = 'block';
+                let leftSecs = Math.max(0, Math.ceil((garageRentEndTime - Date.now()) / 1000));
+                let m = Math.floor(leftSecs / 60); let s = leftSecs % 60;
+                document.getElementById('garageTimerVal').innerText = `Rent Time Left: ${m}m ${s}s (Safe Zone Active)`;
+            } else {
+                document.getElementById('garage-safe-status').style.display = 'none';
+            }
+
+            // --- FIX 2: FREE EXIT FROM GARAGE USING MOVEMENT ---
+            // We ONLY prevent movement inside garage? NO, we DO NOT prevent! 
+            // We allow full movement, regardless of being inside or outside. 
+            // The collision logic for OTHER players is separate (drawn in barrier).
+            
+            // Handle Movement (Always active for the player, even inside garage)
+            let diff = player.targetAngle - player.angle;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+
+            player.angle += diff * (isSteeringActive ? 12.0 : 6.0) * dt;
+
+            let moveSpeed = (manualSpeedBoost ? 380 : 210) * dt;
+            player.x += Math.cos(player.angle) * moveSpeed;
+            player.y += Math.sin(player.angle) * moveSpeed;
+            
+            // Update body
+            player.body.unshift({x: player.x, y: player.y});
+
+            let maxAllowedSegments = Math.min(3500, 60 + Math.floor((score * currentMultiplier) / 4));
+            while(player.body.length > maxAllowedSegments) player.body.pop();
+
+            let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
+            if(distFromCenter >= MAP_RADIUS - 50) {
+                player.alive = false; alert("Game Over! You hit the Red Zone!"); location.reload();
+            }
+            document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 1200 ? 'block' : 'none';
+
+            // Bot collisions with player
+            if(!isInsideGarageSafe) {
+                bots.forEach(b => {
+                    if(!b.alive) return;
+                    
+                    let headDist = Math.hypot(player.x - b.x, player.y - b.y);
+                    if(headDist < player.sizeRadius + b.sizeRadius) {
+                        b.alive = false;
+                        explodeSnake(b.body);
+                        spawnBot(b.id);
+                        score += 500 * currentMultiplier;
+                        headshotTextTimer = Date.now() + 3000;
+                        playHeadshotSound(); 
+                    }
+
+                    b.body.forEach((seg, idx) => {
+                        if(idx > 3 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
+                            player.alive = false; alert("Game Over! You crashed into a bot!"); location.reload();
+                        }
+                    });
+                });
+            }
+
+            if(isMagnetActive && !isInsideGarageSafe) {
+                [fruits, coinItems, powerups, deadRemains].forEach(group => {
+                    group.forEach(item => {
+                        if(!item.eatenTime) {
+                            let d = Math.hypot(player.x - item.x, player.y - item.y);
+                            if(d < 550) {
+                                item.x += (player.x - item.x) * 6.0 * dt;
+                                item.y += (player.y - item.y) * 6.0 * dt;
+                            }
+                        }
+                    });
+                });
+            }
+
+            fruits.forEach((f) => {
+                if(f.eatenTime && Date.now() - f.eatenTime > 15000) {
+                    let pos = getRandomMapPos();
+                    f.x = pos.x; f.y = pos.y;
+                    f.eatenTime = null;
+                }
+                else if(!f.eatenTime && Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 32) {
+                    score += (10 * currentMultiplier);
+                    document.getElementById('scoreVal').innerText = Math.floor(score);
+                    f.eatenTime = Date.now();
+                    f.x = -99999; f.y = -99999;
+                    if(player.sizeRadius < 95) player.sizeRadius += (0.35 * currentMultiplier);
+                }
+            });
+
+            coinItems.forEach((c) => {
+                if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
+                    coins += (0.5 * currentMultiplier);
+                    document.getElementById('coinVal').innerText = `🪙 ${Math.floor(coins)}`;
+                    saveStats();
+                    let pos = getRandomMapPos();
+                    c.x = pos.x; c.y = pos.y;
+                }
+            });
+
+            deadRemains.forEach((r, i) => {
+                if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
+                    score += 15 * currentMultiplier;
+                    document.getElementById('scoreVal').innerText = Math.floor(score);
+                    deadRemains.splice(i, 1);
+                    if(player.sizeRadius < 95) player.sizeRadius += (0.45 * currentMultiplier);
+                }
+            });
+
+            powerups.forEach((p) => {
+                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
+                    if(p.icon === '🧲') {
+                        isMagnetActive = true;
+                        addPowerupTimer('magnet', 'Magnet', '🧲', 15000, () => isMagnetActive = false);
+                    }
+                    if(p.icon.includes('x')) {
+                        let val = parseInt(p.icon.replace('x', '')) || 2;
+                        currentMultiplier = val;
+                        addPowerupTimer('multiplier', `Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
+                    }
+                    if(p.icon === '🚀') {
+                        document.getElementById('boost-btn').style.display = 'flex';
+                        addPowerupTimer('boost', 'Boost Active', '🚀', 15000, () => {
+                            document.getElementById('boost-btn').style.display = 'none';
+                            manualSpeedBoost = false;
+                        });
+                    }
+                    if(p.icon === '🛞') {
+                        isSteeringActive = true;
+                        addPowerupTimer('steering', 'Fast Steering', '🛞', 15000, () => isSteeringActive = false);
+                    }
+                    if(p.icon === '🎯') {
+                        isSniperActive = true;
+                        addPowerupTimer('sniper', 'Sniper Zoom Out', '🎯', 15000, () => isSniperActive = false);
+                    }
+
+                    let pos = getRandomMapPos();
+                    p.x = pos.x; p.y = pos.y;
+                }
+            });
+        }
+
+        bots.forEach(b => {
+            if(!b.alive) return;
+            let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
+            if(distToPlayer < 1200 && player.alive && !isInsideGarageSafe) {
+                b.angle = Math.atan2(player.y - b.y, player.x - b.x);
+            } else { b.angle += (Math.random() - 0.5) * 2.0 * dt; }
+
+            let botSpeed = 190 * dt;
+            b.x += Math.cos(b.angle) * botSpeed; b.y += Math.sin(b.angle) * botSpeed;
+            b.body.unshift({x: b.x, y: b.y}); b.body.pop();
+
+            if(!isInsideGarageSafe) {
+                player.body.forEach((pSeg, idx) => {
+                    if(idx > 3 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
+                        b.alive = false; explodeSnake(b.body); spawnBot(b.id);
+                    }
+                });
+            }
+        });
+
+        const camX = canvas.width / 2 - player.x * cameraScale;
+        const camY = canvas.height / 2 - player.y * cameraScale;
+
+        ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
+
+        drawMapGrid();
+
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
+        ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
+
+        // --- FIX 1 & 3: GARAGE BARRIER & SAFE EXIT ---
+        garages.forEach(g => {
+            let half = g.size / 2;
+            ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
+            ctx.strokeRect(g.x - half - 40, g.y - half - 40, g.size + 80, g.size + 80);
+            
+            ctx.fillStyle = isGarageRented ? 'rgba(46, 204, 113, 0.35)' : 'rgba(127, 140, 141, 0.35)'; 
+            ctx.fillRect(g.x - half, g.y - half, g.size, g.size);
+            ctx.strokeStyle = isGarageRented ? '#2ecc71' : '#f1c40f'; ctx.lineWidth = 6;
+            ctx.strokeRect(g.x - half, g.y - half, g.size, g.size);
+
+            ctx.fillStyle = '#fff'; ctx.font = "bold 26px Arial"; 
+            ctx.fillText(isGarageRented ? "GARAGE 🛞 (SAFE ZONE)" : "GARAGE 🔒 (RENT REQUIRED)", g.x - 140, g.y + 10);
+
+            // INVISIBLE BARRIER FOR OUTSIDE PLAYERS (Bots cant enter)
+            ctx.strokeStyle = 'rgba(46, 204, 113, 0.6)';
+            ctx.lineWidth = 20;
+            ctx.strokeRect(g.x - half - 60, g.y - half - 60, g.size + 120, g.size + 120);
+            
+            // But for Player: We handle it differently. Player can leave freely if they walk outside.
+            // We just check if player is inside.
+        });
+
+        fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "bold 34px Arial"; ctx.fillText(f.type, f.x, f.y); } });
+        coinItems.forEach(c => { ctx.font = "bold 28px Arial"; ctx.fillText("🪙", c.x, c.y); });
+        deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
+        powerups.forEach(p => { ctx.font = "bold 32px Arial"; ctx.fillText(p.icon, p.x, p.y); });
+
+        if(player.alive) {
+            let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
+            
+            // --- FIX 6: FLAGS ON BODY ---
+            for(let i = player.body.length - 1; i >= 2; i--) {
+                let p = player.body[i];
+                let color = skinObj.colors[i % skinObj.colors.length];
+                ctx.fillStyle = color; ctx.beginPath();
+                ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
+
+                // Draw flags down the snake body (changing every 5 segments to look nice)
+                if(skinObj.flagKey && loadedFlagImages[skinObj.flagKey] && i % 5 === 0) {
+                    try {
+                        ctx.drawImage(loadedFlagImages[skinObj.flagKey], p.x - player.sizeRadius * 0.6, p.y - player.sizeRadius * 0.4, player.sizeRadius * 1.2, player.sizeRadius * 0.8);
+                    } catch(e){}
+                }
+            }
+            drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, skinObj.flagKey);
+        }
+
+        // Bots with cool heads too
+        bots.forEach(b => {
+            if(!b.alive) return;
+            for(let j = b.body.length - 1; j >= 2; j--) {
+                let bp = b.body[j];
+                ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#3498db';
+                ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.8, 0, Math.PI*2); ctx.fill();
+            }
+            drawSnakeHead(b.body[0], b.angle, '#e74c3c', b.sizeRadius, null);
+        });
+
+        ctx.restore();
+
+        if(Date.now() < headshotTextTimer) {
+            ctx.save();
+            ctx.font = "900 36px Arial";
+            ctx.fillStyle = "#e74c3c";
+            ctx.textAlign = "center";
+            ctx.shadowColor = "#f1c40f";
+            ctx.shadowBlur = 12;
+            ctx.fillText("💥 HEADSHOT! 🎯", canvas.width / 2, canvas.height / 3);
+            ctx.restore();
+        }
+
+        radarCtx.clearRect(0, 0, 65, 65);
+        garages.forEach(g => {
+            radarCtx.fillStyle = isGarageRented ? '#2ecc71' : '#f1c40f';
+            radarCtx.fillRect(((g.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65 - 3, ((g.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65 - 3, 6, 6);
+        });
+        if(player.alive) {
+            radarCtx.fillStyle = '#ffffff'; radarCtx.beginPath();
+            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, 3.5, 0, Math.PI*2); radarCtx.fill();
+        }
+        bots.forEach(b => {
+            if(!b.alive) return;
+            radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
+            radarCtx.arc(((b.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, ((b.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, 2, 0, Math.PI*2); radarCtx.fill();
+        });
+
+        renderPowerBadges(); updateLeaderboard();
+        requestAnimationFrame(gameLoop);
+    }
+</script>
+</body>
+</html>
