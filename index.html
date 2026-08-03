@@ -124,12 +124,12 @@
         }
 
         #boost-btn {
-            position: absolute; bottom: 15px; right: 15px;
-            width: 55px; height: 55px; background: rgba(231, 76, 60, 0.9);
+            position: absolute; bottom: 20px; right: 20px;
+            width: 60px; height: 60px; background: rgba(231, 76, 60, 0.95);
             border: 2px solid #fff; border-radius: 50%;
-            color: #fff; font-weight: bold; font-size: 10px;
-            z-index: 10; display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 0 8px #e74c3c; cursor: pointer;
+            color: #fff; font-weight: bold; font-size: 11px;
+            z-index: 10; display: none; justify-content: center; align-items: center;
+            box-shadow: 0 0 10px #e74c3c; cursor: pointer;
         }
 
         #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
@@ -160,6 +160,7 @@
             display: flex; justify-content: space-between; align-items: center;
             background: #181c24; padding: 8px 10px; border-radius: 6px; border: 1px solid #333; font-size: 11px;
         }
+        .flag-img { width: 22px; height: 15px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
         @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
@@ -214,8 +215,8 @@
         High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">1500</span> 🪙
     </div>
 
-    <div style="background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; border:1px solid #f1c40f; width:85%; max-width:270px; margin-bottom:8px; font-size:8px;">
-        <div style="color:#f1c40f; font-weight:bold; text-align:center; margin-bottom:2px;">🏆 LEADERBOARD RANKINGS</div>
+    <div style="background:rgba(0,0,0,0.7); padding:6px 12px; border-radius:8px; border:1px solid #f1c40f; width:85%; max-width:280px; margin-bottom:8px; font-size:10px;">
+        <div style="color:#f1c40f; font-weight:bold; text-align:center; margin-bottom:4px; font-size:11px;">🏆 LEADERBOARD RANKINGS</div>
         <div id="menuLeaderboardContainer"></div>
     </div>
 
@@ -309,6 +310,29 @@
     let coinItems = [];
     let powerups = [];
 
+    const flagImageUrls = {
+        'kurdish': 'https://flagcdn.com/w80/krd.png',
+        'spain': 'https://flagcdn.com/w80/es.png',
+        'brazil': 'https://flagcdn.com/w80/br.png',
+        'iraq': 'https://flagcdn.com/w80/iq.png',
+        'turkey': 'https://flagcdn.com/w80/tr.png',
+        'iran': 'https://flagcdn.com/w80/ir.png',
+        'palestine': 'https://flagcdn.com/w80/ps.png',
+        'saudi': 'https://flagcdn.com/w80/sa.png',
+        'uae': 'https://flagcdn.com/w80/ae.png',
+        'usa': 'https://flagcdn.com/w80/us.png',
+        'uk': 'https://flagcdn.com/w80/gb.png',
+        'germany': 'https://flagcdn.com/w80/de.png',
+        'france': 'https://flagcdn.com/w80/fr.png'
+    };
+
+    const loadedFlagImages = {};
+    Object.keys(flagImageUrls).forEach(id => {
+        const img = new Image();
+        img.src = flagImageUrls[id];
+        loadedFlagImages[id] = img;
+    });
+
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', type: 'free', colors: ['#2ecc71', '#27ae60'] },
         { id: 'free2', name: '🔵 Sky Blue', type: 'free', colors: ['#3498db', '#2980b9'] },
@@ -318,42 +342,19 @@
         { id: 'free6', name: '🟠 Sunset Orange', type: 'free', colors: ['#e67e22', '#d35400'] },
         { id: 'free7', name: '⚪ Pure White', type: 'free', colors: ['#ffffff', '#bdc3c7'] },
         
-        { id: 'kurdish', name: '☀️ Kurdistan', type: 'flags', price: 100, flagEmoji: '☀️', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
-        { id: 'spain', name: '🇪🇸 Spain', type: 'flags', price: 100, flagEmoji: '🇪🇸', colors: ['#aa152b', '#f1bf00', '#aa152b'] },
-        { id: 'brazil', name: '🇧🇷 Brazil', type: 'flags', price: 100, flagEmoji: '🇧🇷', colors: ['#009c3b', '#ffdf00', '#002776'] },
-        { id: 'iraq', name: '🇮🇶 Iraq', type: 'flags', price: 100, flagEmoji: '🇮🇶', colors: ['#ff0000', '#ffffff', '#000000'] },
-        { id: 'turkey', name: '🇹🇷 Turkey', type: 'flags', price: 100, flagEmoji: '🇹🇷', colors: ['#e74c3c', '#ffffff'] },
-        { id: 'iran', name: '🇮🇷 Iran', type: 'flags', price: 100, flagEmoji: '🇮🇷', colors: ['#239f40', '#ffffff', '#da0000'] },
-        { id: 'palestine', name: '🇵🇸 Palestine', type: 'flags', price: 100, flagEmoji: '🇵🇸', colors: ['#000000', '#ffffff', '#007a3d', '#e4312b'] },
-        { id: 'saudi', name: '🇸🇦 Saudi Arabia', type: 'flags', price: 100, flagEmoji: '🇸🇦', colors: ['#006c35', '#ffffff'] },
-        { id: 'uae', name: '🇦🇪 UAE', type: 'flags', price: 100, flagEmoji: '🇦🇪', colors: ['#ff0000', '#00732f', '#ffffff', '#000000'] },
-        { id: 'qatar', name: '🇶🇦 Qatar', type: 'flags', price: 100, flagEmoji: '🇶🇦', colors: ['#8d1b3d', '#ffffff'] },
-        { id: 'egypt', name: '🇪🇬 Egypt', type: 'flags', price: 100, flagEmoji: '🇪🇬', colors: ['#ce1126', '#ffffff', '#000000'] },
-        { id: 'morocco', name: '🇲🇦 Morocco', type: 'flags', price: 100, flagEmoji: '🇲🇦', colors: ['#c1272d', '#006233'] },
-        { id: 'algeria', name: '🇩🇿 Algeria', type: 'flags', price: 100, flagEmoji: '🇩🇿', colors: ['#006233', '#ffffff', '#d21034'] },
-        { id: 'tunisia', name: '🇹🇳 Tunisia', type: 'flags', price: 100, flagEmoji: '🇹🇳', colors: ['#e70013', '#ffffff'] },
-        { id: 'jordan', name: '🇯🇴 Jordan', type: 'flags', price: 100, flagEmoji: '🇯🇴', colors: ['#000000', '#ffffff', '#007a3d', '#ce1126'] },
-        { id: 'lebanon', name: '🇱🇧 Lebanon', type: 'flags', price: 100, flagEmoji: '🇱🇧', colors: ['#ed1c24', '#ffffff', '#00a651'] },
-        { id: 'usa', name: '🇺🇸 USA', type: 'flags', price: 100, flagEmoji: '🇺🇸', colors: ['#b22234', '#ffffff', '#3c3b6e'] },
-        { id: 'uk', name: '🇬🇧 UK', type: 'flags', price: 100, flagEmoji: '🇬🇧', colors: ['#00247d', '#ffffff', '#cf142b'] },
-        { id: 'canada', name: '🇨🇦 Canada', type: 'flags', price: 100, flagEmoji: '🇨🇦', colors: ['#ff0000', '#ffffff'] },
-        { id: 'germany', name: '🇩🇪 Germany', type: 'flags', price: 100, flagEmoji: '🇩🇪', colors: ['#000000', '#dd0000', '#ffce00'] },
-        { id: 'france', name: '🇫🇷 France', type: 'flags', price: 100, flagEmoji: '🇫🇷', colors: ['#002395', '#ffffff', '#ed2939'] },
-        { id: 'italy', name: '🇮🇹 Italy', type: 'flags', price: 100, flagEmoji: '🇮🇹', colors: ['#009246', '#ffffff', '#ce2b37'] },
-        { id: 'argentina', name: '🇦🇷 Argentina', type: 'flags', price: 100, flagEmoji: '🇦🇷', colors: ['#74acdf', '#ffffff', '#f6b40e'] },
-        { id: 'portugal', name: '🇵🇹 Portugal', type: 'flags', price: 100, flagEmoji: '🇵🇹', colors: ['#046a38', '#da291c'] },
-        { id: 'netherlands', name: '🇳🇱 Netherlands', type: 'flags', price: 100, flagEmoji: '🇳🇱', colors: ['#ae1c28', '#ffffff', '#21468b'] },
-        { id: 'japan', name: '🇯🇵 Japan', type: 'flags', price: 100, flagEmoji: '🇯🇵', colors: ['#ffffff', '#bc002d'] },
-        { id: 'south_korea', name: '🇰🇷 S. Korea', type: 'flags', price: 100, flagEmoji: '🇰🇷', colors: ['#ffffff', '#cd2e3a', '#0047a0'] },
-        { id: 'china', name: '🇨🇳 China', type: 'flags', price: 100, flagEmoji: '🇨🇳', colors: ['#de2910', '#ffde00'] },
-        { id: 'india', name: '🇮🇳 India', type: 'flags', price: 100, flagEmoji: '🇮🇳', colors: ['#ff9933', '#ffffff', '#128807'] },
-        { id: 'australia', name: '🇦🇺 Australia', type: 'flags', price: 100, flagEmoji: '🇦🇺', colors: ['#00008b', '#ff0000', '#ffffff'] },
-        { id: 'russia', name: '🇷🇺 Russia', type: 'flags', price: 100, flagEmoji: '🇷🇺', colors: ['#ffffff', '#0039a6', '#d52b1e'] },
-        { id: 'ukraine', name: '🇺🇦 Ukraine', type: 'flags', price: 100, flagEmoji: '🇺🇦', colors: ['#0057b7', '#ffd700'] },
-        { id: 'sweden', name: '🇸🇪 Sweden', type: 'flags', price: 100, flagEmoji: '🇸🇪', colors: ['#006aa7', '#fecc00'] },
-        { id: 'norway', name: '🇳🇴 Norway', type: 'flags', price: 100, flagEmoji: '🇳🇴', colors: ['#ba0c2f', '#00205b', '#ffffff'] },
-        { id: 'switzerland', name: '🇨🇭 Switzerland', type: 'flags', price: 100, flagEmoji: '🇨🇭', colors: ['#da291c', '#ffffff'] },
-        { id: 'mexico', name: '🇲🇽 Mexico', type: 'flags', price: 100, flagEmoji: '🇲🇽', colors: ['#006847', '#ffffff', '#ce1126'] }
+        { id: 'kurdish', name: 'Kurdistan', type: 'flags', price: 100, flagKey: 'kurdish', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
+        { id: 'spain', name: 'Spain', type: 'flags', price: 100, flagKey: 'spain', colors: ['#aa152b', '#f1bf00', '#aa152b'] },
+        { id: 'brazil', name: 'Brazil', type: 'flags', price: 100, flagKey: 'brazil', colors: ['#009c3b', '#ffdf00', '#002776'] },
+        { id: 'iraq', name: 'Iraq', type: 'flags', price: 100, flagKey: 'iraq', colors: ['#ff0000', '#ffffff', '#000000'] },
+        { id: 'turkey', name: 'Turkey', type: 'flags', price: 100, flagKey: 'turkey', colors: ['#e74c3c', '#ffffff'] },
+        { id: 'iran', name: 'Iran', type: 'flags', price: 100, flagKey: 'iran', colors: ['#239f40', '#ffffff', '#da0000'] },
+        { id: 'palestine', name: 'Palestine', type: 'flags', price: 100, flagKey: 'palestine', colors: ['#000000', '#ffffff', '#007a3d', '#e4312b'] },
+        { id: 'saudi', name: 'Saudi Arabia', type: 'flags', price: 100, flagKey: 'saudi', colors: ['#006c35', '#ffffff'] },
+        { id: 'uae', name: 'UAE', type: 'flags', price: 100, flagKey: 'uae', colors: ['#ff0000', '#00732f', '#ffffff', '#000000'] },
+        { id: 'usa', name: 'USA', type: 'flags', price: 100, flagKey: 'usa', colors: ['#b22234', '#ffffff', '#3c3b6e'] },
+        { id: 'uk', name: 'UK', type: 'flags', price: 100, flagKey: 'uk', colors: ['#00247d', '#ffffff', '#cf142b'] },
+        { id: 'germany', name: 'Germany', type: 'flags', price: 100, flagKey: 'germany', colors: ['#000000', '#dd0000', '#ffce00'] },
+        { id: 'france', name: 'France', type: 'flags', price: 100, flagKey: 'france', colors: ['#002395', '#ffffff', '#ed2939'] }
     ];
 
     const garageRentOptions = [
@@ -417,7 +418,7 @@
         dummyRanks.sort((a,b) => b.score - a.score);
         let html = "";
         dummyRanks.forEach((r, idx) => {
-            html += `<div style="display:flex; justify-content:space-between; margin-bottom:1px;"><span>${idx+1}. ${r.name}</span><span style="color:#2ecc71;">${r.score}</span></div>`;
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>${idx+1}. ${r.name}</span><span style="color:#2ecc71;">${r.score}</span></div>`;
         });
         document.getElementById('menuLeaderboardContainer').innerHTML = html;
     }
@@ -493,9 +494,11 @@
                 btnHtml = `<button style="background:#f39c12; color:#fff; padding:4px 8px;" onclick="buySkin('${s.id}', ${s.price})">Buy 🪙${s.price}</button>`;
             }
 
+            let flagImgTag = s.flagKey ? `<img src="${flagImageUrls[s.flagKey]}" class="flag-img"/>` : '';
+
             container.innerHTML += `
                 <div class="shop-item">
-                    <span>${s.flagEmoji || ''} ${s.name}</span>
+                    <span>${flagImgTag} ${s.name}</span>
                     ${btnHtml}
                 </div>
             `;
@@ -564,6 +567,7 @@
     function initGame() {
         score = 0; currentMultiplier = 1; cameraScale = 0.50; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
         document.getElementById('scoreVal').innerText = score;
+        document.getElementById('boost-btn').style.display = 'none';
         
         player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
         player.sizeRadius = 28; player.body = [];
@@ -574,20 +578,20 @@
 
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<4500; i++) {
+        for(let i=0; i<9000; i++) {
             let pos = getRandomMapPos();
             fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
         }
 
         coinItems = [];
-        for(let i=0; i<600; i++) {
+        for(let i=0; i<1200; i++) {
             let pos = getRandomMapPos();
             coinItems.push({ x: pos.x, y: pos.y });
         }
 
         powerups = [];
-        const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2', 'x4', 'x8'];
-        for(let i=0; i<500; i++) {
+        const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2', 'x4', 'x6'];
+        for(let i=0; i<1000; i++) {
             let pos = getRandomMapPos();
             powerups.push({ x: pos.x, y: pos.y, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
@@ -682,7 +686,7 @@
         container.innerHTML = html;
     }
 
-    function drawSnakeHead(p, angle, mainColor, radius, flagEmoji) {
+    function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
         
         ctx.fillStyle = mainColor; ctx.beginPath();
@@ -700,19 +704,30 @@
         ctx.arc(radius*0.75, -radius*0.5, radius*0.09, 0, Math.PI * 2);
         ctx.arc(radius*0.75, radius*0.5, radius*0.09, 0, Math.PI * 2); ctx.fill();
 
-        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3.5; ctx.beginPath();
-        ctx.moveTo(radius*2.4, 0); ctx.lineTo(radius*3.2, 0);
-        ctx.lineTo(radius*3.5, -6); ctx.moveTo(radius*3.2, 0); ctx.lineTo(radius*3.5, 6); ctx.stroke();
-
-        if(flagEmoji) {
-            ctx.font = `bold ${radius * 1.8}px Arial`;
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(flagEmoji, radius * 0.4, 0);
+        if(flagKey && loadedFlagImages[flagKey]) {
+            try {
+                ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.2, -radius * 0.6, radius * 1.2, radius * 0.8);
+            } catch(e){}
         }
 
         if(activeEmojiText) {
             ctx.font = `${radius * 2.2}px Arial`;
             ctx.fillText(activeEmojiText, 0, -radius * 2.2);
+        }
+
+        /* Draw 5 Curved Lines for Magnet Effect */
+        if(isMagnetActive) {
+            let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
+            ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
+            ctx.lineWidth = isBlinking ? 4 : 2;
+            ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = isBlinking ? 16 : 2;
+
+            for(let i = -2; i <= 2; i++) {
+                ctx.beginPath();
+                ctx.arc(radius * 1.8, 0, radius * 1.5 + (i + 2) * 8, -Math.PI * 0.28, Math.PI * 0.28);
+                ctx.stroke();
+            }
+            ctx.shadowBlur = 0;
         }
 
         ctx.restore();
@@ -892,7 +907,11 @@
                         addPowerupTimer('multiplier', `Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
                     }
                     if(p.icon === '🚀') {
-                        addPowerupTimer('boost', 'Boost Power', '🚀', 15000, () => {});
+                        document.getElementById('boost-btn').style.display = 'flex';
+                        addPowerupTimer('boost', 'Boost Active', '🚀', 15000, () => {
+                            document.getElementById('boost-btn').style.display = 'none';
+                            manualSpeedBoost = false;
+                        });
                     }
                     if(p.icon === '🛞') {
                         isSteeringActive = true;
@@ -968,13 +987,13 @@
                 ctx.fillStyle = color; ctx.beginPath();
                 ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
 
-                if(skinObj.flagEmoji && i % 2 === 0) {
-                    ctx.font = `bold ${player.sizeRadius * 1.3}px Arial`;
-                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    ctx.fillText(skinObj.flagEmoji, p.x, p.y);
+                if(skinObj.flagKey && loadedFlagImages[skinObj.flagKey] && i % 4 === 0) {
+                    try {
+                        ctx.drawImage(loadedFlagImages[skinObj.flagKey], p.x - player.sizeRadius * 0.6, p.y - player.sizeRadius * 0.4, player.sizeRadius * 1.2, player.sizeRadius * 0.8);
+                    } catch(e){}
                 }
             }
-            drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, skinObj.flagEmoji);
+            drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, skinObj.flagKey);
         }
 
         bots.forEach(b => {
