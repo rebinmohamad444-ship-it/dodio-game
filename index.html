@@ -20,7 +20,7 @@
         }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
-        /* HUD Top Left - Compact */
+        /* HUD Top Left */
         #radar-wrapper {
             position: absolute; top: 8px; left: 8px;
             display: flex; flex-direction: column; align-items: center;
@@ -45,12 +45,12 @@
         #ingame-garage-btn {
             background: rgba(243, 156, 18, 0.9); border: 1px solid #fff;
             color: #fff; padding: 4px 8px; border-radius: 8px;
-            font-size: 9px; font-weight: bold; cursor: pointer; text-align: center; width: 65px;
+            font-size: 9px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
         }
         #exit-btn {
             background: #e74c3c; color: #fff; font-weight: bold;
             border: 1px solid #fff; padding: 4px 8px; border-radius: 8px;
-            font-size: 9px; cursor: pointer; text-align: center; width: 65px;
+            font-size: 9px; cursor: pointer; text-align: center; width: 75px;
         }
 
         /* Joystick & Controls */
@@ -113,7 +113,7 @@
             box-shadow: 0 0 6px #e74c3c; cursor: pointer;
         }
 
-        /* Modals & Main Menu */
+        /* Modals & Main Menu Overlay */
         #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.96); display: flex;
@@ -121,9 +121,9 @@
         }
         #shop-modal, #exit-modal, #settings-modal { display: none; z-index: 30; }
 
-        h1 { font-size: 34px; color: #2ecc71; margin-bottom: 4px; }
-        .btn-group { display: flex; flex-direction: column; gap: 6px; width: 85%; max-width: 270px; }
-        button, input, select { padding: 8px; font-size: 11px; border-radius: 10px; border: none; outline: none; }
+        h1 { font-size: 32px; color: #2ecc71; margin-bottom: 2px; }
+        .btn-group { display: flex; flex-direction: column; gap: 5px; width: 85%; max-width: 270px; }
+        button, input, select { padding: 7px; font-size: 11px; border-radius: 8px; border: none; outline: none; }
         button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; }
         button.fb-btn { background: #1877f2; color: #fff; }
         button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
@@ -131,17 +131,17 @@
         button.settings-btn { background: #e67e22; color: #fff; }
 
         /* Shop Styling */
-        .shop-tabs { display: flex; gap: 6px; width: 90%; max-width: 320px; margin-bottom: 8px; }
-        .shop-tab-btn { flex: 1; padding: 6px; background: #181c24; color: #888; border: 1px solid #333; border-radius: 6px; font-weight: bold; }
+        .shop-tabs { display: flex; gap: 6px; width: 90%; max-width: 320px; margin-bottom: 6px; }
+        .shop-tab-btn { flex: 1; padding: 5px; background: #181c24; color: #888; border: 1px solid #333; border-radius: 6px; font-weight: bold; }
         .shop-tab-btn.active { background: #f39c12; color: #fff; border-color: #f39c12; }
         .shop-list {
-            display: flex; flex-direction: column; gap: 6px;
-            height: 48vh; overflow-y: auto; width: 90%; max-width: 320px;
+            display: flex; flex-direction: column; gap: 5px;
+            height: 45vh; overflow-y: auto; width: 90%; max-width: 320px;
             padding: 4px; -webkit-overflow-scrolling: touch;
         }
         .shop-item {
             display: flex; justify-content: space-between; align-items: center;
-            background: #181c24; padding: 8px 10px; border-radius: 6px; border: 1px solid #333; font-size: 11px;
+            background: #181c24; padding: 6px 10px; border-radius: 6px; border: 1px solid #333; font-size: 10px;
         }
         @keyframes blinker { 50% { opacity: 0; } }
     </style>
@@ -157,7 +157,7 @@
 </div>
 
 <div id="left-bottom-container">
-    <div id="ingame-garage-btn" onclick="openShop()">🚗 Shop</div>
+    <div id="ingame-garage-btn" onclick="openShop()">🛞 Garage</div>
     <div id="exit-btn" onclick="openExitModal()">🏠 Exit</div>
 </div>
 
@@ -178,17 +178,17 @@
 
 <div id="boost-btn">BOOST 🚀</div>
 
-<!-- Main Menu -->
+<!-- Main Menu with Controls Button Visible -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
-    <div style="font-size:26px; margin-bottom:4px;">🐍</div>
-    <div style="font-size:10px; color:#f1c40f; margin-bottom:8px;">
+    <div style="font-size:24px; margin-bottom:2px;">🐍</div>
+    <div style="font-size:10px; color:#f1c40f; margin-bottom:6px;">
         High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">0</span> 🪙
     </div>
 
     <!-- Main Menu Leaderboard Preview -->
-    <div style="background:rgba(0,0,0,0.6); padding:6px 10px; border-radius:8px; border:1px solid #f1c40f; width:85%; max-width:270px; margin-bottom:10px; font-size:9px;">
-        <div style="color:#f1c40f; font-weight:bold; text-align:center; margin-bottom:4px;">🏆 LEADERBOARD RANKINGS</div>
+    <div style="background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; border:1px solid #f1c40f; width:85%; max-width:270px; margin-bottom:8px; font-size:8px;">
+        <div style="color:#f1c40f; font-weight:bold; text-align:center; margin-bottom:2px;">🏆 LEADERBOARD RANKINGS</div>
         <div id="menuLeaderboardContainer"></div>
     </div>
 
@@ -204,21 +204,21 @@
 
 <!-- Controls Settings Modal -->
 <div id="settings-modal">
-    <h3 style="color:#e67e22; margin-bottom:10px; font-size:16px;">Control Settings ⚙️</h3>
+    <h3 style="color:#e67e22; margin-bottom:10px; font-size:15px;">Control Settings ⚙️</h3>
     <div class="btn-group">
-        <label style="font-size:11px;">Select Control Style:</label>
+        <label style="font-size:10px;">Select Control Style:</label>
         <select id="controlTypeSelect" onchange="changeControlType()" style="border:1px solid #e67e22; background:#181c24; color:#fff;">
             <option value="touch">Touch Pointer Target</option>
             <option value="joystick">Floating Anywhere Joystick</option>
             <option value="buttons">4-Direction Buttons</option>
         </select>
-        <button onclick="closeSettings()" style="background:#e67e22; color:#fff; margin-top:10px;">Save & Back</button>
+        <button onclick="closeSettings()" style="background:#e67e22; color:#fff; margin-top:8px;">Save & Back</button>
     </div>
 </div>
 
 <!-- Exit Confirm Modal -->
 <div id="exit-modal">
-    <h3 style="color:#e74c3c; margin-bottom:12px; font-size:14px;">Exit Game?</h3>
+    <h3 style="color:#e74c3c; margin-bottom:10px; font-size:13px;">Exit Game?</h3>
     <div class="btn-group">
         <button onclick="confirmExit()" style="background:#e74c3c; color:#fff;">Main Menu 🏠</button>
         <button onclick="closeExitModal()" style="background:#2ecc71; color:#111;">Continue Playing ▶️</button>
@@ -227,8 +227,8 @@
 
 <!-- Shop Modal -->
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:4px; font-size:16px;">Skins & Flags Shop 🛒</h3>
-    <div style="font-size:10px; margin-bottom:6px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    <h3 style="color:#f39c12; margin-bottom:4px; font-size:15px;">Skins & Flags Shop 🛒</h3>
+    <div style="font-size:10px; margin-bottom:5px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
     
     <div class="shop-tabs">
         <button class="shop-tab-btn active" id="tabFreeBtn" onclick="switchShopTab('free')">Free Skins</button>
@@ -236,7 +236,7 @@
     </div>
 
     <div class="shop-list" id="shopItemsContainer"></div>
-    <button onclick="closeShop()" style="width:110px; margin-top:6px; background:#e74c3c; color:#fff;">Close</button>
+    <button onclick="closeShop()" style="width:100px; margin-top:5px; background:#e74c3c; color:#fff;">Close</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -250,6 +250,7 @@
     const MAP_RADIUS = 18000;
     const MAP_CENTER = 20000;
     let cameraScale = 0.50;
+    let baseCameraScale = 0.50;
     let gameRunning = false;
     let controlType = 'touch';
     let activeShopTab = 'free';
@@ -327,7 +328,7 @@
         dummyRanks.sort((a,b) => b.score - a.score);
         let html = "";
         dummyRanks.forEach((r, idx) => {
-            html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>${idx+1}. ${r.name}</span><span style="color:#2ecc71;">${r.score}</span></div>`;
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:1px;"><span>${idx+1}. ${r.name}</span><span style="color:#2ecc71;">${r.score}</span></div>`;
         });
         document.getElementById('menuLeaderboardContainer').innerHTML = html;
     }
@@ -417,7 +418,7 @@
     }
 
     function initGame() {
-        score = 0; currentMultiplier = 1;
+        score = 0; currentMultiplier = 1; cameraScale = 0.50;
         document.getElementById('scoreVal').innerText = score;
         
         player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
@@ -442,9 +443,9 @@
             coinItems.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r });
         }
 
-        // HALF X, DOUBLE MAGNET/STEERING/SNIPER(BOOST)
+        // Includes Magnet 🧲, Steering 🛞, Sniper Target 🎯, Boost 🚀
         powerups = [];
-        const pTypes = ['🧲', '🧲', '🏎️', '🏎️', '🚀', '🚀', 'x2'];
+        const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2'];
         for(let i=0; i<300; i++) {
             let angle = Math.random() * Math.PI * 2;
             let r = Math.random() * (MAP_RADIUS - 300);
@@ -468,7 +469,6 @@
         body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
     }
 
-    // Floating Joystick Controls
     const joyZone = document.getElementById('joystick-zone');
     const joyKnob = document.getElementById('joystick-knob');
     let joyActive = false, joyCenterX = 0, joyCenterY = 0;
@@ -606,7 +606,8 @@
             player.y += Math.sin(player.angle) * moveSpeed;
             player.body.unshift({x: player.x, y: player.y});
 
-            let maxAllowedSegments = Math.min(500, 45 + Math.floor(score / 40));
+            // Extreme Length Growth (Up to 1,000 Segments)
+            let maxAllowedSegments = Math.min(1000, 50 + Math.floor(score / 25));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
@@ -636,7 +637,6 @@
                 });
             }
 
-            // Fruits Eating with 15s Respawn Timer
             fruits.forEach((f) => {
                 if(f.eatenTime && Date.now() - f.eatenTime > 15000) {
                     let angle = Math.random() * Math.PI * 2;
@@ -648,8 +648,8 @@
                     score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     f.eatenTime = Date.now();
-                    f.x = -99999; f.y = -99999; // Hide offscreen until 15s respawn
-                    if(player.sizeRadius < 38) player.sizeRadius += 0.05;
+                    f.x = -99999; f.y = -99999;
+                    if(player.sizeRadius < 42) player.sizeRadius += 0.06;
                 }
             });
 
@@ -669,7 +669,7 @@
                     score += 15 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
-                    if(player.sizeRadius < 38) player.sizeRadius += 0.08;
+                    if(player.sizeRadius < 42) player.sizeRadius += 0.09;
                 }
             });
 
@@ -690,11 +690,13 @@
                             document.getElementById('boost-btn').style.display = 'none'; manualSpeedBoost = false;
                         });
                     }
-                    if(p.icon === '🏎️') {
-                        isSteeringActive = true; cameraScale = 0.35;
-                        addPowerupTimer('Steering Wheel Zoom', '🏎️', 15000, () => {
-                            isSteeringActive = false; cameraScale = 0.50;
-                        });
+                    if(p.icon === '🛞') {
+                        isSteeringActive = true;
+                        addPowerupTimer('Fast Steering', '🛞', 15000, () => isSteeringActive = false);
+                    }
+                    if(p.icon === '🎯') {
+                        cameraScale = 0.30; // Sniper Camera Zoom Out
+                        addPowerupTimer('Sniper Zoom Out', '🎯', 15000, () => cameraScale = 0.50);
                     }
 
                     let angle = Math.random() * Math.PI * 2;
@@ -704,7 +706,6 @@
             });
         }
 
-        // Bots Logic with Instant Respawn
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
@@ -718,7 +719,7 @@
 
             player.body.forEach((pSeg, idx) => {
                 if(idx > 3 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
-                    b.alive = false; explodeSnake(b.body); spawnBot(b.id); // Instant respawn!
+                    b.alive = false; explodeSnake(b.body); spawnBot(b.id);
                 }
             });
         });
@@ -734,7 +735,7 @@
 
         garages.forEach(g => {
             ctx.fillStyle = '#2ecc71'; ctx.fillRect(g.x - 120, g.y - 120, 240, 240);
-            ctx.fillStyle = '#fff'; ctx.font = "bold 24px Arial"; ctx.fillText("GARAGE 🚗", g.x - 60, g.y + 8);
+            ctx.fillStyle = '#fff'; ctx.font = "bold 24px Arial"; ctx.fillText("GARAGE 🛞", g.x - 60, g.y + 8);
         });
 
         fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); } });
