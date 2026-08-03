@@ -53,7 +53,7 @@
             font-size: 9px; cursor: pointer; text-align: center; width: 75px;
         }
 
-        /* Quick Reactions Overlay (Right side) */
+        /* Quick Reactions Overlay */
         #emoji-reaction-box {
             position: absolute; right: 10px; top: 38%;
             display: flex; flex-direction: column; gap: 6px; z-index: 15;
@@ -171,7 +171,6 @@
     <div id="exit-btn" onclick="openExitModal()">🏠 Exit</div>
 </div>
 
-<!-- Emoji Reactions Container -->
 <div id="emoji-reaction-box">
     <div class="reaction-btn" onclick="triggerEmoji('😂')">😂</div>
     <div class="reaction-btn" onclick="triggerEmoji('😭')">😭</div>
@@ -212,7 +211,7 @@
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name" style="border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
         <button onclick="startGame()">Play Game 🎮</button>
-        <button class="shop-btn" onclick="openShop()">Skins & Shop 🛒</button>
+        <button class="shop-btn" onclick="openShop()">Skins & Rent Garage 🛒</button>
         <button class="settings-btn" onclick="openSettings()">Controls Settings ⚙️</button>
         <button class="fb-btn" onclick="loginFacebook()">Login with Facebook 📘</button>
         <button class="guest-btn" onclick="loginGuest()">Play as Guest / Email 👤</button>
@@ -244,13 +243,13 @@
 
 <!-- Shop Modal -->
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:4px; font-size:15px;">Skins & Shop 🛒</h3>
+    <h3 style="color:#f39c12; margin-bottom:4px; font-size:15px;">Skins & Rent Garage 🛒</h3>
     <div style="font-size:10px; margin-bottom:5px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
     
     <div class="shop-tabs">
         <button class="shop-tab-btn active" id="tabFreeBtn" onclick="switchShopTab('free')">Free Skins</button>
         <button class="shop-tab-btn" id="tabFlagsBtn" onclick="switchShopTab('flags')">Flags (🪙100)</button>
-        <button class="shop-tab-btn" id="tabGarageBtn" onclick="switchShopTab('garage')">Garages (🪙150)</button>
+        <button class="shop-tab-btn" id="tabGarageBtn" onclick="switchShopTab('garage')">Rent Garage 🛞</button>
     </div>
 
     <div class="shop-list" id="shopItemsContainer"></div>
@@ -273,12 +272,14 @@
     let activeShopTab = 'free';
     let lastFrameTime = performance.now();
 
-    let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
+    let coins = parseFloat(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
-    let ownedSkins = JSON.parse(localStorage.getItem('dodio_owned_skins') || '["free1","free2","free3","free4","free5","free6","free7","g_green"]');
-    let activeGarageSkin = 'g_green';
-    let score = 0;
+    let ownedSkins = JSON.parse(localStorage.getItem('dodio_owned_skins') || '["free1","free2","free3","free4","free5","free6","free7"]');
+    
+    // Garage Rent System Expiration Time
+    let garageRentEndTime = parseInt(localStorage.getItem('dodio_garage_rent_end') || '0');
 
+    let score = 0;
     let currentMultiplier = 1;
     let manualSpeedBoost = false;
     let isMagnetActive = false;
@@ -311,13 +312,14 @@
         { id: 'france', name: '🇫🇷 France Flag', type: 'flags', price: 100, flagEmoji: '🇫🇷', colors: ['#002395', '#ffffff', '#ed2939'] },
         { id: 'usa', name: '🇺🇸 USA Flag', type: 'flags', price: 100, flagEmoji: '🇺🇸', colors: ['#b22234', '#ffffff', '#3c3b6e'] },
         { id: 'italy', name: '🇮🇹 Italy Flag', type: 'flags', price: 100, flagEmoji: '🇮🇹', colors: ['#009246', '#ffffff', '#ce2b37'] },
-        { id: 'uk', name: '🇬🇧 UK Flag', type: 'flags', price: 100, flagEmoji: '🇬🇧', colors: ['#00247d', '#ffffff', '#cf142b'] },
+        { id: 'uk', name: '🇬🇧 UK Flag', type: 'flags', price: 100, flagEmoji: '🇬🇧', colors: ['#00247d', '#ffffff', '#cf142b'] }
+    ];
 
-        /* Garage Skins */
-        { id: 'g_green', name: '🟩 Emerald Garage', type: 'garage', price: 0, color: '#2ecc71' },
-        { id: 'g_gold', name: '🟨 Golden Garage', type: 'garage', price: 150, color: '#f1c40f' },
-        { id: 'g_blue', name: '🟦 Neon Blue Garage', type: 'garage', price: 150, color: '#3498db' },
-        { id: 'g_red', name: '🟥 Cyber Red Garage', type: 'garage', price: 150, color: '#e74c3c' }
+    const garageRentOptions = [
+        { minutes: 10, price: 50, label: "Rent 10 Mins (🪙50)" },
+        { minutes: 20, price: 100, label: "Rent 20 Mins (🪙100)" },
+        { minutes: 30, price: 150, label: "Rent 30 Mins (🪙150)" },
+        { minutes: 60, price: 230, label: "Rent 1 Hour (🪙230)" }
     ];
 
     const garages = [
@@ -337,10 +339,11 @@
     updateMenuStats();
 
     function updateMenuStats() {
-        document.getElementById('coinVal').innerText = `🪙 ${coins}`;
-        document.getElementById('menuCoins').innerText = coins;
+        let displayCoins = Math.floor(coins);
+        document.getElementById('coinVal').innerText = `🪙 ${displayCoins}`;
+        document.getElementById('menuCoins').innerText = displayCoins;
         document.getElementById('menuHighScore').innerText = highScore;
-        document.getElementById('shopCoinVal').innerText = `🪙 ${coins}`;
+        document.getElementById('shopCoinVal').innerText = `🪙 ${displayCoins}`;
         renderMenuLeaderboard();
     }
 
@@ -395,17 +398,37 @@
     function renderShop() {
         let container = document.getElementById('shopItemsContainer');
         container.innerHTML = "";
+
+        if(activeShopTab === 'garage') {
+            let isRented = Date.now() < garageRentEndTime;
+            let leftMins = isRented ? Math.ceil((garageRentEndTime - Date.now()) / 60000) : 0;
+
+            container.innerHTML += `<div style="text-align:center; margin-bottom:8px; font-size:11px; color:#f1c40f;">
+                ${isRented ? `✅ Garage Active! Remaining: ${leftMins} Mins` : `❌ Garage Expired. Rent time below:`}
+            </div>`;
+
+            garageRentOptions.forEach(opt => {
+                container.innerHTML += `
+                    <div class="shop-item">
+                        <span>🛞 ${opt.minutes} Minutes Rent</span>
+                        <button style="background:#f39c12; color:#fff; padding:4px 8px;" onclick="rentGarage(${opt.minutes}, ${opt.price})">Rent 🪙${opt.price}</button>
+                    </div>
+                `;
+            });
+            return;
+        }
+
         let list = skinsDatabase.filter(s => s.type === activeShopTab);
 
         list.forEach(s => {
             let isOwned = ownedSkins.includes(s.id);
-            let isSelected = (s.type === 'garage') ? (activeGarageSkin === s.id) : (player.skin === s.id);
+            let isSelected = (player.skin === s.id);
             let btnHtml = "";
 
             if(isSelected) {
                 btnHtml = `<button style="background:#27ae60; padding:4px 8px;">Equipped</button>`;
             } else if(isOwned) {
-                btnHtml = `<button style="background:#2980b9; padding:4px 8px;" onclick="selectSkin('${s.id}', '${s.type}')">Equip</button>`;
+                btnHtml = `<button style="background:#2980b9; padding:4px 8px;" onclick="selectSkin('${s.id}')">Equip</button>`;
             } else {
                 btnHtml = `<button style="background:#f39c12; color:#fff; padding:4px 8px;" onclick="buySkin('${s.id}', ${s.price})">Buy 🪙${s.price}</button>`;
             }
@@ -419,12 +442,22 @@
         });
     }
 
-    function selectSkin(id, type) { 
-        if(type === 'garage') {
-            activeGarageSkin = id;
+    function rentGarage(minutes, price) {
+        if(coins >= price) {
+            coins -= price;
+            let currentEnd = Date.now() < garageRentEndTime ? garageRentEndTime : Date.now();
+            garageRentEndTime = currentEnd + (minutes * 60 * 1000);
+            localStorage.setItem('dodio_garage_rent_end', garageRentEndTime.toString());
+            saveStats();
+            renderShop();
+            alert(`🎉 Garage rented for ${minutes} minutes!`);
         } else {
-            player.skin = id; 
+            alert(`❌ Not enough coins! You need 🪙${price}.`);
         }
+    }
+
+    function selectSkin(id) { 
+        player.skin = id; 
         renderShop(); 
     }
 
@@ -434,9 +467,8 @@
             ownedSkins.push(id);
             localStorage.setItem('dodio_owned_skins', JSON.stringify(ownedSkins));
             saveStats();
-            let skinObj = skinsDatabase.find(s => s.id === id);
-            selectSkin(id, skinObj ? skinObj.type : 'free');
-            alert("🎉 Item unlocked successfully!");
+            selectSkin(id);
+            alert("🎉 Skin unlocked successfully!");
         } else {
             alert(`❌ Not enough coins! You need ${price} coins.`);
         }
@@ -725,10 +757,11 @@
                 }
             });
 
+            // Reduced Coins Collection (Half Coins Rate)
             coinItems.forEach((c) => {
                 if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
-                    coins += 1;
-                    document.getElementById('coinVal').innerText = `🪙 ${coins}`;
+                    coins += 0.5; // Only 0.5 Coin
+                    document.getElementById('coinVal').innerText = `🪙 ${Math.floor(coins)}`;
                     saveStats();
                     let angle = Math.random() * Math.PI * 2;
                     let r = Math.random() * (MAP_RADIUS - 300);
@@ -807,10 +840,13 @@
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-        let gSkinObj = skinsDatabase.find(s => s.id === activeGarageSkin) || skinsDatabase.find(s => s.id === 'g_green');
+        // RENTED GARAGE STATUS & DRAWING
+        let isGarageActive = Date.now() < garageRentEndTime;
         garages.forEach(g => {
-            ctx.fillStyle = gSkinObj.color || '#2ecc71'; ctx.fillRect(g.x - 120, g.y - 120, 240, 240);
-            ctx.fillStyle = '#fff'; ctx.font = "bold 24px Arial"; ctx.fillText("GARAGE 🛞", g.x - 60, g.y + 8);
+            ctx.fillStyle = isGarageActive ? '#2ecc71' : '#7f8c8d'; 
+            ctx.fillRect(g.x - 120, g.y - 120, 240, 240);
+            ctx.fillStyle = '#fff'; ctx.font = "bold 22px Arial"; 
+            ctx.fillText(isGarageActive ? "GARAGE 🛞 (ACTIVE)" : "GARAGE 🔒 (EXPIRED)", g.x - 100, g.y + 8);
         });
 
         fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); } });
@@ -818,7 +854,7 @@
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
-        /* DRAW PLAYER SNAKE WITH EMOJIS & FLAGS */
+        /* DRAW PLAYER SNAKE WITH 4 DISTINCT FLAG EMOJIS PRINTED ON BODY */
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             
@@ -828,8 +864,9 @@
                 ctx.fillStyle = color; ctx.beginPath();
                 ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
 
-                if(skinObj.flagEmoji && i % 3 === 0) {
-                    ctx.font = `${player.sizeRadius * 1.3}px Arial`;
+                /* Draw 4 Flag Emojis along the snake length */
+                if(skinObj.flagEmoji && (i === 5 || i === 15 || i === 25 || i === 35)) {
+                    ctx.font = `bold ${player.sizeRadius * 1.6}px Arial`;
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                     ctx.fillText(skinObj.flagEmoji, p.x, p.y);
                 }
@@ -851,7 +888,7 @@
 
         radarCtx.clearRect(0, 0, 60, 60);
         garages.forEach(g => {
-            radarCtx.fillStyle = '#2ecc71';
+            radarCtx.fillStyle = isGarageActive ? '#2ecc71' : '#7f8c8d';
             radarCtx.fillRect(((g.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60 - 2.5, ((g.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60 - 2.5, 5, 5);
         });
         if(player.alive) {
