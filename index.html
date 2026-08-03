@@ -115,12 +115,12 @@
         }
 
         /* Modals & Overlays */
-        #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
+        #menu-overlay, #shop-modal, #exit-modal, #settings-modal, #global-leaderboard-modal, #daily-chest-modal {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.96); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
-        #shop-modal, #exit-modal, #settings-modal { display: none; z-index: 30; }
+        #shop-modal, #exit-modal, #settings-modal, #global-leaderboard-modal, #daily-chest-modal { display: none; z-index: 30; }
 
         h1 { font-size: 36px; color: #2ecc71; margin-bottom: 5px; }
         .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 280px; }
@@ -129,10 +129,12 @@
         button.fb-btn { background: #1877f2; color: #fff; }
         button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
         button.shop-btn { background: #f39c12; color: #fff; }
+        button.chest-btn { background: #9b59b6; color: #fff; }
+        button.lead-btn { background: #f1c40f; color: #111; }
 
         .shop-list {
             display: flex; flex-direction: column; gap: 8px;
-            max-height: 60vh; overflow-y: auto; width: 92%; max-width: 340px; margin: 10px 0;
+            height: 50vh; overflow-y: auto; width: 92%; max-width: 340px; margin: 10px 0;
             padding: 5px; -webkit-overflow-scrolling: touch;
         }
         .shop-item {
@@ -185,10 +187,30 @@
         <input type="text" id="playerName" placeholder="Enter Player Name" style="border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
         <button onclick="startGame()">Play Game 🎮</button>
         <button class="shop-btn" onclick="openShop()">Shop & Country Flags 🛒</button>
+        <button class="chest-btn" onclick="openDailyChest()">Daily Chest 🎁</button>
+        <button class="lead-btn" onclick="openGlobalLeaderboard()">Global Leaderboard 🏆</button>
         <button style="background:#e67e22; color:#fff;" onclick="openSettings()">Controls & Settings ⚙️</button>
         <button class="fb-btn" onclick="loginFacebook()">Login with Facebook 📘</button>
         <button class="guest-btn" onclick="loginGuest()">Play as Guest / Email 👤</button>
     </div>
+</div>
+
+<!-- Daily Chest Reward Modal -->
+<div id="daily-chest-modal">
+    <h2 style="color:#9b59b6; margin-bottom:10px;">Daily Chest Reward 🎁</h2>
+    <div style="font-size:50px; margin:15px 0;">🎁</div>
+    <div id="chestStatusText" style="font-size:13px; margin-bottom:15px; text-align:center;">Claim your free daily coins!</div>
+    <div class="btn-group">
+        <button id="claimChestBtn" onclick="claimDailyReward()" style="background:#9b59b6; color:#fff;">Claim 🪙 100 Coins</button>
+        <button onclick="closeDailyChest()" style="background:#282c34; color:#fff;">Close</button>
+    </div>
+</div>
+
+<!-- Global Leaderboard Modal -->
+<div id="global-leaderboard-modal">
+    <h2 style="color:#f1c40f; margin-bottom:10px;">Global Leaderboard 🏆</h2>
+    <div class="shop-list" id="globalRankContainer"></div>
+    <button onclick="closeGlobalLeaderboard()" style="width:120px; background:#e74c3c; color:#fff;">Close</button>
 </div>
 
 <!-- Controls Settings Modal -->
@@ -214,12 +236,12 @@
     </div>
 </div>
 
-<!-- Full Shop Modal with Free & Country Flag Skins -->
+<!-- Full Shop Modal -->
 <div id="shop-modal">
     <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Country Flags 🛒</h3>
     <div style="font-size:11px; margin-bottom:5px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
     <div class="shop-list" id="shopItemsContainer"></div>
-    <button onclick="closeShop()" style="width:120px; margin-top:5px;">Close</button>
+    <button onclick="closeShop()" style="width:120px; margin-top:5px; background:#e74c3c; color:#fff;">Close</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -239,6 +261,7 @@
 
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
+    let lastChestClaim = localStorage.getItem('dodio_last_chest') || '0';
     let score = 0;
 
     let currentMultiplier = 1;
@@ -260,6 +283,8 @@
         { id: 'free3', name: '🔴 Ruby Red', colors: ['#e74c3c', '#c0392b'] },
         { id: 'free4', name: '🟡 Bright Yellow', colors: ['#f1c40f', '#f39c12'] },
         { id: 'free5', name: '🟣 Royal Purple', colors: ['#9b59b6', '#8e44ad'] },
+        { id: 'free6', name: '🟠 Sunset Orange', colors: ['#e67e22', '#d35400'] },
+        { id: 'free7', name: '⚪ Pure White', colors: ['#ffffff', '#bdc3c7'] },
         { id: 'kurdish', name: '✌️ Kurdistan Flag', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
         { id: 'brazil', name: '🇧🇷 Brazil Flag', colors: ['#009c3b', '#ffdf00', '#002776'] },
         { id: 'argentina', name: '🇦🇷 Argentina Flag', colors: ['#74acdf', '#ffffff', '#74acdf'] },
@@ -291,9 +316,14 @@
         document.getElementById('coinVal').innerText = `🪙 ${coins}`;
         document.getElementById('menuCoins').innerText = coins;
         document.getElementById('menuHighScore').innerText = highScore;
+        document.getElementById('shopCoinVal').innerText = `🪙 ${coins}`;
     }
 
-    function openShop() { renderShop(); document.getElementById('shop-modal').style.display = 'flex'; }
+    function openShop() { 
+        updateMenuStats();
+        renderShop(); 
+        document.getElementById('shop-modal').style.display = 'flex'; 
+    }
     function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
     function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }
     function closeExitModal() { document.getElementById('exit-modal').style.display = 'none'; }
@@ -301,6 +331,59 @@
 
     function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
     function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
+    /* Daily Chest Modal Logic */
+    function openDailyChest() {
+        let now = Date.now();
+        let oneDay = 24 * 60 * 60 * 1000;
+        let btn = document.getElementById('claimChestBtn');
+        let status = document.getElementById('chestStatusText');
+
+        if(now - parseInt(lastChestClaim) > oneDay) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            status.innerText = "Your daily reward is ready!";
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            status.innerText = "Come back tomorrow for your next reward!";
+        }
+        document.getElementById('daily-chest-modal').style.display = 'flex';
+    }
+    function closeDailyChest() { document.getElementById('daily-chest-modal').style.display = 'none'; }
+    function claimDailyReward() {
+        coins += 100;
+        lastChestClaim = Date.now().toString();
+        localStorage.setItem('dodio_last_chest', lastChestClaim);
+        saveStats();
+        alert("🎉 You received 🪙 100 Daily Coins!");
+        closeDailyChest();
+    }
+
+    /* Global Leaderboard Logic */
+    function openGlobalLeaderboard() {
+        let container = document.getElementById('globalRankContainer');
+        container.innerHTML = "";
+        let ranks = [
+            { name: "🏆 Kurd_King_99", score: 98500 },
+            { name: "🥇 Anaconda_Pro", score: 75400 },
+            { name: "🥈 Apex_Predator", score: 62100 },
+            { name: "🥉 Viper_Master", score: 48900 },
+            { name: "5. Shadow_Slayer", score: 34500 },
+            { name: "6. You (Best Record)", score: highScore }
+        ];
+        ranks.sort((a,b) => b.score - a.score);
+        ranks.forEach((r, idx) => {
+            container.innerHTML += `
+                <div class="shop-item">
+                    <span>${r.name}</span>
+                    <span style="color:#f1c40f; font-weight:bold;">${r.score} pts</span>
+                </div>
+            `;
+        });
+        document.getElementById('global-leaderboard-modal').style.display = 'flex';
+    }
+    function closeGlobalLeaderboard() { document.getElementById('global-leaderboard-modal').style.display = 'none'; }
 
     function changeControlType() {
         controlType = document.getElementById('controlTypeSelect').value;
@@ -349,7 +432,7 @@
         
         player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
         player.sizeRadius = 20; player.body = [];
-        for(let i=0; i<35; i++) player.body.push({x: player.x - i*8, y: player.y});
+        for(let i=0; i<35; i++) player.body.push({x: player.x - i*9, y: player.y});
 
         bots = [];
         for(let i=0; i<12; i++) spawnBot(i);
@@ -453,33 +536,29 @@
         container.innerHTML = html;
     }
 
-    // BEAUTIFUL REALISTIC TRIANGULAR COBRA HEAD
+    // REAL SHARP COBRA HEAD DESIGN
     function drawSnakeHead(p, angle, mainColor, radius) {
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
         
-        // Triangular Cobra Hood
         ctx.fillStyle = mainColor; ctx.beginPath();
-        ctx.moveTo(radius * 2.2, 0); // Nose
-        ctx.lineTo(-radius * 0.8, -radius * 1.5); // Left Flare
-        ctx.lineTo(-radius * 1.2, 0); // Neck Arc
-        ctx.lineTo(-radius * 0.8, radius * 1.5); // Right Flare
+        ctx.moveTo(radius * 2.3, 0); 
+        ctx.lineTo(-radius * 0.5, -radius * 1.6); 
+        ctx.lineTo(-radius * 1.0, 0); 
+        ctx.lineTo(-radius * 0.5, radius * 1.6); 
         ctx.closePath(); ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
-        // Sharp Eyes
         ctx.fillStyle = '#f1c40f'; ctx.beginPath();
-        ctx.ellipse(radius*0.6, -radius*0.5, radius*0.3, radius*0.18, Math.PI*0.1, 0, Math.PI * 2);
-        ctx.ellipse(radius*0.6, radius*0.5, radius*0.3, radius*0.18, -Math.PI*0.1, 0, Math.PI * 2); ctx.fill();
+        ctx.ellipse(radius*0.7, -radius*0.5, radius*0.3, radius*0.16, Math.PI*0.1, 0, Math.PI * 2);
+        ctx.ellipse(radius*0.7, radius*0.5, radius*0.3, radius*0.16, -Math.PI*0.1, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#000'; ctx.beginPath();
-        ctx.arc(radius*0.65, -radius*0.5, radius*0.1, 0, Math.PI * 2);
-        ctx.arc(radius*0.65, radius*0.5, radius*0.1, 0, Math.PI * 2); ctx.fill();
+        ctx.arc(radius*0.75, -radius*0.5, radius*0.09, 0, Math.PI * 2);
+        ctx.arc(radius*0.75, radius*0.5, radius*0.09, 0, Math.PI * 2); ctx.fill();
 
-        // Forked Tongue
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3; ctx.beginPath();
-        ctx.moveTo(radius*2.2, 0); ctx.lineTo(radius*3.0, 0);
-        ctx.lineTo(radius*3.3, -6); ctx.moveTo(radius*3.0, 0); ctx.lineTo(radius*3.3, 6); ctx.stroke();
+        ctx.moveTo(radius*2.3, 0); ctx.lineTo(radius*3.1, 0);
+        ctx.lineTo(radius*3.4, -6); ctx.moveTo(radius*3.1, 0); ctx.lineTo(radius*3.4, 6); ctx.stroke();
 
-        // 5 Magnet Waves
         if(isMagnetActive) {
             let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
             ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
@@ -549,7 +628,6 @@
                 });
             });
 
-            // Magnet Effect
             if(isMagnetActive) {
                 [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
@@ -562,10 +640,9 @@
                 });
             }
 
-            // Fruits Eating (MULTIPLIES SCORE ACCORDING TO CURRENT MULTIPLIER!)
             fruits.forEach((f) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
-                    score += 5 * currentMultiplier; // Multiplied score!
+                    score += 5 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     let angle = Math.random() * Math.PI * 2;
                     let r = Math.random() * (MAP_RADIUS - 300);
@@ -574,7 +651,6 @@
                 }
             });
 
-            // Coins Eating
             coinItems.forEach((c) => {
                 if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
                     coins += 1;
@@ -586,17 +662,15 @@
                 }
             });
 
-            // Dead Remains Eating (MULTIPLIES SCORE TOO!)
             deadRemains.forEach((r, i) => {
                 if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
-                    score += 15 * currentMultiplier; // Multiplied score!
+                    score += 15 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
                     if(player.sizeRadius < 36) player.sizeRadius += 0.06;
                 }
             });
 
-            // Powerups Eating
             powerups.forEach((p) => {
                 if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
                     if(p.icon === '🧲') {
@@ -605,7 +679,7 @@
                     }
                     if(p.icon.includes('x')) {
                         let val = parseInt(p.icon.replace('x', '')) || 2;
-                        currentMultiplier = val; // Set Multiplier Value!
+                        currentMultiplier = val;
                         addPowerupTimer(`Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
                     }
                     if(p.icon === '🚀') {
@@ -628,7 +702,6 @@
             });
         }
 
-        // Bots Logic
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
@@ -653,7 +726,6 @@
         ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
 
-        // Map Border
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
@@ -667,20 +739,18 @@
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
-        // Draw Player Body with Gap for Head Visibility
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             player.body.forEach((p, i) => {
                 let color = skinObj.colors[i % skinObj.colors.length];
                 if(i === 0) drawSnakeHead(p, player.angle, color, player.sizeRadius);
-                else if(i > 1) { // Gap at i=1 for head clearance
+                else if(i > 1) {
                     ctx.fillStyle = color; ctx.beginPath();
                     ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
                 }
             });
         }
 
-        // Draw Bots
         bots.forEach(b => {
             if(!b.alive) return;
             b.body.forEach((bp, j) => {
@@ -694,7 +764,6 @@
 
         ctx.restore();
 
-        // Radar
         radarCtx.clearRect(0, 0, 75, 75);
         garages.forEach(g => {
             radarCtx.fillStyle = '#2ecc71';
