@@ -129,10 +129,11 @@
         button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
         button.shop-btn { background: #f39c12; color: #fff; }
 
+        /* Shop List Box with Fixed Touch Scroll */
         .shop-list {
             display: flex; flex-direction: column; gap: 8px;
-            max-height: 55vh; overflow-y: auto; width: 90%; max-width: 340px; margin: 10px 0;
-            padding-right: 5px;
+            max-height: 60vh; overflow-y: auto; width: 92%; max-width: 350px; margin: 10px 0;
+            padding: 5px; -webkit-overflow-scrolling: touch;
         }
         .shop-item {
             display: flex; justify-content: space-between; align-items: center;
@@ -234,6 +235,7 @@
     let cameraScale = 0.50;
     let gameRunning = false;
     let controlType = 'touch';
+    let lastFrameTime = performance.now();
 
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
@@ -322,7 +324,7 @@
             container.innerHTML += `
                 <div class="shop-item">
                     <span>${s.name}</span>
-                    <button style="background:${isSelected ? '#27ae60' : '#2980b9'}; padding:6px 12px; cursor:pointer;" onclick="selectSkin('${s.id}')">${isSelected ? 'Equipped' : 'Equip'}</button>
+                    <button style="background:${isSelected ? '#27ae60' : '#2980b9'}; padding:6px 14px; cursor:pointer;" onclick="selectSkin('${s.id}')">${isSelected ? 'Equipped' : 'Equip'}</button>
                 </div>
             `;
         });
@@ -336,6 +338,7 @@
     function startGame() {
         document.getElementById('menu-overlay').style.display = 'none';
         gameRunning = true; initGame();
+        lastFrameTime = performance.now();
         requestAnimationFrame(gameLoop);
     }
 
@@ -455,7 +458,7 @@
         container.innerHTML = html;
     }
 
-    // Snake Head + 5 Glowing Blinking Magnet Waves
+    // Snake Head + 5 Glowing Magnet Waves
     function drawSnakeHead(p, angle, mainColor, radius) {
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
         
@@ -505,8 +508,13 @@
         document.getElementById('topList').innerHTML = html;
     }
 
-    function gameLoop() {
+    function gameLoop(now) {
         if(!gameRunning) return;
+
+        // ACCURATE FRAME RATE INDEPENDENT TIMING (Fix Ferrari Bug)
+        let dt = (now - lastFrameTime) / 1000;
+        if(dt > 0.1 || isNaN(dt)) dt = 0.016;
+        lastFrameTime = now;
 
         deadRemains = deadRemains.filter(r => Date.now() - r.spawnTime < 25000);
 
@@ -515,10 +523,10 @@
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
 
-            player.angle += diff * (isSteeringActive ? 0.35 : 0.18);
+            player.angle += diff * (isSteeringActive ? 12.0 : 6.0) * dt;
 
-            // CONTROLLED SMOOTH MOVEMENT SPEED (Fix Bugatti Speed Bug)
-            let moveSpeed = manualSpeedBoost ? 7.5 : 4.2;
+            // NORMAL REALISTIC SPEED
+            let moveSpeed = (manualSpeedBoost ? 380 : 210) * dt;
             player.x += Math.cos(player.angle) * moveSpeed;
             player.y += Math.sin(player.angle) * moveSpeed;
             player.body.unshift({x: player.x, y: player.y});
@@ -542,14 +550,14 @@
                 });
             });
 
-            // Magnet Effect
+            // Magnet Attraction
             if(isMagnetActive) {
                 [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
                         let d = Math.hypot(player.x - item.x, player.y - item.y);
                         if(d < 550) {
-                            item.x += (player.x - item.x) * 0.15;
-                            item.y += (player.y - item.y) * 0.15;
+                            item.x += (player.x - item.x) * 6.0 * dt;
+                            item.y += (player.y - item.y) * 6.0 * dt;
                         }
                     });
                 });
@@ -621,15 +629,16 @@
             });
         }
 
-        // Bots Logic
+        // Bots Movement
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
             if(distToPlayer < 1200 && player.alive) {
                 b.angle = Math.atan2(player.y - b.y, player.x - b.x);
-            } else { b.angle += (Math.random() - 0.5) * 0.1; }
+            } else { b.angle += (Math.random() - 0.5) * 2.0 * dt; }
 
-            b.x += Math.cos(b.angle) * 3.8; b.y += Math.sin(b.angle) * 3.8;
+            let botSpeed = 190 * dt;
+            b.x += Math.cos(b.angle) * botSpeed; b.y += Math.sin(b.angle) * botSpeed;
             b.body.unshift({x: b.x, y: b.y}); b.body.pop();
 
             player.body.forEach((pSeg, idx) => {
