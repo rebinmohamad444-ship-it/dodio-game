@@ -94,6 +94,13 @@
             animation: blinker 0.5s linear infinite;
         }
 
+        #garage-safe-status {
+            position: absolute; top: 15%; left: 50%; transform: translate(-50%, -50%);
+            color: #2ecc71; font-size: 14px; font-weight: bold;
+            background: rgba(0,0,0,0.9); padding: 6px 14px; border-radius: 8px;
+            border: 2px solid #2ecc71; display: none; z-index: 8; text-align: center;
+        }
+
         #leaderboard-box {
             position: absolute; top: 8px; right: 8px;
             background: rgba(0,0,0,0.85); padding: 5px 8px;
@@ -180,6 +187,7 @@
 </div>
 
 <div id="red-zone-alert">⚠️ WARNING: RED ZONE! ⚠️</div>
+<div id="garage-safe-status">🛡️ INSIDE SAFE GARAGE 🛡️<br><span id="garageTimerVal" style="font-size:11px; color:#f1c40f;"></span></div>
 <div id="active-powers-container"></div>
 
 <div id="leaderboard-box">
@@ -281,6 +289,7 @@
     let activeEmojiText = null;
     let emojiTimer = null;
     let headshotTextTimer = 0;
+    let isInsideGarageSafe = false;
 
     let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 28 };
     let bots = [];
@@ -288,6 +297,7 @@
     let coinItems = [];
     let powerups = [];
 
+    /* Full 40 Country & Region Flags List */
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', type: 'free', colors: ['#2ecc71', '#27ae60'] },
         { id: 'free2', name: '🔵 Sky Blue', type: 'free', colors: ['#3498db', '#2980b9'] },
@@ -342,11 +352,12 @@
         { minutes: 60, price: 230 }
     ];
 
+    /* Larger Garages (Size 480x480) with Safe Wall Corridor */
     const garages = [
-        { x: MAP_CENTER - 10000, y: MAP_CENTER - 10000 },
-        { x: MAP_CENTER + 10000, y: MAP_CENTER - 10000 },
-        { x: MAP_CENTER - 10000, y: MAP_CENTER + 10000 },
-        { x: MAP_CENTER + 10000, y: MAP_CENTER + 10000 }
+        { x: MAP_CENTER - 10000, y: MAP_CENTER - 10000, size: 480 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER - 10000, size: 480 },
+        { x: MAP_CENTER - 10000, y: MAP_CENTER + 10000, size: 480 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER + 10000, size: 480 }
     ];
 
     function playHeadshotSound() {
@@ -535,7 +546,7 @@
     }
 
     function initGame() {
-        score = 0; currentMultiplier = 1; cameraScale = 0.50; activePowers = {}; headshotTextTimer = 0;
+        score = 0; currentMultiplier = 1; cameraScale = 0.50; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
         document.getElementById('scoreVal').innerText = score;
         
         player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
@@ -676,7 +687,7 @@
         ctx.lineTo(radius*3.5, -6); ctx.moveTo(radius*3.2, 0); ctx.lineTo(radius*3.5, 6); ctx.stroke();
 
         if(flagEmoji) {
-            ctx.font = `bold ${radius * 1.4}px Arial`;
+            ctx.font = `bold ${radius * 1.2}px Arial`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(flagEmoji, radius * 0.2, 0);
         }
@@ -744,20 +755,51 @@
 
         deadRemains = deadRemains.filter(r => Date.now() - r.spawnTime < 25000);
 
+        let isGarageRented = Date.now() < garageRentEndTime;
+
         if(player.alive) {
-            let diff = player.targetAngle - player.angle;
-            while (diff < -Math.PI) diff += Math.PI * 2;
-            while (diff > Math.PI) diff -= Math.PI * 2;
+            // Check if Player Head touches any Garage Box
+            let inAnyGarage = false;
+            garages.forEach(g => {
+                let half = g.size / 2;
+                if(player.x >= g.x - half && player.x <= g.x + half && player.y >= g.y - half && player.y <= g.y + half) {
+                    inAnyGarage = true;
+                }
+            });
 
-            player.angle += diff * (isSteeringActive ? 12.0 : 6.0) * dt;
+            if(inAnyGarage && isGarageRented) {
+                isInsideGarageSafe = true;
+                document.getElementById('garage-safe-status').style.display = 'block';
+                let leftSecs = Math.max(0, Math.ceil((garageRentEndTime - Date.now()) / 1000));
+                let m = Math.floor(leftSecs / 60); let s = leftSecs % 60;
+                document.getElementById('garageTimerVal').innerText = `Rent Time Left: ${m}m ${s}s (Safe Zone Active)`;
+            } else {
+                isInsideGarageSafe = false;
+                document.getElementById('garage-safe-status').style.display = 'none';
+            }
 
-            let moveSpeed = (manualSpeedBoost ? 380 : 210) * dt;
-            player.x += Math.cos(player.angle) * moveSpeed;
-            player.y += Math.sin(player.angle) * moveSpeed;
-            player.body.unshift({x: player.x, y: player.y});
+            // Normal Movement if not safely parked in Garage
+            if(!isInsideGarageSafe) {
+                let diff = player.targetAngle - player.angle;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
 
-            let maxAllowedSegments = Math.min(2500, 60 + Math.floor(score / 8));
-            while(player.body.length > maxAllowedSegments) player.body.pop();
+                player.angle += diff * (isSteeringActive ? 12.0 : 6.0) * dt;
+
+                let moveSpeed = (manualSpeedBoost ? 380 : 210) * dt;
+                player.x += Math.cos(player.angle) * moveSpeed;
+                player.y += Math.sin(player.angle) * moveSpeed;
+                player.body.unshift({x: player.x, y: player.y});
+
+                let maxAllowedSegments = Math.min(2500, 60 + Math.floor(score / 8));
+                while(player.body.length > maxAllowedSegments) player.body.pop();
+            } else {
+                // Pull whole snake body inside garage safely when parked
+                for(let i=1; i<player.body.length; i++) {
+                    player.body[i].x += (player.x - player.body[i].x) * 4.0 * dt;
+                    player.body[i].y += (player.y - player.body[i].y) * 4.0 * dt;
+                }
+            }
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
             if(distFromCenter >= MAP_RADIUS - 50) {
@@ -765,27 +807,30 @@
             }
             document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 1200 ? 'block' : 'none';
 
-            bots.forEach(b => {
-                if(!b.alive) return;
-                
-                let headDist = Math.hypot(player.x - b.x, player.y - b.y);
-                if(headDist < player.sizeRadius + b.sizeRadius) {
-                    b.alive = false;
-                    explodeSnake(b.body);
-                    spawnBot(b.id);
-                    score += 500 * currentMultiplier;
-                    headshotTextTimer = Date.now() + 3000;
-                    playHeadshotSound();
-                }
-
-                b.body.forEach((seg, idx) => {
-                    if(idx > 3 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
-                        player.alive = false; alert("Game Over! You crashed into a bot!"); location.reload();
+            // Safe Immunity: Bots cannot hurt Player inside Garage Safe Zone
+            if(!isInsideGarageSafe) {
+                bots.forEach(b => {
+                    if(!b.alive) return;
+                    
+                    let headDist = Math.hypot(player.x - b.x, player.y - b.y);
+                    if(headDist < player.sizeRadius + b.sizeRadius) {
+                        b.alive = false;
+                        explodeSnake(b.body);
+                        spawnBot(b.id);
+                        score += 500 * currentMultiplier;
+                        headshotTextTimer = Date.now() + 3000;
+                        playHeadshotSound();
                     }
-                });
-            });
 
-            if(isMagnetActive) {
+                    b.body.forEach((seg, idx) => {
+                        if(idx > 3 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
+                            player.alive = false; alert("Game Over! You crashed into a bot!"); location.reload();
+                        }
+                    });
+                });
+            }
+
+            if(isMagnetActive && !isInsideGarageSafe) {
                 [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
                         if(!item.eatenTime) {
@@ -868,7 +913,7 @@
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
-            if(distToPlayer < 1200 && player.alive) {
+            if(distToPlayer < 1200 && player.alive && !isInsideGarageSafe) {
                 b.angle = Math.atan2(player.y - b.y, player.x - b.x);
             } else { b.angle += (Math.random() - 0.5) * 2.0 * dt; }
 
@@ -876,11 +921,13 @@
             b.x += Math.cos(b.angle) * botSpeed; b.y += Math.sin(b.angle) * botSpeed;
             b.body.unshift({x: b.x, y: b.y}); b.body.pop();
 
-            player.body.forEach((pSeg, idx) => {
-                if(idx > 3 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
-                    b.alive = false; explodeSnake(b.body); spawnBot(b.id);
-                }
-            });
+            if(!isInsideGarageSafe) {
+                player.body.forEach((pSeg, idx) => {
+                    if(idx > 3 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
+                        b.alive = false; explodeSnake(b.body); spawnBot(b.id);
+                    }
+                });
+            }
         });
 
         const camX = canvas.width / 2 - player.x * cameraScale;
@@ -894,12 +941,22 @@
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-        let isGarageActive = Date.now() < garageRentEndTime;
+        // Draw Garages with Safe Protective Outer Wall Corridor
         garages.forEach(g => {
-            ctx.fillStyle = isGarageActive ? '#2ecc71' : '#7f8c8d'; 
-            ctx.fillRect(g.x - 140, g.y - 140, 280, 280);
-            ctx.fillStyle = '#fff'; ctx.font = "bold 22px Arial"; 
-            ctx.fillText(isGarageActive ? "GARAGE 🛞 (ACTIVE)" : "GARAGE 🔒 (RENT)", g.x - 110, g.y + 8);
+            let half = g.size / 2;
+            
+            // Outer Protective Shield Corridor
+            ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
+            ctx.strokeRect(g.x - half - 40, g.y - half - 40, g.size + 80, g.size + 80);
+            
+            // Garage Base Floor
+            ctx.fillStyle = isGarageRented ? 'rgba(46, 204, 113, 0.35)' : 'rgba(127, 140, 141, 0.35)'; 
+            ctx.fillRect(g.x - half, g.y - half, g.size, g.size);
+            ctx.strokeStyle = isGarageRented ? '#2ecc71' : '#f1c40f'; ctx.lineWidth = 6;
+            ctx.strokeRect(g.x - half, g.y - half, g.size, g.size);
+
+            ctx.fillStyle = '#fff'; ctx.font = "bold 26px Arial"; 
+            ctx.fillText(isGarageRented ? "GARAGE 🛞 (SAFE ZONE)" : "GARAGE 🔒 (RENT REQUIRED)", g.x - 140, g.y + 10);
         });
 
         fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); } });
@@ -907,6 +964,7 @@
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
+        /* Render Player Snake with Flag Emoji on Head & Body */
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             
@@ -916,8 +974,8 @@
                 ctx.fillStyle = color; ctx.beginPath();
                 ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
 
-                if(skinObj.flagEmoji && i % 4 === 0) {
-                    ctx.font = `bold ${player.sizeRadius * 1.5}px Arial`;
+                if(skinObj.flagEmoji && i % 3 === 0) {
+                    ctx.font = `bold ${player.sizeRadius * 1.1}px Arial`;
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                     ctx.fillText(skinObj.flagEmoji, p.x, p.y);
                 }
@@ -950,7 +1008,7 @@
 
         radarCtx.clearRect(0, 0, 65, 65);
         garages.forEach(g => {
-            radarCtx.fillStyle = isGarageActive ? '#2ecc71' : '#f1c40f';
+            radarCtx.fillStyle = isGarageRented ? '#2ecc71' : '#f1c40f';
             radarCtx.fillRect(((g.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65 - 3, ((g.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65 - 3, 6, 6);
         });
         if(player.alive) {
