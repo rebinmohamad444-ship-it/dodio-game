@@ -112,7 +112,7 @@
             box-shadow: 0 0 6px #e74c3c; cursor: pointer;
         }
 
-        /* Modals & Main Menu Overlay */
+        /* Modals & Main Menu */
         #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.96); display: flex;
@@ -129,7 +129,6 @@
         button.shop-btn { background: #f39c12; color: #fff; }
         button.settings-btn { background: #e67e22; color: #fff; }
 
-        /* Shop Styling */
         .shop-tabs { display: flex; gap: 6px; width: 90%; max-width: 320px; margin-bottom: 6px; }
         .shop-tab-btn { flex: 1; padding: 6px; background: #181c24; color: #888; border: 1px solid #333; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .shop-tab-btn.active { background: #f39c12; color: #fff; border-color: #f39c12; }
@@ -224,7 +223,7 @@
     </div>
 </div>
 
-<!-- Fixed Shop Modal -->
+<!-- Shop Modal -->
 <div id="shop-modal">
     <h3 style="color:#f39c12; margin-bottom:4px; font-size:15px;">Skins & Flags Shop 🛒</h3>
     <div style="font-size:10px; margin-bottom:5px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
@@ -263,7 +262,7 @@
     let manualSpeedBoost = false;
     let isMagnetActive = false;
     let isSteeringActive = false;
-    let activePowers = {}; // Object map to prevent duplicates
+    let activePowers = {};
     let deadRemains = [];
 
     let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 28 };
@@ -272,6 +271,7 @@
     let coinItems = [];
     let powerups = [];
 
+    /* Database with Flag Emoji representations */
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', type: 'free', colors: ['#2ecc71', '#27ae60'] },
         { id: 'free2', name: '🔵 Sky Blue', type: 'free', colors: ['#3498db', '#2980b9'] },
@@ -281,15 +281,15 @@
         { id: 'free6', name: '🟠 Sunset Orange', type: 'free', colors: ['#e67e22', '#d35400'] },
         { id: 'free7', name: '⚪ Pure White', type: 'free', colors: ['#ffffff', '#bdc3c7'] },
         
-        { id: 'kurdish', name: '✌️ Kurdistan Flag', type: 'flags', price: 100, colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
-        { id: 'brazil', name: '🇧🇷 Brazil Flag', type: 'flags', price: 100, colors: ['#009c3b', '#ffdf00', '#002776'] },
-        { id: 'argentina', name: '🇦🇷 Argentina Flag', type: 'flags', price: 100, colors: ['#74acdf', '#ffffff', '#74acdf'] },
-        { id: 'germany', name: '🇩🇪 Germany Flag', type: 'flags', price: 100, colors: ['#000000', '#dd0000', '#ffce00'] },
-        { id: 'france', name: '🇫🇷 France Flag', type: 'flags', price: 100, colors: ['#002395', '#ffffff', '#ed2939'] },
-        { id: 'spain', name: '🇪🇸 Spain Flag', type: 'flags', price: 100, colors: ['#aa152b', '#f1bf00', '#aa152b'] },
-        { id: 'italy', name: '🇮🇹 Italy Flag', type: 'flags', price: 100, colors: ['#009246', '#ffffff', '#ce2b37'] },
-        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', type: 'flags', price: 100, colors: ['#ffffff', '#ce1124', '#ffffff'] },
-        { id: 'portugal', name: '🇵🇹 Portugal Flag', type: 'flags', price: 100, colors: ['#046a38', '#da291c'] }
+        { id: 'brazil', name: '🇧🇷 Brazil Flag', type: 'flags', price: 100, flagEmoji: '🇧🇷', colors: ['#009c3b', '#ffdf00', '#002776'] },
+        { id: 'kurdish', name: '✌️ Kurdistan Flag', type: 'flags', price: 100, flagEmoji: '☀️', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
+        { id: 'spain', name: '🇪🇸 Spain Flag', type: 'flags', price: 100, flagEmoji: '🇪🇸', colors: ['#aa152b', '#f1bf00', '#aa152b'] },
+        { id: 'canada', name: '🇨🇦 Canada Flag', type: 'flags', price: 100, flagEmoji: '🇨🇦', colors: ['#ff0000', '#ffffff', '#ff0000'] },
+        { id: 'germany', name: '🇩🇪 Germany Flag', type: 'flags', price: 100, flagEmoji: '🇩🇪', colors: ['#000000', '#dd0000', '#ffce00'] },
+        { id: 'france', name: '🇫🇷 France Flag', type: 'flags', price: 100, flagEmoji: '🇫🇷', colors: ['#002395', '#ffffff', '#ed2939'] },
+        { id: 'usa', name: '🇺🇸 USA Flag', type: 'flags', price: 100, flagEmoji: '🇺🇸', colors: ['#b22234', '#ffffff', '#3c3b6e'] },
+        { id: 'italy', name: '🇮🇹 Italy Flag', type: 'flags', price: 100, flagEmoji: '🇮🇹', colors: ['#009246', '#ffffff', '#ce2b37'] },
+        { id: 'uk', name: '🇬🇧 UK Flag', type: 'flags', price: 100, flagEmoji: '🇬🇧', colors: ['#00247d', '#ffffff', '#cf142b'] }
     ];
 
     const garages = [
@@ -509,7 +509,6 @@
     function loginFacebook() { alert("Connected with Facebook successfully! 📘"); }
     function loginGuest() { alert("Logged in as Guest / Email successfully! 👤"); }
 
-    /* ABSOLUTE UNIQUE POWERUP LOGIC (REFRESHES TIMER, NO DUPLICATES) */
     function addPowerupTimer(key, name, icon, durationMs, onExpire) {
         let expireTime = Date.now() + durationMs;
         
@@ -633,7 +632,6 @@
             player.y += Math.sin(player.angle) * moveSpeed;
             player.body.unshift({x: player.x, y: player.y});
 
-            // Massive Length Growth (Up to 1,500 Segments)
             let maxAllowedSegments = Math.min(1500, 60 + Math.floor(score / 15));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
@@ -666,7 +664,6 @@
                 });
             }
 
-            // Fruits Eating (15 Seconds Timer Respawn)
             fruits.forEach((f) => {
                 if(f.eatenTime && Date.now() - f.eatenTime > 15000) {
                     let angle = Math.random() * Math.PI * 2;
@@ -680,7 +677,7 @@
                     document.getElementById('scoreVal').innerText = score;
                     f.eatenTime = Date.now();
                     f.x = -99999; f.y = -99999;
-                    if(player.sizeRadius < 55) player.sizeRadius += 0.12; // Fast Thickness Growth
+                    if(player.sizeRadius < 55) player.sizeRadius += 0.12;
                 }
             });
 
@@ -700,7 +697,7 @@
                     score += 15 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
-                    if(player.sizeRadius < 55) player.sizeRadius += 0.18; // Fast Thickness Growth
+                    if(player.sizeRadius < 55) player.sizeRadius += 0.18;
                 }
             });
 
@@ -776,13 +773,22 @@
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
+        /* DRAW PLAYER SNAKE WITH FLAG EMOJIS & COLORS */
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
+            
             for(let i = player.body.length - 1; i >= 2; i--) {
                 let p = player.body[i];
                 let color = skinObj.colors[i % skinObj.colors.length];
                 ctx.fillStyle = color; ctx.beginPath();
                 ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
+
+                /* Draw Flag Emoji along body if it's a flag skin */
+                if(skinObj.flagEmoji && i % 4 === 0) {
+                    ctx.font = `${player.sizeRadius * 1.2}px Arial`;
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    ctx.fillText(skinObj.flagEmoji, p.x, p.y);
+                }
             }
             drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius);
         }
