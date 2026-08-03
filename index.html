@@ -279,6 +279,7 @@
     const MAP_RADIUS = 18000;
     const MAP_CENTER = 20000;
     let cameraScale = 0.50;
+    let baseCameraScale = 0.50;
     let gameRunning = false;
     let controlType = 'touch';
     let activeShopTab = 'free';
@@ -297,6 +298,7 @@
     let manualSpeedBoost = false;
     let isMagnetActive = false;
     let isSteeringActive = false;
+    let isSniperActive = false;
     let activePowers = {};
     let deadRemains = [];
     let activeEmojiText = null;
@@ -565,7 +567,7 @@
     }
 
     function initGame() {
-        score = 0; currentMultiplier = 1; cameraScale = 0.50; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
+        score = 0; currentMultiplier = 1; cameraScale = 0.50; baseCameraScale = 0.50; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
         document.getElementById('scoreVal').innerText = score;
         document.getElementById('boost-btn').style.display = 'none';
         
@@ -760,7 +762,7 @@
         }
         for(let y = startX; y <= endX; y += gridSize) {
             ctx.moveTo(MAP_CENTER - MAP_RADIUS, y);
-            ctx.lineTo(MAP_CENTER + MAP_RADIUS, y);
+            ctx.lineTo(MAP_CENTER + MAP_RADIUS);
         }
         ctx.stroke();
     }
@@ -777,6 +779,10 @@
         let isGarageRented = Date.now() < garageRentEndTime;
 
         if(player.alive) {
+            /* Dynamic Camera Zoom Out as Snake Grows */
+            baseCameraScale = Math.max(0.18, 0.50 - (player.sizeRadius - 28) * 0.004);
+            cameraScale = isSniperActive ? 0.30 : baseCameraScale;
+
             let inAnyGarage = false;
             garages.forEach(g => {
                 let half = g.size / 2;
@@ -918,8 +924,8 @@
                         addPowerupTimer('steering', 'Fast Steering', '🛞', 15000, () => isSteeringActive = false);
                     }
                     if(p.icon === '🎯') {
-                        cameraScale = 0.30;
-                        addPowerupTimer('sniper', 'Sniper Zoom Out', '🎯', 15000, () => cameraScale = 0.50);
+                        isSniperActive = true;
+                        addPowerupTimer('sniper', 'Sniper Zoom Out', '🎯', 15000, () => isSniperActive = false);
                     }
 
                     let pos = getRandomMapPos();
