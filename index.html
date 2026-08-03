@@ -125,11 +125,11 @@
 
         #boost-btn {
             position: absolute; bottom: 15px; right: 15px;
-            width: 50px; height: 50px; background: rgba(231, 76, 60, 0.9);
-            border: 1.5px solid #fff; border-radius: 50%;
-            color: #fff; font-weight: bold; font-size: 9px;
-            z-index: 10; display: none; justify-content: center; align-items: center;
-            box-shadow: 0 0 6px #e74c3c; cursor: pointer;
+            width: 55px; height: 55px; background: rgba(231, 76, 60, 0.9);
+            border: 2px solid #fff; border-radius: 50%;
+            color: #fff; font-weight: bold; font-size: 10px;
+            z-index: 10; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 8px #e74c3c; cursor: pointer;
         }
 
         #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
@@ -557,7 +557,7 @@
 
     function exitGarageManually() {
         isInsideGarageSafe = false;
-        player.x += 350; // Push player out of garage zone safely
+        player.x += 350;
         document.getElementById('garage-safe-status').style.display = 'none';
     }
 
@@ -636,6 +636,8 @@
     const boostBtn = document.getElementById('boost-btn');
     boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
     boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); manualSpeedBoost = false; });
+    boostBtn.addEventListener('mousedown', (e) => { e.preventDefault(); manualSpeedBoost = true; });
+    boostBtn.addEventListener('mouseup', (e) => { e.preventDefault(); manualSpeedBoost = false; });
 
     window.addEventListener('touchmove', (e) => {
         if(!gameRunning || !player.alive) return;
@@ -830,6 +832,20 @@
                 });
             }
 
+            if(isMagnetActive && !isInsideGarageSafe) {
+                [fruits, coinItems, powerups, deadRemains].forEach(group => {
+                    group.forEach(item => {
+                        if(!item.eatenTime) {
+                            let d = Math.hypot(player.x - item.x, player.y - item.y);
+                            if(d < 550) {
+                                item.x += (player.x - item.x) * 6.0 * dt;
+                                item.y += (player.y - item.y) * 6.0 * dt;
+                            }
+                        }
+                    });
+                });
+            }
+
             fruits.forEach((f) => {
                 if(f.eatenTime && Date.now() - f.eatenTime > 15000) {
                     let pos = getRandomMapPos();
@@ -861,6 +877,34 @@
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
                     if(player.sizeRadius < 95) player.sizeRadius += (0.45 * currentMultiplier);
+                }
+            });
+
+            powerups.forEach((p) => {
+                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
+                    if(p.icon === '🧲') {
+                        isMagnetActive = true;
+                        addPowerupTimer('magnet', 'Magnet', '🧲', 15000, () => isMagnetActive = false);
+                    }
+                    if(p.icon.includes('x')) {
+                        let val = parseInt(p.icon.replace('x', '')) || 2;
+                        currentMultiplier = val;
+                        addPowerupTimer('multiplier', `Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
+                    }
+                    if(p.icon === '🚀') {
+                        addPowerupTimer('boost', 'Boost Power', '🚀', 15000, () => {});
+                    }
+                    if(p.icon === '🛞') {
+                        isSteeringActive = true;
+                        addPowerupTimer('steering', 'Fast Steering', '🛞', 15000, () => isSteeringActive = false);
+                    }
+                    if(p.icon === '🎯') {
+                        cameraScale = 0.30;
+                        addPowerupTimer('sniper', 'Sniper Zoom Out', '🎯', 15000, () => cameraScale = 0.50);
+                    }
+
+                    let pos = getRandomMapPos();
+                    p.x = pos.x; p.y = pos.y;
                 }
             });
         }
