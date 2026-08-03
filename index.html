@@ -164,7 +164,7 @@
     <canvas id="radar-canvas" width="65" height="65"></canvas>
     <div id="hud-stats">
         <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
-        <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
+        <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 1500</span></div>
     </div>
     <div id="emoji-reaction-box">
         <div class="reaction-btn" onclick="triggerEmoji('😂')">😂</div>
@@ -202,7 +202,7 @@
     <h1>dod.io</h1>
     <div style="font-size:24px; margin-bottom:2px;">🐍</div>
     <div style="font-size:10px; color:#f1c40f; margin-bottom:6px;">
-        High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">0</span> 🪙
+        High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">1500</span> 🪙
     </div>
 
     <div style="background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:8px; border:1px solid #f1c40f; width:85%; max-width:270px; margin-bottom:8px; font-size:8px;">
@@ -246,7 +246,7 @@
 <!-- Shop Modal -->
 <div id="shop-modal">
     <h3 style="color:#f39c12; margin-bottom:4px; font-size:15px;">Skins & Rent Garage 🛒</h3>
-    <div style="font-size:10px; margin-bottom:5px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    <div style="font-size:10px; margin-bottom:5px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 1500</span></div>
     
     <div class="shop-tabs">
         <button class="shop-tab-btn active" id="tabFreeBtn" onclick="switchShopTab('free')">Free Skins</button>
@@ -274,7 +274,11 @@
     let activeShopTab = 'free';
     let lastFrameTime = performance.now();
 
-    let coins = parseFloat(localStorage.getItem('dodio_coins') || '0');
+    // Set initial testing coins to 1500 if less than 1500
+    let savedCoins = parseFloat(localStorage.getItem('dodio_coins') || '1500');
+    let coins = savedCoins < 1500 ? 1500 : savedCoins;
+    localStorage.setItem('dodio_coins', coins.toString());
+
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
     let ownedSkins = JSON.parse(localStorage.getItem('dodio_owned_skins') || '["free1","free2","free3","free4","free5","free6","free7"]');
     let garageRentEndTime = parseInt(localStorage.getItem('dodio_garage_rent_end') || '0');
@@ -297,7 +301,6 @@
     let coinItems = [];
     let powerups = [];
 
-    /* Full 40 Country & Region Flags List */
     const skinsDatabase = [
         { id: 'free1', name: '🟢 Lime Green', type: 'free', colors: ['#2ecc71', '#27ae60'] },
         { id: 'free2', name: '🔵 Sky Blue', type: 'free', colors: ['#3498db', '#2980b9'] },
@@ -352,7 +355,6 @@
         { minutes: 60, price: 230 }
     ];
 
-    /* Larger Garages (Size 480x480) with Safe Wall Corridor */
     const garages = [
         { x: MAP_CENTER - 10000, y: MAP_CENTER - 10000, size: 480 },
         { x: MAP_CENTER + 10000, y: MAP_CENTER - 10000, size: 480 },
@@ -378,6 +380,7 @@
         } catch(e){}
     }
 
+    /* Auto Adapt to Landscape/Screen Resize */
     function resize() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -485,7 +488,7 @@
 
             container.innerHTML += `
                 <div class="shop-item">
-                    <span>${s.name}</span>
+                    <span>${s.flagEmoji || ''} ${s.name}</span>
                     ${btnHtml}
                 </div>
             `;
@@ -570,8 +573,8 @@
         }
 
         powerups = [];
-        const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2'];
-        for(let i=0; i<400; i++) {
+        const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2', 'x4', 'x8'];
+        for(let i=0; i<500; i++) {
             let pos = getRandomMapPos();
             powerups.push({ x: pos.x, y: pos.y, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
@@ -686,10 +689,11 @@
         ctx.moveTo(radius*2.4, 0); ctx.lineTo(radius*3.2, 0);
         ctx.lineTo(radius*3.5, -6); ctx.moveTo(radius*3.2, 0); ctx.lineTo(radius*3.5, 6); ctx.stroke();
 
+        /* Print Large Clear Flag Emoji on Snake Head */
         if(flagEmoji) {
-            ctx.font = `bold ${radius * 1.2}px Arial`;
+            ctx.font = `bold ${radius * 1.8}px Arial`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(flagEmoji, radius * 0.2, 0);
+            ctx.fillText(flagEmoji, radius * 0.4, 0);
         }
 
         if(activeEmojiText) {
@@ -758,7 +762,6 @@
         let isGarageRented = Date.now() < garageRentEndTime;
 
         if(player.alive) {
-            // Check if Player Head touches any Garage Box
             let inAnyGarage = false;
             garages.forEach(g => {
                 let half = g.size / 2;
@@ -778,7 +781,6 @@
                 document.getElementById('garage-safe-status').style.display = 'none';
             }
 
-            // Normal Movement if not safely parked in Garage
             if(!isInsideGarageSafe) {
                 let diff = player.targetAngle - player.angle;
                 while (diff < -Math.PI) diff += Math.PI * 2;
@@ -791,10 +793,10 @@
                 player.y += Math.sin(player.angle) * moveSpeed;
                 player.body.unshift({x: player.x, y: player.y});
 
-                let maxAllowedSegments = Math.min(2500, 60 + Math.floor(score / 8));
+                /* Multiplier Growth Logic: Length expands x2, x4 times faster */
+                let maxAllowedSegments = Math.min(3500, 60 + Math.floor((score * currentMultiplier) / 4));
                 while(player.body.length > maxAllowedSegments) player.body.pop();
             } else {
-                // Pull whole snake body inside garage safely when parked
                 for(let i=1; i<player.body.length; i++) {
                     player.body[i].x += (player.x - player.body[i].x) * 4.0 * dt;
                     player.body[i].y += (player.y - player.body[i].y) * 4.0 * dt;
@@ -807,7 +809,6 @@
             }
             document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 1200 ? 'block' : 'none';
 
-            // Safe Immunity: Bots cannot hurt Player inside Garage Safe Zone
             if(!isInsideGarageSafe) {
                 bots.forEach(b => {
                     if(!b.alive) return;
@@ -855,13 +856,14 @@
                     document.getElementById('scoreVal').innerText = score;
                     f.eatenTime = Date.now();
                     f.x = -99999; f.y = -99999;
-                    if(player.sizeRadius < 85) player.sizeRadius += 0.15;
+                    /* Dynamic Growth Thickness according to currentMultiplier */
+                    if(player.sizeRadius < 95) player.sizeRadius += (0.35 * currentMultiplier);
                 }
             });
 
             coinItems.forEach((c) => {
                 if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
-                    coins += 0.5;
+                    coins += 0.5 * currentMultiplier;
                     document.getElementById('coinVal').innerText = `🪙 ${Math.floor(coins)}`;
                     saveStats();
                     let pos = getRandomMapPos();
@@ -874,7 +876,7 @@
                     score += 15 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
-                    if(player.sizeRadius < 85) player.sizeRadius += 0.25;
+                    if(player.sizeRadius < 95) player.sizeRadius += (0.45 * currentMultiplier);
                 }
             });
 
@@ -941,15 +943,12 @@
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-        // Draw Garages with Safe Protective Outer Wall Corridor
         garages.forEach(g => {
             let half = g.size / 2;
             
-            // Outer Protective Shield Corridor
             ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
             ctx.strokeRect(g.x - half - 40, g.y - half - 40, g.size + 80, g.size + 80);
             
-            // Garage Base Floor
             ctx.fillStyle = isGarageRented ? 'rgba(46, 204, 113, 0.35)' : 'rgba(127, 140, 141, 0.35)'; 
             ctx.fillRect(g.x - half, g.y - half, g.size, g.size);
             ctx.strokeStyle = isGarageRented ? '#2ecc71' : '#f1c40f'; ctx.lineWidth = 6;
@@ -964,7 +963,7 @@
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
-        /* Render Player Snake with Flag Emoji on Head & Body */
+        /* Render Snake Body and Flag Emojis Clearly along body */
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             
@@ -974,8 +973,8 @@
                 ctx.fillStyle = color; ctx.beginPath();
                 ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
 
-                if(skinObj.flagEmoji && i % 3 === 0) {
-                    ctx.font = `bold ${player.sizeRadius * 1.1}px Arial`;
+                if(skinObj.flagEmoji && i % 2 === 0) {
+                    ctx.font = `bold ${player.sizeRadius * 1.3}px Arial`;
                     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                     ctx.fillText(skinObj.flagEmoji, p.x, p.y);
                 }
