@@ -20,126 +20,117 @@
         }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
-        /* HUD Top Left */
+        /* HUD Top Left - Compact */
         #radar-wrapper {
-            position: absolute; top: 10px; left: 10px;
+            position: absolute; top: 8px; left: 8px;
             display: flex; flex-direction: column; align-items: center;
-            gap: 4px; z-index: 5;
+            gap: 2px; z-index: 5;
         }
         #radar-canvas {
-            width: 75px; height: 75px;
+            width: 60px; height: 60px;
             background: rgba(0, 0, 0, 0.85);
-            border: 2px solid #2ecc71; border-radius: 50%;
+            border: 1.5px solid #2ecc71; border-radius: 50%;
         }
         #hud-stats {
-            background: rgba(0,0,0,0.75); padding: 3px 6px;
-            border-radius: 6px; border: 1px solid #2ecc71;
-            font-size: 9px; margin-top: 2px; text-align: center; width: 75px;
+            background: rgba(0,0,0,0.75); padding: 2px 4px;
+            border-radius: 5px; border: 1px solid #2ecc71;
+            font-size: 8px; margin-top: 2px; text-align: center; width: 60px;
         }
 
         /* Left Bottom Stack: Garage & Exit */
         #left-bottom-container {
-            position: absolute; bottom: 15px; left: 15px;
-            display: flex; flex-direction: column; gap: 6px; z-index: 10;
+            position: absolute; bottom: 12px; left: 12px;
+            display: flex; flex-direction: column; gap: 4px; z-index: 10;
         }
         #ingame-garage-btn {
-            background: rgba(243, 156, 18, 0.9); border: 1.5px solid #fff;
-            color: #fff; padding: 5px 10px; border-radius: 10px;
-            font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
+            background: rgba(243, 156, 18, 0.9); border: 1px solid #fff;
+            color: #fff; padding: 4px 8px; border-radius: 8px;
+            font-size: 9px; font-weight: bold; cursor: pointer; text-align: center; width: 65px;
         }
         #exit-btn {
             background: #e74c3c; color: #fff; font-weight: bold;
-            border: 1.5px solid #fff; padding: 5px 10px; border-radius: 10px;
-            font-size: 10px; cursor: pointer; text-align: center; width: 75px;
+            border: 1px solid #fff; padding: 4px 8px; border-radius: 8px;
+            font-size: 9px; cursor: pointer; text-align: center; width: 65px;
         }
 
-        /* Dynamic Floating Joystick */
+        /* Joystick & Controls */
         #joystick-zone {
-            position: absolute; width: 80px; height: 80px;
+            position: absolute; width: 70px; height: 70px;
             background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(46, 204, 113, 0.8);
+            border: 1.5px solid rgba(46, 204, 113, 0.8);
             border-radius: 50%; z-index: 10; display: none;
             pointer-events: none; transform: translate(-50%, -50%);
         }
         #joystick-knob {
-            position: absolute; top: 20px; left: 20px;
-            width: 40px; height: 40px;
+            position: absolute; top: 18px; left: 18px;
+            width: 34px; height: 34px;
             background: #2ecc71; border-radius: 50%;
-            box-shadow: 0 0 8px #2ecc71; pointer-events: none;
-        }
-
-        /* 4-Direction Buttons */
-        #btn-controls {
-            position: absolute; bottom: 20px; right: 20px;
-            display: none; grid-template-columns: repeat(3, 38px);
-            grid-template-rows: repeat(3, 38px); gap: 4px; z-index: 10;
-        }
-        .ctrl-btn {
-            background: rgba(46, 204, 113, 0.75); border: 1px solid #fff;
-            color: #fff; font-weight: bold; border-radius: 8px; font-size: 14px;
+            box-shadow: 0 0 6px #2ecc71; pointer-events: none;
         }
 
         #red-zone-alert {
-            position: absolute; top: 18%; left: 50%; transform: translate(-50%, -50%);
-            color: #e74c3c; font-size: 14px; font-weight: bold;
-            background: rgba(0,0,0,0.85); padding: 6px 12px; border-radius: 8px;
-            border: 2px solid #e74c3c; display: none; z-index: 8;
+            position: absolute; top: 15%; left: 50%; transform: translate(-50%, -50%);
+            color: #e74c3c; font-size: 13px; font-weight: bold;
+            background: rgba(0,0,0,0.85); padding: 4px 10px; border-radius: 6px;
+            border: 1.5px solid #e74c3c; display: none; z-index: 8;
             animation: blinker 0.5s linear infinite;
         }
 
         #leaderboard-box {
-            position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.85); padding: 6px 10px;
-            border-radius: 8px; border: 1.5px solid #f1c40f;
-            font-size: 9px; z-index: 5; min-width: 120px; pointer-events: none;
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,0.85); padding: 5px 8px;
+            border-radius: 6px; border: 1px solid #f1c40f;
+            font-size: 8px; z-index: 5; min-width: 110px; pointer-events: none;
         }
 
-        /* Compact Smaller Active Power Badges */
+        /* Compact Active Power Badges */
         #active-powers-container {
-            position: absolute; top: 125px; left: 10px;
-            display: flex; flex-direction: column; gap: 3px; z-index: 5;
+            position: absolute; top: 105px; left: 8px;
+            display: flex; flex-direction: column; gap: 2px; z-index: 5;
         }
         .power-badge {
             background: rgba(241, 196, 15, 0.95); color: #111;
-            padding: 2px 6px; border-radius: 6px; font-weight: bold;
-            font-size: 9px; box-shadow: 0 0 4px #f1c40f; width: fit-content;
+            padding: 2px 5px; border-radius: 5px; font-weight: bold;
+            font-size: 8px; box-shadow: 0 0 3px #f1c40f; width: fit-content;
         }
 
         #boost-btn {
-            position: absolute; bottom: 20px; right: 20px;
-            width: 55px; height: 55px; background: rgba(231, 76, 60, 0.9);
-            border: 2px solid #fff; border-radius: 50%;
-            color: #fff; font-weight: bold; font-size: 10px;
+            position: absolute; bottom: 15px; right: 15px;
+            width: 50px; height: 50px; background: rgba(231, 76, 60, 0.9);
+            border: 1.5px solid #fff; border-radius: 50%;
+            color: #fff; font-weight: bold; font-size: 9px;
             z-index: 10; display: none; justify-content: center; align-items: center;
-            box-shadow: 0 0 8px #e74c3c; cursor: pointer;
+            box-shadow: 0 0 6px #e74c3c; cursor: pointer;
         }
 
-        /* Modals & Overlays */
-        #menu-overlay, #shop-modal, #exit-modal, #settings-modal, #global-leaderboard-modal, #daily-chest-modal {
+        /* Modals & Main Menu */
+        #menu-overlay, #shop-modal, #exit-modal {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(10, 12, 16, 0.96); display: flex;
             flex-direction: column; justify-content: center; align-items: center; z-index: 20;
         }
-        #shop-modal, #exit-modal, #settings-modal, #global-leaderboard-modal, #daily-chest-modal { display: none; z-index: 30; }
+        #shop-modal, #exit-modal { display: none; z-index: 30; }
 
-        h1 { font-size: 36px; color: #2ecc71; margin-bottom: 5px; }
-        .btn-group { display: flex; flex-direction: column; gap: 8px; width: 85%; max-width: 280px; }
-        button, input, select { padding: 9px; font-size: 11px; border-radius: 10px; border: none; outline: none; }
+        h1 { font-size: 34px; color: #2ecc71; margin-bottom: 4px; }
+        .btn-group { display: flex; flex-direction: column; gap: 6px; width: 85%; max-width: 270px; }
+        button, input { padding: 8px; font-size: 11px; border-radius: 10px; border: none; outline: none; }
         button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; }
         button.fb-btn { background: #1877f2; color: #fff; }
         button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
         button.shop-btn { background: #f39c12; color: #fff; }
-        button.chest-btn { background: #9b59b6; color: #fff; }
-        button.lead-btn { background: #f1c40f; color: #111; }
 
+        /* New 2-Tab Shop Styling */
+        .shop-tabs { display: flex; gap: 6px; width: 90%; max-width: 320px; margin-bottom: 8px; }
+        .shop-tab-btn { flex: 1; padding: 6px; background: #181c24; color: #888; border: 1px solid #333; border-radius: 6px; font-weight: bold; }
+        .shop-tab-btn.active { background: #f39c12; color: #fff; border-color: #f39c12; }
         .shop-list {
-            display: flex; flex-direction: column; gap: 8px;
-            height: 50vh; overflow-y: auto; width: 92%; max-width: 340px; margin: 10px 0;
-            padding: 5px; -webkit-overflow-scrolling: touch;
+            display: flex; flex-direction: column; gap: 6px;
+            height: 48vh; overflow-y: auto; width: 90%; max-width: 320px;
+            padding: 4px; -webkit-overflow-scrolling: touch;
         }
         .shop-item {
             display: flex; justify-content: space-between; align-items: center;
-            background: #181c24; padding: 8px 12px; border-radius: 8px; border: 1px solid #333; font-size: 11px;
+            background: #181c24; padding: 8px 10px; border-radius: 6px; border: 1px solid #333; font-size: 11px;
         }
         @keyframes blinker { 50% { opacity: 0; } }
     </style>
@@ -147,7 +138,7 @@
 <body>
 
 <div id="radar-wrapper">
-    <canvas id="radar-canvas" width="75" height="75"></canvas>
+    <canvas id="radar-canvas" width="60" height="60"></canvas>
     <div id="hud-stats">
         <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
         <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 0</span></div>
@@ -155,93 +146,65 @@
 </div>
 
 <div id="left-bottom-container">
-    <div id="ingame-garage-btn" onclick="openShop()">🚗 Garage</div>
+    <div id="ingame-garage-btn" onclick="openShop()">🚗 Shop</div>
     <div id="exit-btn" onclick="openExitModal()">🏠 Exit</div>
 </div>
 
 <div id="joystick-zone"><div id="joystick-knob"></div></div>
-<div id="btn-controls">
-    <div></div><button class="ctrl-btn" onclick="setDir(0, -1)">▲</button><div></div>
-    <button class="ctrl-btn" onclick="setDir(-1, 0)">◀</button><div></div><button class="ctrl-btn" onclick="setDir(1, 0)">▶</button>
-    <div></div><button class="ctrl-btn" onclick="setDir(0, 1)">▼</button><div></div>
-</div>
-
 <div id="red-zone-alert">⚠️ WARNING: RED ZONE! ⚠️</div>
 <div id="active-powers-container"></div>
 
 <div id="leaderboard-box">
-    <h4 style="color:#f1c40f; text-align:center; margin-bottom:4px; font-size:9px;">🏆 TOP 10 PLAYERS</h4>
+    <h4 style="color:#f1c40f; text-align:center; margin-bottom:3px; font-size:8px;">🏆 TOP 10 PLAYERS</h4>
     <div id="topList"></div>
 </div>
 
 <div id="boost-btn">BOOST 🚀</div>
 
-<!-- Main Menu -->
+<!-- Main Menu with Integrated Leaderboard -->
 <div id="menu-overlay">
     <h1>dod.io</h1>
-    <div style="font-size:32px; margin-bottom:8px;">🐍</div>
-    <div style="font-size:11px; color:#f1c40f; margin-bottom:12px;">
+    <div style="font-size:26px; margin-bottom:4px;">🐍</div>
+    <div style="font-size:10px; color:#f1c40f; margin-bottom:8px;">
         High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">0</span> 🪙
     </div>
+
+    <!-- Main Menu Leaderboard Preview -->
+    <div style="background:rgba(0,0,0,0.6); padding:6px 10px; border-radius:8px; border:1px solid #f1c40f; width:85%; max-width:270px; margin-bottom:10px; font-size:9px;">
+        <div style="color:#f1c40f; font-weight:bold; text-align:center; margin-bottom:4px;">🏆 LEADERBOARD RANKINGS</div>
+        <div id="menuLeaderboardContainer"></div>
+    </div>
+
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name" style="border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
         <button onclick="startGame()">Play Game 🎮</button>
-        <button class="shop-btn" onclick="openShop()">Shop & Country Flags 🛒</button>
-        <button class="chest-btn" onclick="openDailyChest()">Daily Chest 🎁</button>
-        <button class="lead-btn" onclick="openGlobalLeaderboard()">Global Leaderboard 🏆</button>
-        <button style="background:#e67e22; color:#fff;" onclick="openSettings()">Controls & Settings ⚙️</button>
+        <button class="shop-btn" onclick="openShop()">Skins & Flags Shop 🛒</button>
         <button class="fb-btn" onclick="loginFacebook()">Login with Facebook 📘</button>
         <button class="guest-btn" onclick="loginGuest()">Play as Guest / Email 👤</button>
     </div>
 </div>
 
-<!-- Daily Chest Reward Modal -->
-<div id="daily-chest-modal">
-    <h2 style="color:#9b59b6; margin-bottom:10px;">Daily Chest Reward 🎁</h2>
-    <div style="font-size:50px; margin:15px 0;">🎁</div>
-    <div id="chestStatusText" style="font-size:13px; margin-bottom:15px; text-align:center;">Claim your free daily coins!</div>
-    <div class="btn-group">
-        <button id="claimChestBtn" onclick="claimDailyReward()" style="background:#9b59b6; color:#fff;">Claim 🪙 100 Coins</button>
-        <button onclick="closeDailyChest()" style="background:#282c34; color:#fff;">Close</button>
-    </div>
-</div>
-
-<!-- Global Leaderboard Modal -->
-<div id="global-leaderboard-modal">
-    <h2 style="color:#f1c40f; margin-bottom:10px;">Global Leaderboard 🏆</h2>
-    <div class="shop-list" id="globalRankContainer"></div>
-    <button onclick="closeGlobalLeaderboard()" style="width:120px; background:#e74c3c; color:#fff;">Close</button>
-</div>
-
-<!-- Controls Settings Modal -->
-<div id="settings-modal">
-    <h3 style="color:#e67e22; margin-bottom:10px;">Control Settings ⚙️</h3>
-    <div class="btn-group">
-        <label style="font-size:11px;">Control Style:</label>
-        <select id="controlTypeSelect" onchange="changeControlType()" style="border:1px solid #e67e22; background:#181c24; color:#fff;">
-            <option value="touch">Touch Pointer Target</option>
-            <option value="joystick">Floating Anywhere Joystick</option>
-            <option value="buttons">4-Direction Buttons</option>
-        </select>
-        <button onclick="closeSettings()">Save & Back</button>
-    </div>
-</div>
-
 <!-- Exit Confirm Modal -->
 <div id="exit-modal">
-    <h3 style="color:#e74c3c; margin-bottom:15px;">Exit Game?</h3>
+    <h3 style="color:#e74c3c; margin-bottom:12px; font-size:14px;">Exit Game?</h3>
     <div class="btn-group">
         <button onclick="confirmExit()" style="background:#e74c3c; color:#fff;">Main Menu 🏠</button>
         <button onclick="closeExitModal()" style="background:#2ecc71; color:#111;">Continue Playing ▶️</button>
     </div>
 </div>
 
-<!-- Full Shop Modal -->
+<!-- Brand New 2-Tab Shop Modal -->
 <div id="shop-modal">
-    <h3 style="color:#f39c12; margin-bottom:5px;">Skins & Country Flags 🛒</h3>
-    <div style="font-size:11px; margin-bottom:5px;">Saved Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    <h3 style="color:#f39c12; margin-bottom:4px; font-size:16px;">Skins & Flags Shop 🛒</h3>
+    <div style="font-size:10px; margin-bottom:6px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 0</span></div>
+    
+    <div class="shop-tabs">
+        <button class="shop-tab-btn active" id="tabFreeBtn" onclick="switchShopTab('free')">Free Skins</button>
+        <button class="shop-tab-btn" id="tabFlagsBtn" onclick="switchShopTab('flags')">Country Flags (🪙100)</button>
+    </div>
+
     <div class="shop-list" id="shopItemsContainer"></div>
-    <button onclick="closeShop()" style="width:120px; margin-top:5px; background:#e74c3c; color:#fff;">Close</button>
+    <button onclick="closeShop()" style="width:110px; margin-top:6px; background:#e74c3c; color:#fff;">Close</button>
 </div>
 
 <canvas id="gameCanvas"></canvas>
@@ -256,12 +219,12 @@
     const MAP_CENTER = 20000;
     let cameraScale = 0.50;
     let gameRunning = false;
-    let controlType = 'touch';
+    let activeShopTab = 'free';
     let lastFrameTime = performance.now();
 
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
-    let lastChestClaim = localStorage.getItem('dodio_last_chest') || '0';
+    let ownedSkins = JSON.parse(localStorage.getItem('dodio_owned_skins') || '["free1","free2","free3","free4","free5","free6","free7"]');
     let score = 0;
 
     let currentMultiplier = 1;
@@ -271,29 +234,31 @@
     let activePowers = [];
     let deadRemains = [];
 
-    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'kurdish', body: [], alive: true, sizeRadius: 20 };
+    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 20 };
     let bots = [];
     let fruits = [];
     let coinItems = [];
     let powerups = [];
 
+    // Complete Database with Type Flags
     const skinsDatabase = [
-        { id: 'free1', name: '🟢 Lime Green', colors: ['#2ecc71', '#27ae60'] },
-        { id: 'free2', name: '🔵 Sky Blue', colors: ['#3498db', '#2980b9'] },
-        { id: 'free3', name: '🔴 Ruby Red', colors: ['#e74c3c', '#c0392b'] },
-        { id: 'free4', name: '🟡 Bright Yellow', colors: ['#f1c40f', '#f39c12'] },
-        { id: 'free5', name: '🟣 Royal Purple', colors: ['#9b59b6', '#8e44ad'] },
-        { id: 'free6', name: '🟠 Sunset Orange', colors: ['#e67e22', '#d35400'] },
-        { id: 'free7', name: '⚪ Pure White', colors: ['#ffffff', '#bdc3c7'] },
-        { id: 'kurdish', name: '✌️ Kurdistan Flag', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
-        { id: 'brazil', name: '🇧🇷 Brazil Flag', colors: ['#009c3b', '#ffdf00', '#002776'] },
-        { id: 'argentina', name: '🇦🇷 Argentina Flag', colors: ['#74acdf', '#ffffff', '#74acdf'] },
-        { id: 'germany', name: '🇩🇪 Germany Flag', colors: ['#000000', '#dd0000', '#ffce00'] },
-        { id: 'france', name: '🇫🇷 France Flag', colors: ['#002395', '#ffffff', '#ed2939'] },
-        { id: 'spain', name: '🇪🇸 Spain Flag', colors: ['#aa152b', '#f1bf00', '#aa152b'] },
-        { id: 'italy', name: '🇮🇹 Italy Flag', colors: ['#009246', '#ffffff', '#ce2b37'] },
-        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', colors: ['#ffffff', '#ce1124', '#ffffff'] },
-        { id: 'portugal', name: '🇵🇹 Portugal Flag', colors: ['#046a38', '#da291c'] }
+        { id: 'free1', name: '🟢 Lime Green', type: 'free', colors: ['#2ecc71', '#27ae60'] },
+        { id: 'free2', name: '🔵 Sky Blue', type: 'free', colors: ['#3498db', '#2980b9'] },
+        { id: 'free3', name: '🔴 Ruby Red', type: 'free', colors: ['#e74c3c', '#c0392b'] },
+        { id: 'free4', name: '🟡 Bright Yellow', type: 'free', colors: ['#f1c40f', '#f39c12'] },
+        { id: 'free5', name: '🟣 Royal Purple', type: 'free', colors: ['#9b59b6', '#8e44ad'] },
+        { id: 'free6', name: '🟠 Sunset Orange', type: 'free', colors: ['#e67e22', '#d35400'] },
+        { id: 'free7', name: '⚪ Pure White', type: 'free', colors: ['#ffffff', '#bdc3c7'] },
+        
+        { id: 'kurdish', name: '✌️ Kurdistan Flag', type: 'flag', price: 100, colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
+        { id: 'brazil', name: '🇧🇷 Brazil Flag', type: 'flag', price: 100, colors: ['#009c3b', '#ffdf00', '#002776'] },
+        { id: 'argentina', name: '🇦🇷 Argentina Flag', type: 'flag', price: 100, colors: ['#74acdf', '#ffffff', '#74acdf'] },
+        { id: 'germany', name: '🇩🇪 Germany Flag', type: 'flag', price: 100, colors: ['#000000', '#dd0000', '#ffce00'] },
+        { id: 'france', name: '🇫🇷 France Flag', type: 'flag', price: 100, colors: ['#002395', '#ffffff', '#ed2939'] },
+        { id: 'spain', name: '🇪🇸 Spain Flag', type: 'flag', price: 100, colors: ['#aa152b', '#f1bf00', '#aa152b'] },
+        { id: 'italy', name: '🇮🇹 Italy Flag', type: 'flag', price: 100, colors: ['#009246', '#ffffff', '#ce2b37'] },
+        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', type: 'flag', price: 100, colors: ['#ffffff', '#ce1124', '#ffffff'] },
+        { id: 'portugal', name: '🇵🇹 Portugal Flag', type: 'flag', price: 100, colors: ['#046a38', '#da291c'] }
     ];
 
     const garages = [
@@ -317,6 +282,22 @@
         document.getElementById('menuCoins').innerText = coins;
         document.getElementById('menuHighScore').innerText = highScore;
         document.getElementById('shopCoinVal').innerText = `🪙 ${coins}`;
+        renderMenuLeaderboard();
+    }
+
+    function renderMenuLeaderboard() {
+        let dummyRanks = [
+            { name: "🏆 Kurd_Pro_99", score: 45000 },
+            { name: "🥇 Apex_Viper", score: 32000 },
+            { name: "🥈 Shadow_Hunter", score: 24000 },
+            { name: "You (Best)", score: highScore }
+        ];
+        dummyRanks.sort((a,b) => b.score - a.score);
+        let html = "";
+        dummyRanks.forEach((r, idx) => {
+            html += `<div style="display:flex; justify-space-between; margin-bottom:2px;"><span>${idx+1}. ${r.name}</span><span style="color:#2ecc71;">${r.score}</span></div>`;
+        });
+        document.getElementById('menuLeaderboardContainer').innerHTML = html;
     }
 
     function openShop() { 
@@ -329,81 +310,35 @@
     function closeExitModal() { document.getElementById('exit-modal').style.display = 'none'; }
     function confirmExit() { gameRunning = false; closeExitModal(); document.getElementById('menu-overlay').style.display = 'flex'; }
 
-    function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
-    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
-
-    /* Daily Chest Modal Logic */
-    function openDailyChest() {
-        let now = Date.now();
-        let oneDay = 24 * 60 * 60 * 1000;
-        let btn = document.getElementById('claimChestBtn');
-        let status = document.getElementById('chestStatusText');
-
-        if(now - parseInt(lastChestClaim) > oneDay) {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            status.innerText = "Your daily reward is ready!";
-        } else {
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-            status.innerText = "Come back tomorrow for your next reward!";
-        }
-        document.getElementById('daily-chest-modal').style.display = 'flex';
+    function switchShopTab(tab) {
+        activeShopTab = tab;
+        document.getElementById('tabFreeBtn').className = `shop-tab-btn ${tab === 'free' ? 'active' : ''}`;
+        document.getElementById('tabFlagsBtn').className = `shop-tab-btn ${tab === 'flags' ? 'active' : ''}`;
+        renderShop();
     }
-    function closeDailyChest() { document.getElementById('daily-chest-modal').style.display = 'none'; }
-    function claimDailyReward() {
-        coins += 100;
-        lastChestClaim = Date.now().toString();
-        localStorage.setItem('dodio_last_chest', lastChestClaim);
-        saveStats();
-        alert("🎉 You received 🪙 100 Daily Coins!");
-        closeDailyChest();
-    }
-
-    /* Global Leaderboard Logic */
-    function openGlobalLeaderboard() {
-        let container = document.getElementById('globalRankContainer');
-        container.innerHTML = "";
-        let ranks = [
-            { name: "🏆 Kurd_King_99", score: 98500 },
-            { name: "🥇 Anaconda_Pro", score: 75400 },
-            { name: "🥈 Apex_Predator", score: 62100 },
-            { name: "🥉 Viper_Master", score: 48900 },
-            { name: "5. Shadow_Slayer", score: 34500 },
-            { name: "6. You (Best Record)", score: highScore }
-        ];
-        ranks.sort((a,b) => b.score - a.score);
-        ranks.forEach((r, idx) => {
-            container.innerHTML += `
-                <div class="shop-item">
-                    <span>${r.name}</span>
-                    <span style="color:#f1c40f; font-weight:bold;">${r.score} pts</span>
-                </div>
-            `;
-        });
-        document.getElementById('global-leaderboard-modal').style.display = 'flex';
-    }
-    function closeGlobalLeaderboard() { document.getElementById('global-leaderboard-modal').style.display = 'none'; }
-
-    function changeControlType() {
-        controlType = document.getElementById('controlTypeSelect').value;
-        document.getElementById('btn-controls').style.display = controlType === 'buttons' ? 'grid' : 'none';
-        document.getElementById('joystick-zone').style.display = 'none';
-    }
-
-    function setDir(x, y) { player.targetAngle = Math.atan2(y, x); }
-    function loginFacebook() { alert("Connected with Facebook successfully! 📘"); }
-    function loginGuest() { alert("Logged in as Guest / Email successfully! 👤"); }
 
     function renderShop() {
         let container = document.getElementById('shopItemsContainer');
         container.innerHTML = "";
-        skinsDatabase.forEach(s => {
+        let list = skinsDatabase.filter(s => s.type === activeShopTab);
+
+        list.forEach(s => {
+            let isOwned = ownedSkins.includes(s.id);
             let isSelected = player.skin === s.id;
+            let btnHtml = "";
+
+            if(isSelected) {
+                btnHtml = `<button style="background:#27ae60; padding:4px 8px;">Equipped</button>`;
+            } else if(isOwned) {
+                btnHtml = `<button style="background:#2980b9; padding:4px 8px;" onclick="selectSkin('${s.id}')">Equip</button>`;
+            } else {
+                btnHtml = `<button style="background:#f39c12; color:#fff; padding:4px 8px;" onclick="buySkin('${s.id}')">Buy 🪙100</button>`;
+            }
+
             container.innerHTML += `
                 <div class="shop-item">
                     <span>${s.name}</span>
-                    <button style="background:${isSelected ? '#27ae60' : '#2980b9'}; padding:5px 10px; cursor:pointer;" onclick="selectSkin('${s.id}')">${isSelected ? 'Equipped' : 'Equip'}</button>
+                    ${btnHtml}
                 </div>
             `;
         });
@@ -412,6 +347,20 @@
     function selectSkin(id) { 
         player.skin = id; 
         renderShop(); 
+    }
+
+    function buySkin(id) {
+        if(coins >= 100) {
+            coins -= 100;
+            ownedSkins.push(id);
+            localStorage.setItem('dodio_owned_skins', JSON.stringify(ownedSkins));
+            saveStats();
+            player.skin = id;
+            renderShop();
+            alert("🎉 Skin unlocked successfully!");
+        } else {
+            alert("❌ Not enough coins! You need 100 coins.");
+        }
     }
 
     function startGame() {
@@ -437,24 +386,25 @@
         bots = [];
         for(let i=0; i<12; i++) spawnBot(i);
 
+        // Huge Fruit Spawn Count (3,500 Items)
         fruits = [];
         const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<1800; i++) {
+        for(let i=0; i<3500; i++) {
             let angle = Math.random() * Math.PI * 2;
             let r = Math.random() * (MAP_RADIUS - 300);
             fruits.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, type: fTypes[Math.floor(Math.random()*fTypes.length)] });
         }
 
         coinItems = [];
-        for(let i=0; i<300; i++) {
+        for(let i=0; i<400; i++) {
             let angle = Math.random() * Math.PI * 2;
             let r = Math.random() * (MAP_RADIUS - 300);
             coinItems.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r });
         }
 
         powerups = [];
-        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🏎️', '🏎️'];
-        for(let i=0; i<200; i++) {
+        const pTypes = ['🧲', 'x2', 'x4', 'x6', 'x10', '🚀', '🏎️'];
+        for(let i=0; i<250; i++) {
             let angle = Math.random() * Math.PI * 2;
             let r = Math.random() * (MAP_RADIUS - 300);
             powerups.push({ x: MAP_CENTER + Math.cos(angle)*r, y: MAP_CENTER + Math.sin(angle)*r, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
@@ -477,40 +427,12 @@
         body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
     }
 
-    // Floating Joystick Controls
-    const joyZone = document.getElementById('joystick-zone');
-    const joyKnob = document.getElementById('joystick-knob');
-    let joyActive = false, joyCenterX = 0, joyCenterY = 0;
-
-    window.addEventListener('touchstart', (e) => {
-        if(!gameRunning || !player.alive || controlType !== 'joystick') return;
-        const touch = e.touches[0];
-        if(touch.clientX < 110 && touch.clientY < 110) return;
-
-        joyCenterX = touch.clientX; joyCenterY = touch.clientY;
-        joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
-        joyZone.style.display = 'block'; joyActive = true;
-    });
-
-    window.addEventListener('touchmove', (e) => {
-        if(!joyActive || controlType !== 'joystick') return;
-        const touch = e.touches[0];
-        const dx = touch.clientX - joyCenterX; const dy = touch.clientY - joyCenterY;
-        const dist = Math.hypot(dx, dy); const maxDist = 28;
-        let knobX = dx, knobY = dy;
-        if(dist > maxDist) { knobX = (dx / dist) * maxDist; knobY = (dy / dist) * maxDist; }
-        joyKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
-        player.targetAngle = Math.atan2(dy, dx);
-    });
-
-    window.addEventListener('touchend', () => { joyActive = false; joyZone.style.display = 'none'; });
-
     const boostBtn = document.getElementById('boost-btn');
     boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
     boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); manualSpeedBoost = false; });
 
     window.addEventListener('touchmove', (e) => {
-        if(!gameRunning || !player.alive || controlType !== 'touch') return;
+        if(!gameRunning || !player.alive) return;
         const touch = e.touches[0];
         player.targetAngle = Math.atan2(touch.clientY - canvas.height/2, touch.clientX - canvas.width/2);
     });
@@ -536,15 +458,15 @@
         container.innerHTML = html;
     }
 
-    // REAL SHARP COBRA HEAD DESIGN
+    // PERFECT INDEPENDENT TRIANGULAR COBRA HEAD
     function drawSnakeHead(p, angle, mainColor, radius) {
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
         
         ctx.fillStyle = mainColor; ctx.beginPath();
-        ctx.moveTo(radius * 2.3, 0); 
-        ctx.lineTo(-radius * 0.5, -radius * 1.6); 
-        ctx.lineTo(-radius * 1.0, 0); 
-        ctx.lineTo(-radius * 0.5, radius * 1.6); 
+        ctx.moveTo(radius * 2.4, 0); 
+        ctx.lineTo(-radius * 0.4, -radius * 1.6); 
+        ctx.lineTo(-radius * 0.9, 0); 
+        ctx.lineTo(-radius * 0.4, radius * 1.6); 
         ctx.closePath(); ctx.fill();
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 
@@ -556,8 +478,8 @@
         ctx.arc(radius*0.75, radius*0.5, radius*0.09, 0, Math.PI * 2); ctx.fill();
 
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3; ctx.beginPath();
-        ctx.moveTo(radius*2.3, 0); ctx.lineTo(radius*3.1, 0);
-        ctx.lineTo(radius*3.4, -6); ctx.moveTo(radius*3.1, 0); ctx.lineTo(radius*3.4, 6); ctx.stroke();
+        ctx.moveTo(radius*2.4, 0); ctx.lineTo(radius*3.2, 0);
+        ctx.lineTo(radius*3.5, -6); ctx.moveTo(radius*3.2, 0); ctx.lineTo(radius*3.5, 6); ctx.stroke();
 
         if(isMagnetActive) {
             let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
@@ -610,7 +532,8 @@
             player.y += Math.sin(player.angle) * moveSpeed;
             player.body.unshift({x: player.x, y: player.y});
 
-            let maxAllowedSegments = Math.min(250, 40 + Math.floor(score / 60));
+            // Very Long Body Growth (Up to 500 segments)
+            let maxAllowedSegments = Math.min(500, 45 + Math.floor(score / 40));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
@@ -622,7 +545,7 @@
             bots.forEach(b => {
                 if(!b.alive) return;
                 b.body.forEach((seg, idx) => {
-                    if(idx > 2 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
+                    if(idx > 3 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
                         player.alive = false; alert("Game Over! You crashed into a bot!"); location.reload();
                     }
                 });
@@ -647,7 +570,7 @@
                     let angle = Math.random() * Math.PI * 2;
                     let r = Math.random() * (MAP_RADIUS - 300);
                     f.x = MAP_CENTER + Math.cos(angle)*r; f.y = MAP_CENTER + Math.sin(angle)*r;
-                    if(player.sizeRadius < 36) player.sizeRadius += 0.04;
+                    if(player.sizeRadius < 38) player.sizeRadius += 0.05;
                 }
             });
 
@@ -667,7 +590,7 @@
                     score += 15 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = score;
                     deadRemains.splice(i, 1);
-                    if(player.sizeRadius < 36) player.sizeRadius += 0.06;
+                    if(player.sizeRadius < 38) player.sizeRadius += 0.08;
                 }
             });
 
@@ -714,7 +637,7 @@
             b.body.unshift({x: b.x, y: b.y}); b.body.pop();
 
             player.body.forEach((pSeg, idx) => {
-                if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
+                if(idx > 3 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
                     b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 300);
                 }
             });
@@ -739,44 +662,44 @@
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
+        // Draw Snake Body first, then Head on top for clean overlap
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
-            player.body.forEach((p, i) => {
+            for(let i = player.body.length - 1; i >= 2; i--) {
+                let p = player.body[i];
                 let color = skinObj.colors[i % skinObj.colors.length];
-                if(i === 0) drawSnakeHead(p, player.angle, color, player.sizeRadius);
-                else if(i > 1) {
-                    ctx.fillStyle = color; ctx.beginPath();
-                    ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
-                }
-            });
+                ctx.fillStyle = color; ctx.beginPath();
+                ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
+            }
+            drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius);
         }
 
+        // Draw Bots Body then Head
         bots.forEach(b => {
             if(!b.alive) return;
-            b.body.forEach((bp, j) => {
-                if(j === 0) drawSnakeHead(bp, b.angle, '#e74c3c', b.sizeRadius);
-                else if(j > 1) {
-                    ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#3498db';
-                    ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.8, 0, Math.PI*2); ctx.fill();
-                }
-            });
+            for(let j = b.body.length - 1; j >= 2; j--) {
+                let bp = b.body[j];
+                ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#3498db';
+                ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.8, 0, Math.PI*2); ctx.fill();
+            }
+            drawSnakeHead(b.body[0], b.angle, '#e74c3c', b.sizeRadius);
         });
 
         ctx.restore();
 
-        radarCtx.clearRect(0, 0, 75, 75);
+        radarCtx.clearRect(0, 0, 60, 60);
         garages.forEach(g => {
             radarCtx.fillStyle = '#2ecc71';
-            radarCtx.fillRect(((g.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75 - 3, ((g.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75 - 3, 6, 6);
+            radarCtx.fillRect(((g.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60 - 2.5, ((g.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60 - 2.5, 5, 5);
         });
         if(player.alive) {
             radarCtx.fillStyle = '#ffffff'; radarCtx.beginPath();
-            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, 4.5, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60, 3.5, 0, Math.PI*2); radarCtx.fill();
         }
         bots.forEach(b => {
             if(!b.alive) return;
             radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
-            radarCtx.arc(((b.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, ((b.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*75, 2.5, 0, Math.PI*2); radarCtx.fill();
+            radarCtx.arc(((b.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60, ((b.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*60, 2, 0, Math.PI*2); radarCtx.fill();
         });
 
         renderPowerBadges(); updateLeaderboard();
