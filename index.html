@@ -129,7 +129,6 @@
         button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
         button.shop-btn { background: #f39c12; color: #fff; }
 
-        /* Fixed Larger Scrollable Shop Box */
         .shop-list {
             display: flex; flex-direction: column; gap: 8px;
             max-height: 55vh; overflow-y: auto; width: 90%; max-width: 340px; margin: 10px 0;
@@ -230,13 +229,11 @@
     const radarCanvas = document.getElementById('radar-canvas');
     const radarCtx = radarCanvas.getContext('2d');
 
-    // GIANT MAP RADIUS (18,000 Units)
     const MAP_RADIUS = 18000;
     const MAP_CENTER = 20000;
     let cameraScale = 0.50;
     let gameRunning = false;
     let controlType = 'touch';
-    let lastFrameTime = performance.now();
 
     let coins = parseInt(localStorage.getItem('dodio_coins') || '0');
     let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
@@ -255,31 +252,27 @@
     let coinItems = [];
     let powerups = [];
 
-    // Complete Country Flags & Free Skins Database
     const skinsDatabase = [
-        { id: 'free1', name: '🟢 Lime Green', price: 0, colors: ['#2ecc71', '#27ae60'] },
-        { id: 'free2', name: '🔵 Sky Blue', price: 0, colors: ['#3498db', '#2980b9'] },
-        { id: 'free3', name: '🔴 Ruby Red', price: 0, colors: ['#e74c3c', '#c0392b'] },
-        { id: 'free4', name: '🟡 Bright Yellow', price: 0, colors: ['#f1c40f', '#f39c12'] },
-        { id: 'free5', name: '🟣 Royal Purple', price: 0, colors: ['#9b59b6', '#8e44ad'] },
-        { id: 'free6', name: '🟠 Sunset Orange', price: 0, colors: ['#e67e22', '#d35400'] },
-        { id: 'free7', name: '⚪ Pure White', price: 0, colors: ['#ffffff', '#bdc3c7'] },
-        { id: 'free8', name: '🌊 Cyan Ocean', price: 0, colors: ['#1abc9c', '#16a085'] },
-        { id: 'free9', name: '💖 Neon Pink', price: 0, colors: ['#ff6b81', '#ff4757'] },
-        { id: 'kurdish', name: '✌️ Kurdistan Flag', price: 100, colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
-        { id: 'brazil', name: '🇧🇷 Brazil Flag', price: 100, colors: ['#009c3b', '#ffdf00', '#002776'] },
-        { id: 'argentina', name: '🇦🇷 Argentina Flag', price: 100, colors: ['#74acdf', '#ffffff', '#74acdf'] },
-        { id: 'germany', name: '🇩🇪 Germany Flag', price: 100, colors: ['#000000', '#dd0000', '#ffce00'] },
-        { id: 'france', name: '🇫🇷 France Flag', price: 100, colors: ['#002395', '#ffffff', '#ed2939'] },
-        { id: 'spain', name: '🇪🇸 Spain Flag', price: 100, colors: ['#aa152b', '#f1bf00', '#aa152b'] },
-        { id: 'italy', name: '🇮🇹 Italy Flag', price: 100, colors: ['#009246', '#ffffff', '#ce2b37'] },
-        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', price: 100, colors: ['#ffffff', '#ce1124', '#ffffff'] },
-        { id: 'portugal', name: '🇵🇹 Portugal Flag', price: 100, colors: ['#046a38', '#da291c'] }
+        { id: 'free1', name: '🟢 Lime Green', colors: ['#2ecc71', '#27ae60'] },
+        { id: 'free2', name: '🔵 Sky Blue', colors: ['#3498db', '#2980b9'] },
+        { id: 'free3', name: '🔴 Ruby Red', colors: ['#e74c3c', '#c0392b'] },
+        { id: 'free4', name: '🟡 Bright Yellow', colors: ['#f1c40f', '#f39c12'] },
+        { id: 'free5', name: '🟣 Royal Purple', colors: ['#9b59b6', '#8e44ad'] },
+        { id: 'free6', name: '🟠 Sunset Orange', colors: ['#e67e22', '#d35400'] },
+        { id: 'free7', name: '⚪ Pure White', colors: ['#ffffff', '#bdc3c7'] },
+        { id: 'free8', name: '🌊 Cyan Ocean', colors: ['#1abc9c', '#16a085'] },
+        { id: 'free9', name: '💖 Neon Pink', colors: ['#ff6b81', '#ff4757'] },
+        { id: 'kurdish', name: '✌️ Kurdistan Flag', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
+        { id: 'brazil', name: '🇧🇷 Brazil Flag', colors: ['#009c3b', '#ffdf00', '#002776'] },
+        { id: 'argentina', name: '🇦🇷 Argentina Flag', colors: ['#74acdf', '#ffffff', '#74acdf'] },
+        { id: 'germany', name: '🇩🇪 Germany Flag', colors: ['#000000', '#dd0000', '#ffce00'] },
+        { id: 'france', name: '🇫🇷 France Flag', colors: ['#002395', '#ffffff', '#ed2939'] },
+        { id: 'spain', name: '🇪🇸 Spain Flag', colors: ['#aa152b', '#f1bf00', '#aa152b'] },
+        { id: 'italy', name: '🇮🇹 Italy Flag', colors: ['#009246', '#ffffff', '#ce2b37'] },
+        { id: 'england', name: '🏴󠁧󠁢󠁥󠁮󠁧󠁿 England Flag', colors: ['#ffffff', '#ce1124', '#ffffff'] },
+        { id: 'portugal', name: '🇵🇹 Portugal Flag', colors: ['#046a38', '#da291c'] }
     ];
 
-    let ownedSkins = skinsDatabase.map(s => s.id);
-
-    // 4 Garages in 4 Directions
     const garages = [
         { x: MAP_CENTER - 11000, y: MAP_CENTER - 11000 },
         { x: MAP_CENTER + 11000, y: MAP_CENTER - 11000 },
@@ -329,18 +322,20 @@
             container.innerHTML += `
                 <div class="shop-item">
                     <span>${s.name}</span>
-                    <button style="background:${isSelected ? '#27ae60' : '#2980b9'}; padding:6px 12px;" onclick="selectSkin('${s.id}')">${isSelected ? 'Equipped' : 'Equip'}</button>
+                    <button style="background:${isSelected ? '#27ae60' : '#2980b9'}; padding:6px 12px; cursor:pointer;" onclick="selectSkin('${s.id}')">${isSelected ? 'Equipped' : 'Equip'}</button>
                 </div>
             `;
         });
     }
 
-    function selectSkin(id) { player.skin = id; renderShop(); }
+    function selectSkin(id) { 
+        player.skin = id; 
+        renderShop(); 
+    }
 
     function startGame() {
         document.getElementById('menu-overlay').style.display = 'none';
         gameRunning = true; initGame();
-        lastFrameTime = performance.now();
         requestAnimationFrame(gameLoop);
     }
 
@@ -401,7 +396,7 @@
         body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
     }
 
-    // Floating Joystick
+    // Floating Joystick Controls
     const joyZone = document.getElementById('joystick-zone');
     const joyKnob = document.getElementById('joystick-knob');
     let joyActive = false, joyCenterX = 0, joyCenterY = 0;
@@ -460,7 +455,7 @@
         container.innerHTML = html;
     }
 
-    // Awesome Cobra Snake Head + 5 Glowing Blinking Magnet Light Lines
+    // Snake Head + 5 Glowing Blinking Magnet Waves
     function drawSnakeHead(p, angle, mainColor, radius) {
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
         
@@ -479,7 +474,7 @@
         ctx.moveTo(radius*1.85, 0); ctx.lineTo(radius*2.6, 0);
         ctx.lineTo(radius*2.95, -6); ctx.moveTo(radius*2.6, 0); ctx.lineTo(radius*2.95, 6); ctx.stroke();
 
-        // 5 Blinking Magnet Waves In Front Of Head
+        // 5 Glowing Magnet Waves
         if(isMagnetActive) {
             let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
             ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
@@ -510,11 +505,8 @@
         document.getElementById('topList').innerHTML = html;
     }
 
-    function gameLoop(now) {
+    function gameLoop() {
         if(!gameRunning) return;
-        let dt = (now - lastFrameTime) / 1000;
-        if(dt > 0.1) dt = 0.1;
-        lastFrameTime = now;
 
         deadRemains = deadRemains.filter(r => Date.now() - r.spawnTime < 25000);
 
@@ -523,14 +515,15 @@
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
 
-            player.angle += diff * (isSteeringActive ? 0.45 : 0.22);
+            player.angle += diff * (isSteeringActive ? 0.35 : 0.18);
 
-            let moveSpeed = (manualSpeedBoost ? 400 : 230) * (dt * 60);
-            player.x += Math.cos(player.angle) * (moveSpeed * 0.08);
-            player.y += Math.sin(player.angle) * (moveSpeed * 0.08);
+            // CONTROLLED SMOOTH MOVEMENT SPEED (Fix Bugatti Speed Bug)
+            let moveSpeed = manualSpeedBoost ? 7.5 : 4.2;
+            player.x += Math.cos(player.angle) * moveSpeed;
+            player.y += Math.sin(player.angle) * moveSpeed;
             player.body.unshift({x: player.x, y: player.y});
 
-            // Very Long Snake Growth (Max 250 Segments)
+            // Long Body Growth
             let maxAllowedSegments = Math.min(250, 40 + Math.floor(score / 60));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
@@ -549,7 +542,7 @@
                 });
             });
 
-            // Magnet Attraction
+            // Magnet Effect
             if(isMagnetActive) {
                 [fruits, coinItems, powerups, deadRemains].forEach(group => {
                     group.forEach(item => {
@@ -562,7 +555,7 @@
                 });
             }
 
-            // Eating Fruits
+            // Fruits
             fruits.forEach((f) => {
                 if(Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
                     score += 5 * currentMultiplier;
@@ -574,7 +567,7 @@
                 }
             });
 
-            // Eating Coins
+            // Coins
             coinItems.forEach((c) => {
                 if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
                     coins += 1;
@@ -586,7 +579,7 @@
                 }
             });
 
-            // Eating Dead Remains
+            // Dead Remains
             deadRemains.forEach((r, i) => {
                 if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
                     score += 15 * currentMultiplier;
@@ -596,7 +589,7 @@
                 }
             });
 
-            // Eating Powerups
+            // Powerups
             powerups.forEach((p) => {
                 if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
                     if(p.icon === '🧲') {
@@ -628,7 +621,7 @@
             });
         }
 
-        // Fast Respawning Bots Logic
+        // Bots Logic
         bots.forEach(b => {
             if(!b.alive) return;
             let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
@@ -641,7 +634,7 @@
 
             player.body.forEach((pSeg, idx) => {
                 if(idx > 2 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
-                    b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 300); // Fast Respawn!
+                    b.alive = false; explodeSnake(b.body); setTimeout(() => spawnBot(b.id), 300);
                 }
             });
         });
@@ -652,11 +645,10 @@
         ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
 
-        // Red Zone Outer Circle
+        // Map Border
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-        // 4 Garages
         garages.forEach(g => {
             ctx.fillStyle = '#2ecc71'; ctx.fillRect(g.x - 120, g.y - 120, 240, 240);
             ctx.fillStyle = '#fff'; ctx.font = "bold 24px Arial"; ctx.fillText("GARAGE 🚗", g.x - 60, g.y + 8);
@@ -667,7 +659,7 @@
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
-        // Draw Player Body (Country Flag Colors Pattern)
+        // Draw Player Body with Active Skin
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             player.body.forEach((p, i) => {
@@ -694,7 +686,7 @@
 
         ctx.restore();
 
-        // Clear Radar with Player, Bots, and Green Garages Icons
+        // Radar
         radarCtx.clearRect(0, 0, 80, 80);
         garages.forEach(g => {
             radarCtx.fillStyle = '#2ecc71';
