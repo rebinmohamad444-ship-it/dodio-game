@@ -322,102 +322,14 @@ function addPowerupTimer(key, name, icon, durationMs, onExpire) {
         }, durationMs);
 
         activePowers[key] = { name, icon, expireTime, timerId };
-    }
-}
-
-function renderPowerBadges() {
-    let container = document.getElementById('active-powers-container');
-    let html = ""; let now = Date.now();
-    Object.keys(activePowers).forEach(key => {
-        let p = activePowers[key];
-        let timeLeft = Math.max(0, Math.ceil((p.expireTime - now) / 1000));
-        html += `<div class="power-badge"><span>${p.icon}</span> <span>${p.name} (${timeLeft}s)</span></div>`;
-    });
-    container.innerHTML = html;
-}
-
-function drawSnakeHead(p, angle, mainColor, radius, flagEmoji) {
-    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
     
-    ctx.fillStyle = mainColor; ctx.beginPath();
-    ctx.moveTo(radius * 2.4, 0); 
-    ctx.lineTo(-radius * 0.4, -radius * 1.6); 
-    ctx.lineTo(-radius * 0.9, 0); 
-    ctx.lineTo(-radius * 0.4, radius * 1.6); 
-    ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
+functrenderPowerBadges();
+updateLeaderboard();
 
-    ctx.fillStyle = '#f1c40f'; ctx.beginPath();
-    ctx.ellipse(radius*0.7, -radius*0.5, radius*0.3, radius*0.16, Math.PI*0.1, 0, Math.PI * 2);
-    ctx.ellipse(radius*0.7, radius*0.5, radius*0.3, radius*0.16, -Math.PI*0.1, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#000'; ctx.beginPath();
-    ctx.arc(radius*0.75, -radius*0.5, radius*0.09, 0, Math.PI * 2);
-    ctx.arc(radius*0.75, radius*0.5, radius*0.09, 0, Math.PI * 2); ctx.fill();
+sendPlayerUpdate();
+drawOnlinePlayers();
 
-    ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3.5; ctx.beginPath();
-    ctx.moveTo(radius*2.4, 0); ctx.lineTo(radius*3.2, 0);
-    ctx.lineTo(radius*3.5, -6); ctx.moveTo(radius*3.2, 0); ctx.lineTo(radius*3.5, 6); ctx.stroke();
-
-    if(flagEmoji) {
-        ctx.font = `bold ${radius * 1.4}px Arial`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(flagEmoji, radius * 0.2, 0);
-    }
-
-    if(activeEmojiText) {
-        ctx.font = `${radius * 2.2}px Arial`;
-        ctx.fillText(activeEmojiText, 0, -radius * 2.2);
-    }
-
-    if(isMagnetActive) {
-        let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
-        ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
-        ctx.lineWidth = isBlinking ? 4 : 2;
-        ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = isBlinking ? 16 : 2;
-
-        for(let i = -2; i <= 2; i++) {
-            ctx.beginPath();
-            ctx.arc(radius * 1.8, 0, radius * 1.5 + (i + 2) * 8, -Math.PI * 0.28, Math.PI * 0.28);
-            ctx.stroke();
-        }
-        ctx.shadowBlur = 0;
-    }
-
-    ctx.restore();
-}
-
-function updateLeaderboard() {
-    let list = [{ name: document.getElementById('playerName').value || "You (Player)", score: score }];
-    bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score }); });
-    list.sort((a, b) => b.score - a.score);
-
-    let html = "";
-    list.slice(0, 10).forEach((item, idx) => {
-        let isPlayer = item.name.includes("Player");
-        html += `<div style="color:${isPlayer ? '#2ecc71' : '#fff'};">${idx+1}. ${item.name} - ${item.score}</div>`;
-    });
-    document.getElementById('topList').innerHTML = html;
-}
-
-function drawMapGrid() {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-    ctx.lineWidth = 2;
-    const gridSize = 120;
-    const startX = MAP_CENTER - MAP_RADIUS;
-    const endX = MAP_CENTER + MAP_RADIUS;
-
-    ctx.beginPath();
-    for(let x = startX; x <= endX; x += gridSize) {
-        ctx.moveTo(x, MAP_CENTER - MAP_RADIUS);
-        ctx.lineTo(x, MAP_CENTER + MAP_RADIUS);
-    }
-    for(let y = startX; y <= endX; y += gridSize) {
-        ctx.moveTo(MAP_CENTER - MAP_RADIUS, y);
-        ctx.lineTo(MAP_CENTER + MAP_RADIUS, y);
-    }
-    ctx.stroke();
-}
-
+requestAnimationFrame(gameLoop);
 function gameLoop(now) {
     if(!gameRunning) return;
 
