@@ -1,3 +1,30 @@
+// ===== Responsive Fullscreen & Landscape Support =====
+
+function resizeGame() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    if (canvas) {
+        canvas.width = w;
+        canvas.height = h;
+    }
+
+    if (typeof camera !== "undefined") {
+        camera.width = w;
+        camera.height = h;
+    }
+}
+
+// کاتێک قەبارەی شاشە بگۆڕێت
+window.addEventListener("resize", resizeGame);
+
+// کاتێک مۆبایل بچێتە Landscape یان Portrait
+window.addEventListener("orientationchange", () => {
+    setTimeout(resizeGame, 200);
+});
+
+// یەکجار لە دەستپێکدا
+resizeGame();
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const radarCanvas = document.getElementById('radar-canvas');
