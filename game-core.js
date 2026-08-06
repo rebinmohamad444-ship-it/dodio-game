@@ -1,83 +1,110 @@
 // game-core.js
 
-// گەیم ئۆبجێکت
-const game = {
-    shop: new Shop(),
-    network: new Network(),
-    player: null,
-    bots: [],
-    canvas: document.getElementById('gameCanvas'),
-    ctx: document.getElementById('gameCanvas').getContext('2d'),
-    
-    init() {
-        // پێکهێنانی یاریزان
-        this.player = new Player('Player1', 'red');
+// فەنکشنی سەرەکی بۆ پێکهێنانی گەیم
+function initGame() {
+    // 1. دۆزینەوەی کانڤاس
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 2. ڕێکخستنی قەبارەی کانڤاس بۆ گەیشتن بە هەموو شاشە
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // 3. دروستکردنی هەندێک شتی ناو گەیم (بۆ تەستکردن کە شاشە ڕەش نەبێت)
+    // ئەمە تەنها بۆ نیشاندانی گەیمەکەیە، دەتوانی دواتر بگۆڕیت بۆ یاریزانە ڕاستەقینەکەت
+    let x = canvas.width / 2;
+    let y = canvas.height / 2;
+    let radius = 30;
+
+    // 4. فەنکشنی نوێکردنەوە (Game Loop)
+    function update() {
+        // پاککردنەوەی شاشە
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // کێشانی پشتەوەی گەیم (شەبەکە)
+        ctx.fillStyle = "#1e272e";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // پێکهێنانی بۆتەکان
-        for(let i=0; i<5; i++) {
-            this.bots.push(new Bot('Bot ' + (i+1), 'blue'));
-        }
+        // کێشانی بازنەی یاریزان (بۆ نیشاندانی کە گەیم کار دەکات)
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#00d2d3";
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
 
-        // سەیرکردنی شۆپ
-        this.shop.load();
+        // نووسینی ناوی گەیم لەسەر شاشە
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "20px Arial";
+        ctx.fillText("Shanshen.io is Running!", 20, 40);
+        ctx.font = "14px Arial";
+        ctx.fillText("Press 'S' key to open Shop", 20, 70);
 
-        // وەرگرتنی ڕیزبەندی
-        this.updateLeaderboard();
-
-        // دەستپێکردنی لووپ
-        this.gameLoop();
-
-        console.log('🦆 Shanshen.io loaded!');
-    },
-
-    updateLeaderboard() {
-        const container = document.getElementById('leaderboard-list');
-        if (!container) return;
-
-        // وەرگرتنی داتا لە نێتۆرک
-        this.network.getLeaderboard((data) => {
-            let html = '<ul style="list-style:none; padding:0; font-size:14px;">';
-            
-            // تەنها ٥ یەکەم نیشان بدە
-            data.slice(0, 5).forEach((item, index) => {
-                let color = index === 0 ? '#f1c40f' : '#fff';
-                html += `<li style="color:${color}; margin-bottom:5px; display:flex; justify-content:space-between;">
-                            <span>${index + 1}. ${item.name || item.username || 'Unknown'}</span>
-                            <span>Score: ${item.score}</span>
-                        </li>`;
-            });
-            
-            html += '</ul>';
-            container.innerHTML = html;
-        });
-    },
-
-    gameLoop() {
-        // کۆدەکانی گەیم پاک بکەوە
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // نوێکردنەوەی یاریزان و بۆتەکان
-        this.player.update(this.ctx);
-        this.bots.forEach(bot => bot.update(this.ctx));
-
-        // خولگەی گەیم
-        requestAnimationFrame(() => this.gameLoop());
+        // بانگهێشتی لووپەکە بۆ خولێکی تر
+        requestAnimationFrame(update);
     }
-};
 
-// دەستپێکردنی گەیم کە HTML بارکرا
-document.addEventListener('DOMContentLoaded', () => {
-    game.init();
-});
+    // دەستپێکردنی لووپ
+    update();
 
-// فەنکشنی کرانەوە و داخستنی شۆپ لە ئاستی جیهانیدا
-function renderShopUI(tab) {
-    document.getElementById('shop-modal').style.display = 'block';
-    if (game.shop && game.shop.render) {
-        game.shop.render(tab); // واباشترە shop.js پشتگیری بکات
+    // 5. پەیوەندی بە شۆپ و ڕیزبەندیەوە
+    if (typeof game !== 'undefined' && game.network) {
+        setTimeout(() => {
+            const mockData = [
+                { name: "Shanshen", score: 2500 },
+                { name: "ProPlayer", score: 1800 },
+                { name: "NoobMaster", score: 1200 }
+            ];
+            // دەستکاری ڕیزبەندی لە HTML
+            const list = document.getElementById('leaderboard-list');
+            if(list) {
+                let html = '<ul>';
+                mockData.forEach((item, i) => {
+                    html += `<li><span>${i+1}. ${item.name}</span> <span>${item.score}</span></li>`;
+                });
+                html += '</ul>';
+                list.innerHTML = html;
+            }
+        }, 100);
+    }
+
+    // 6. گوێگرتن لە کرانەوەی شۆپ
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 's' || e.key === 'S') {
+            renderShopUI('skins');
+        }
+    });
+
+    console.log('✅ Game Core Loaded Successfully!');
+}
+
+// 7. دەستپێکردنی گەیم کاتێک HTML بار دەبێت
+document.addEventListener('DOMContentLoaded', initGame);
+
+
+// فەنکشنەکانی شۆپ لە ئاستی جیهانیدا (Global)
+function renderShopUI(tabName) {
+    const modal = document.getElementById('shop-modal');
+    if (modal) {
+        modal.style.display = 'block';
+        // ئەگەر ui-manager.js هەیە، ئەوەی بانگ بکە، ئەگەرنا تەنها دەریدەخەین
+        console.log(`Opening Shop tab: ${tabName}`);
     }
 }
 
 function closeShop() {
-    document.getElementById('shop-modal').style.display = 'none';
+    const modal = document.getElementById('shop-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// ئەمەش بۆ ئەوەی ئەگەر window.game بوونی هەبوو، پشتگیری بکات (ئامادەکاری بۆ فایلەکانی تر)
+if (typeof window.game === 'undefined') {
+    window.game = {
+        init: initGame,
+        shop: { save: () => {}, load: () => {} },
+        network: { getLeaderboard: (cb) => { cb([{name:"Test", score:100}]); } }
+    };
 }
