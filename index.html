@@ -4,57 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Shanshen.io</title>
-    <style>
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden; background-color: #1a1a1a;
-        }
-        canvas {
-            display: block;
-            width: 100vw; height: 100vh;
-            background-color: #2c3e50;
-        }
-        #shop-modal {
-            display: none; position: absolute; top: 10px; left: 10px; 
-            background: rgba(25, 25, 25, 0.95); color: #fff; padding: 20px; 
-            border-radius: 12px; width: 300px; max-width: 90%;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 100;
-        }
-        #shop-tabs button {
-            background: #444; color: #fff; border: none; padding: 8px 15px;
-            margin-right: 5px; cursor: pointer; border-radius: 5px;
-        }
-        #shop-tabs button:hover { background: #f39c12; }
-        .shop-list { min-height: 80px; margin-top: 15px; }
-        #leaderboard-container { margin-top: 15px; border-top: 1px solid #444; padding-top: 10px; }
-        #leaderboard-list ul { list-style: none; padding: 0; margin: 0; font-size: 14px; }
-        #leaderboard-list li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #333; }
-        .close-btn { margin-top: 15px; background: #e74c3c; color: #fff; border: none; padding: 10px; width: 100%; cursor: pointer; border-radius: 6px;}
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <canvas id="gameCanvas"></canvas>
 
-    <div id="shop-modal">
+    <div id="shop-modal" style="display:none; position:absolute; top:10px; left:10px; background:rgba(30,30,30,0.95); color:#fff; padding:20px; border-radius:12px; width:300px; max-width:90%; z-index:100;">
         <h3 style="margin-top:0; color:#f39c12;">🛒 Shop</h3>
         <div id="shop-tabs">
             <button onclick="renderShopUI('skins')">Skins</button>
             <button onclick="renderShopUI('flags')">Flags</button>
             <button onclick="renderShopUI('garage')">Garage</button>
         </div>
-        <div id="shop-list" class="shop-list">Select a tab to view items</div>
+        <div id="shop-list" class="shop-list" style="min-height:80px; margin:15px 0;">Select a tab</div>
         
-        <div id="leaderboard-container">
-            <h4 style="margin:10px 0 5px 0; color:#ddd;">🏆 Leaderboard</h4>
-            <div id="leaderboard-list"><ul><li>Loading...</li></ul></div>
+        <div style="border-top:1px solid #444; padding-top:15px;">
+            <h4 style="margin:0 0 10px 0; color:#ddd;">🏆 Leaderboard</h4>
+            <div id="leaderboard-list"></div>
         </div>
         
-        <button class="close-btn" onclick="closeShop()">Close Shop</button>
+        <button onclick="closeShop()" style="margin-top:15px; background:#e74c3c; color:#fff; border:none; padding:10px; width:100%; cursor:pointer; border-radius:6px;">Close</button>
     </div>
 
-    <!-- بەستنەوەی فایلەکان -->
     <script src="config.js"></script>
     <script src="utils.js"></script>
     <script src="player.js"></script>
@@ -63,6 +34,6 @@
     <script src="shop.js"></script>
     <script src="network.js"></script>
     <script src="ui-manager.js"></script>
-    <script src="game-core.js"></script>
+    <script src="game-core.js"></script> <!-- ئەم فایلە دەبێت گۆڕابێت -->
 </body>
 </html>
