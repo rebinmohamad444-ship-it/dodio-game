@@ -947,4 +947,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;">
                     <span>${idx+1}. ${item.name}</span>
                     <span style="color:#2ecc71;">${Math.floor(item.score)}</span>
-                </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+    });
+});
+
+console.log('🐍 Shanshen.io loaded!');
