@@ -107,4 +107,33 @@ export function playEatSound() {
         osc.start();
         osc.stop(actx.currentTime + 0.08);
     } catch(e) {}
+}// لە شوێنی پێکدادان لەگەڵ بۆتدا (جێگەی کۆنەکەی بگۆڕە بەم):
+if(!isInsideGarageSafe) {
+    bots.forEach(b => {
+        if(!b.alive) return;
+        
+        let headDist = Math.hypot(player.x - b.x, player.y - b.y);
+        if(headDist < player.sizeRadius + b.sizeRadius) {
+            b.alive = false;
+            explodeSnake(b.body);
+            spawnBot(b.id);
+            // زیادکردنی خاڵ
+            score += 500 * currentMultiplier;
+            headshotTextTimer = Date.now() + 3000;
+            playHeadshotSound();
+
+            // === گەورەبوون تەنها بە میوە، نەک بۆت ===
+            // ئەم بەشە لابڕێ بۆ ئەوەی بە خواردنی بۆت ئەستور نەبێت:
+            // player.sizeRadius += ... (ئەم بەشە لابکە)
+        }
+
+        // پێکدادان لەگەڵ لاشەی بۆت (هەروەها کۆنترۆڵی بکە)
+        b.body.forEach((seg, idx) => {
+            if(idx > 3 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
+                player.alive = false; 
+                alert("Game Over! You crashed into a bot!"); 
+                location.reload();
+            }
+        });
+    });
 }
