@@ -145,17 +145,73 @@ export class UIManager {
             ctx.fill();
         }
         
-        // ئاڵا (ئەگەر هەبێت)
-        if (flagKey && flagImages && flagImages[flagKey]) {
-            ctx.shadowBlur = 0;
-            try {
-                ctx.drawImage(
-                    flagImages[flagKey],
-                    -radius * 0.25,
-                    -radius * 0.7,
-                    radius * 1.3,
-                    radius * 0.85
-                );
+           loadFlagImages() {
+    const flagUrls = {
+        'kurdish': 'https://flagcdn.com/w80/krd.png',
+        'spain': 'https://flagcdn.com/w80/es.png',
+        'brazil': 'https://flagcdn.com/w80/br.png',
+        'iraq': 'https://flagcdn.com/w80/iq.png',
+        'turkey': 'https://flagcdn.com/w80/tr.png',
+        'iran': 'https://flagcdn.com/w80/ir.png',
+        'palestine': 'https://flagcdn.com/w80/ps.png',
+        'saudi': 'https://flagcdn.com/w80/sa.png',
+        'uae': 'https://flagcdn.com/w80/ae.png',
+        'usa': 'https://flagcdn.com/w80/us.png',
+        'uk': 'https://flagcdn.com/w80/gb.png',
+        'germany': 'https://flagcdn.com/w80/de.png',
+        'france': 'https://flagcdn.com/w80/fr.png',
+        'italy': 'https://flagcdn.com/w80/it.png',
+        'japan': 'https://flagcdn.com/w80/jp.png',
+        'china': 'https://flagcdn.com/w80/cn.png',
+        'russia': 'https://flagcdn.com/w80/ru.png',
+        'canada': 'https://flagcdn.com/w80/ca.png',
+        'australia': 'https://flagcdn.com/w80/au.png',
+        'egypt': 'https://flagcdn.com/w80/eg.png',
+        'lebanon': 'https://flagcdn.com/w80/lb.png',
+        'jordan': 'https://flagcdn.com/w80/jo.png',
+        'morocco': 'https://flagcdn.com/w80/ma.png',
+        'algeria': 'https://flagcdn.com/w80/dz.png',
+        'tunisia': 'https://flagcdn.com/w80/tn.png',
+        'libya': 'https://flagcdn.com/w80/ly.png',
+        'syria': 'https://flagcdn.com/w80/sy.png',
+        'yemen': 'https://flagcdn.com/w80/ye.png',
+        'oman': 'https://flagcdn.com/w80/om.png',
+        'qatar': 'https://flagcdn.com/w80/qa.png',
+        'kuwait': 'https://flagcdn.com/w80/kw.png',
+        'bahrain': 'https://flagcdn.com/w80/bh.png',
+        'afghanistan': 'https://flagcdn.com/w80/af.png',
+        'pakistan': 'https://flagcdn.com/w80/pk.png',
+        'india': 'https://flagcdn.com/w80/in.png',
+        'bangladesh': 'https://flagcdn.com/w80/bd.png',
+        'malaysia': 'https://flagcdn.com/w80/my.png',
+        'indonesia': 'https://flagcdn.com/w80/id.png',
+        'philippines': 'https://flagcdn.com/w80/ph.png',
+        'southkorea': 'https://flagcdn.com/w80/kr.png',
+        'northkorea': 'https://flagcdn.com/w80/kp.png',
+        'mexico': 'https://flagcdn.com/w80/mx.png',
+        'argentina': 'https://flagcdn.com/w80/ar.png',
+        'chile': 'https://flagcdn.com/w80/cl.png',
+        'peru': 'https://flagcdn.com/w80/pe.png',
+        'venezuela': 'https://flagcdn.com/w80/ve.png',
+        'colombia': 'https://flagcdn.com/w80/co.png',
+        'southafrica': 'https://flagcdn.com/w80/za.png',
+        'nigeria': 'https://flagcdn.com/w80/ng.png',
+        'kenya': 'https://flagcdn.com/w80/ke.png',
+        'ghana': 'https://flagcdn.com/w80/gh.png',
+        'senegal': 'https://flagcdn.com/w80/sn.png',
+        'cameroon': 'https://flagcdn.com/w80/cm.png',
+        'ivorycoast': 'https://flagcdn.com/w80/ci.png',
+        'madagascar': 'https://flagcdn.com/w80/mg.png',
+        'zimbabwe': 'https://flagcdn.com/w80/zw.png',
+        'ethiopia': 'https://flagcdn.com/w80/et.png'
+    };
+    
+    Object.keys(flagUrls).forEach(key => {
+        const img = new Image();
+        img.src = flagUrls[key];
+        this.flagImages[key] = img;
+    });
+}     );
             } catch(e) {}
         }
         
