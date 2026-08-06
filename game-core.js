@@ -800,7 +800,10 @@ class Game {
 const game = new Game();
 
 // کردنەوەی فەنکشنەکان بۆ دوگمەکان
-window.startGame = () => game.startGame();
+window.startGame = function() {
+    console.log('🚀 Start Game pressed!');
+    game.startGame();
+};
 window.openShop = () => {
     document.getElementById('shop-modal').style.display = 'flex';
     renderShopUI(game.shop);
