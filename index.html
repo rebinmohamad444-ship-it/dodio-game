@@ -2,355 +2,1048 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shanshen.io - Full Restored</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>dod.io</title>
     <style>
-        /* ستایلی پەڕە */
-        body, html {
+        * {
+            box-sizing: border-box;
             margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            background-color: #1e272e;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
         }
-        canvas {
-            display: block;
+        html, body {
             width: 100vw; height: 100vh;
+            background-color: #0b0d12;
+            color: #fff; font-family: Arial, sans-serif;
+            overflow: hidden;
         }
-        #shop-modal {
-            display: none; position: absolute; top: 20px; left: 20px; 
-            background: rgba(25, 25, 25, 0.95); padding: 20px; 
-            border-radius: 12px; width: 300px; max-width: 90%;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 100;
+        canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
+
+        /* HUD Top Left */
+        #radar-wrapper {
+            position: absolute; top: 8px; left: 8px;
+            display: flex; flex-direction: column; align-items: flex-start;
+            gap: 4px; z-index: 5;
         }
-        .btn { background: #f39c12; color: #000; border:none; padding: 8px 15px; border-radius:5px; cursor:pointer; margin:5px; font-weight:bold;}
-        .btn-close { background: #e74c3c; color: #fff; margin-top:15px; width:100%;}
-        #shop-list { min-height: 80px; margin: 15px 0; }
-        #leaderboard-container { border-top: 1px solid #555; padding-top: 10px; margin-top:15px; }
-        .lobby {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            background: rgba(0,0,0,0.7); z-index:50;
+        #radar-canvas {
+            width: 65px; height: 65px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1.5px solid #2ecc71; border-radius: 50%;
         }
-        .start-btn {
-            padding: 15px 50px; font-size: 22px; background: #00d2d3; color:#000;
-            border: none; border-radius: 30px; cursor: pointer; font-weight:bold;
-            margin-top: 20px;
+        #hud-stats {
+            background: rgba(0,0,0,0.75); padding: 3px 6px;
+            border-radius: 6px; border: 1px solid #2ecc71;
+            font-size: 9px; text-align: left; width: 65px;
         }
-        .start-btn:hover { transform: scale(1.1); }
+
+        #emoji-reaction-box {
+            display: flex; flex-direction: row; gap: 4px; margin-top: 2px;
+        }
+        .reaction-btn {
+            width: 28px; height: 28px; background: rgba(0,0,0,0.8);
+            border: 1px solid #f1c40f; border-radius: 50%; font-size: 14px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,0.5);
+        }
+
+        #left-bottom-container {
+            position: absolute; bottom: 12px; left: 12px;
+            display: flex; flex-direction: column; gap: 4px; z-index: 10;
+        }
+        #ingame-garage-btn {
+            background: rgba(243, 156, 18, 0.9); border: 1px solid #fff;
+            color: #fff; padding: 5px 8px; border-radius: 8px;
+            font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
+        }
+        #exit-btn {
+            background: #e74c3c; color: #fff; font-weight: bold;
+            border: 1px solid #fff; padding: 5px 8px; border-radius: 8px;
+            font-size: 10px; cursor: pointer; text-align: center; width: 75px;
+        }
+
+        #joystick-zone {
+            position: absolute; width: 70px; height: 70px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1.5px solid rgba(46, 204, 113, 0.8);
+            border-radius: 50%; z-index: 10; display: none;
+            pointer-events: none; transform: translate(-50%, -50%);
+        }
+        #joystick-knob {
+            position: absolute; top: 18px; left: 18px;
+            width: 34px; height: 34px;
+            background: #2ecc71; border-radius: 50%;
+            box-shadow: 0 0 6px #2ecc71; pointer-events: none;
+        }
+
+        #btn-controls {
+            position: absolute; bottom: 20px; right: 20px;
+            display: none; grid-template-columns: repeat(3, 36px);
+            grid-template-rows: repeat(3, 36px); gap: 4px; z-index: 10;
+        }
+        .ctrl-btn {
+            background: rgba(46, 204, 113, 0.75); border: 1px solid #fff;
+            color: #fff; font-weight: bold; border-radius: 6px; font-size: 13px;
+        }
+
+        #red-zone-alert {
+            position: absolute; top: 15%; left: 50%; transform: translate(-50%, -50%);
+            color: #e74c3c; font-size: 13px; font-weight: bold;
+            background: rgba(0,0,0,0.85); padding: 4px 10px; border-radius: 6px;
+            border: 1.5px solid #e74c3c; display: none; z-index: 8;
+            animation: blinker 0.5s linear infinite;
+        }
+
+        #garage-safe-status {
+            position: absolute; top: 12%; left: 50%; transform: translate(-50%, -50%);
+            color: #2ecc71; font-size: 13px; font-weight: bold;
+            background: rgba(0,0,0,0.92); padding: 8px 14px; border-radius: 10px;
+            border: 2px solid #2ecc71; display: none; z-index: 8; text-align: center;
+        }
+        #exit-garage-btn {
+            background: #e74c3c; color: #fff; font-size: 11px; font-weight: bold;
+            padding: 5px 12px; border-radius: 6px; border: 1px solid #fff;
+            cursor: pointer; margin-top: 5px; display: inline-block;
+        }
+
+        #leaderboard-box {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,0.85); padding: 5px 8px;
+            border-radius: 6px; border: 1px solid #f1c40f;
+            font-size: 8px; z-index: 5; min-width: 110px; pointer-events: none;
+        }
+
+        #active-powers-container {
+            position: absolute; top: 175px; left: 8px;
+            display: flex; flex-direction: column; gap: 3px; z-index: 5;
+        }
+        .power-badge {
+            background: rgba(241, 196, 15, 0.95); color: #111;
+            padding: 3px 6px; border-radius: 6px; font-weight: bold;
+            font-size: 9px; box-shadow: 0 0 4px #f1c40f; width: fit-content;
+        }
+
+        #boost-btn {
+            position: absolute; bottom: 20px; right: 20px;
+            width: 60px; height: 60px; background: rgba(231, 76, 60, 0.95);
+            border: 2px solid #fff; border-radius: 50%;
+            color: #fff; font-weight: bold; font-size: 11px;
+            z-index: 10; display: none; justify-content: center; align-items: center;
+            box-shadow: 0 0 10px #e74c3c; cursor: pointer;
+        }
+
+        #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(10, 12, 16, 0.96); display: flex;
+            flex-direction: column; justify-content: center; align-items: center; z-index: 20;
+        }
+        #shop-modal, #exit-modal, #settings-modal { display: none; z-index: 30; }
+
+        h1 { font-size: 32px; color: #2ecc71; margin-bottom: 2px; }
+        .btn-group { display: flex; flex-direction: column; gap: 5px; width: 85%; max-width: 270px; }
+        button, input, select { padding: 7px; font-size: 11px; border-radius: 8px; border: none; outline: none; }
+        button { background: #2ecc71; color: #111; font-weight: bold; cursor: pointer; }
+        button.fb-btn { background: #1877f2; color: #fff; }
+        button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
+        button.shop-btn { background: #f39c12; color: #fff; }
+        button.settings-btn { background: #e67e22; color: #fff; }
+
+        .shop-tabs { display: flex; gap: 4px; width: 90%; max-width: 320px; margin-bottom: 6px; }
+        .shop-tab-btn { flex: 1; padding: 5px; background: #181c24; color: #888; border: 1px solid #333; border-radius: 6px; font-weight: bold; font-size: 10px; cursor: pointer; }
+        .shop-tab-btn.active { background: #f39c12; color: #fff; border-color: #f39c12; }
+        .shop-list {
+            display: flex; flex-direction: column; gap: 5px;
+            height: 48vh; overflow-y: auto; width: 90%; max-width: 320px;
+            padding: 4px; -webkit-overflow-scrolling: touch;
+        }
+        .shop-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #181c24; padding: 8px 10px; border-radius: 6px; border: 1px solid #333; font-size: 11px;
+        }
+        .flag-img { width: 22px; height: 15px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
 
-    <!-- لۆبی یاری (دوای دەستپێکردن دەشاردرێتەوە) -->
-    <div id="lobby" class="lobby">
-        <h1 style="font-size: 40px; color:#f39c12;">⚔️ SHANSHEN.IO</h1>
-        <p style="font-size: 18px;">Eat food, grow bigger, defeat bots!</p>
-        <button class="start-btn" onclick="startGame()">Start Game</button>
-        <p style="margin-top:15px; font-size:12px; color:#aaa;">Press 'S' to open Shop in-game</p>
+<div id="radar-wrapper">
+    <canvas id="radar-canvas" width="65" height="65"></canvas>
+    <div id="hud-stats">
+        <div>Score: <span id="scoreVal" style="color:#2ecc71;">0</span></div>
+        <div>Coins: <span id="coinVal" style="color:#f1c40f;">🪙 1500</span></div>
+    </div>
+    <div id="emoji-reaction-box">
+        <div class="reaction-btn" onclick="triggerEmoji('😂')">😂</div>
+        <div class="reaction-btn" onclick="triggerEmoji('😭')">😭</div>
+        <div class="reaction-btn" onclick="triggerEmoji('👍')">👍</div>
+        <div class="reaction-btn" onclick="triggerEmoji('🤝')">🤝</div>
+    </div>
+</div>
+
+<div id="left-bottom-container">
+    <div id="ingame-garage-btn" onclick="openShop()">🛞 Garage</div>
+    <div id="exit-btn" onclick="openExitModal()">🏠 Exit</div>
+</div>
+
+<div id="joystick-zone"><div id="joystick-knob"></div></div>
+<div id="btn-controls">
+    <div></div><button class="ctrl-btn" onclick="setDir(0, -1)">▲</button><div></div>
+    <button class="ctrl-btn" onclick="setDir(-1, 0)">◀</button><div></div><button class="ctrl-btn" onclick="setDir(1, 0)">▶</button>
+    <div></div><button class="ctrl-btn" onclick="setDir(0, 1)">▼</button><div></div>
+</div>
+
+<div id="red-zone-alert">⚠️ WARNING: RED ZONE! ⚠️</div>
+<div id="garage-safe-status">
+    🛡️ INSIDE SAFE GARAGE 🛡️<br>
+    <span id="garageTimerVal" style="font-size:11px; color:#f1c40f;"></span><br>
+    <div id="exit-garage-btn" onclick="exitGarageManually()">🚪 Exit Garage</div>
+</div>
+<div id="active-powers-container"></div>
+
+<div id="leaderboard-box">
+    <h4 style="color:#f1c40f; text-align:center; margin-bottom:3px; font-size:8px;">🏆 TOP 10 PLAYERS</h4>
+    <div id="topList"></div>
+</div>
+
+<div id="boost-btn">BOOST 🚀</div>
+
+<!-- Main Menu -->
+<div id="menu-overlay">
+    <!-- لۆگۆی نوێ بە شێوازێکی زۆر پاک و دڵنیاکراوە -->
+    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #2ecc71, #f1c40f); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 15px #2ecc71; margin-bottom: 6px; border: 2px solid #fff;">
+        <span style="font-size: 42px;">🐍</span>
+    </div>
+    <h1>dod.io</h1>
+    <div style="font-size:10px; color:#f1c40f; margin-bottom:6px;">
+        High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">1500</span> 🪙
     </div>
 
-    <!-- کانڤاسی گەیم -->
-    <canvas id="gameCanvas"></canvas>
-
-    <!-- شۆپ و ڕیزبەندی -->
-    <div id="shop-modal">
-        <h3 style="margin:0; color:#f39c12;">🛒 Shop</h3>
-        <div>
-            <button class="btn" onclick="showShopTab('skins')">Skins</button>
-            <button class="btn" onclick="showShopTab('flags')">Flags</button>
-            <button class="btn" onclick="showShopTab('garage')">Garage</button>
-        </div>
-        <div id="shop-list">Select a tab to see items...</div>
-        <div id="leaderboard-container">
-            <h4 style="margin:5px 0;">🏆 Leaderboard</h4>
-            <div id="leaderboard-list"><i>Loading data...</i></div>
-        </div>
-        <button class="btn btn-close" onclick="closeShop()">Close Shop</button>
+    <div style="background:rgba(0,0,0,0.7); padding:6px 12px; border-radius:8px; border:1px solid #f1c40f; width:85%; max-width:280px; margin-bottom:8px; font-size:10px;">
+        <div style="color:#f1c40f; font-weight:bold; text-align:center; margin-bottom:4px; font-size:11px;">🏆 LEADERBOARD RANKINGS</div>
+        <div id="menuLeaderboardContainer"></div>
     </div>
 
-    <!-- کۆدی تەواوی یارییەکە (جاڤاسکریپت) -->
-    <script>
-        // =========================================================
-        // کۆدی سەرەکی گەیم (بێ هیچ کورت کردنێک)
-        // =========================================================
+    <div class="btn-group">
+        <input type="text" id="playerName" placeholder="Enter Player Name" style="border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
+        <button onclick="startGame()">Play Game 🎮</button>
+        <button class="shop-btn" onclick="openShop()">Skins & Rent Garage 🛒</button>
+        <button class="settings-btn" onclick="openSettings()">Controls Settings ⚙️</button>
+        <button class="fb-btn" onclick="loginFacebook()">Login with Facebook 📘</button>
+        <button class="guest-btn" onclick="loginGuest()">Play as Guest / Email 👤</button>
+    </div>
+</div>
 
-        let gameRunning = false;
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let animationFrameId = null;
+<!-- Controls Settings Modal -->
+<div id="settings-modal">
+    <h3 style="color:#e67e22; margin-bottom:10px; font-size:15px;">Control Settings ⚙️</h3>
+    <div class="btn-group">
+        <label style="font-size:10px;">Select Control Style:</label>
+        <select id="controlTypeSelect" onchange="changeControlType()" style="border:1px solid #e67e22; background:#181c24; color:#fff;">
+            <option value="touch">Touch Pointer Target</option>
+            <option value="joystick">Floating Anywhere Joystick</option>
+            <option value="buttons">4-Direction Buttons</option>
+        </select>
+        <button onclick="closeSettings()" style="background:#e67e22; color:#fff; margin-top:8px;">Save & Back</button>
+    </div>
+</div>
 
-        // خەسڵەتەکانی گەیم
-        const state = {
-            player: null,
-            bots: [],
-            foods: [],
-            score: 0,
-            leaderboard: [
-                { name: "Shanshen", score: 3500 },
-                { name: "ProMaster", score: 2800 },
-                { name: "ShadowKing", score: 2200 },
-                { name: "Blaze", score: 1800 },
-                { name: "Ghost", score: 1200 }
-            ]
+<!-- Exit Confirm Modal -->
+<div id="exit-modal">
+    <h3 style="color:#e74c3c; margin-bottom:10px; font-size:13px;">Exit Game?</h3>
+    <div class="btn-group">
+        <button onclick="confirmExit()" style="background:#e74c3c; color:#fff;">Main Menu 🏠</button>
+        <button onclick="closeExitModal()" style="background:#2ecc71; color:#111;">Continue Playing ▶️</button>
+    </div>
+</div>
+
+<!-- Shop Modal -->
+<div id="shop-modal">
+    <h3 style="color:#f39c12; margin-bottom:4px; font-size:15px;">Skins & Rent Garage 🛒</h3>
+    <div style="font-size:10px; margin-bottom:5px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 1500</span></div>
+    
+    <div class="shop-tabs">
+        <button class="shop-tab-btn active" id="tabFreeBtn" onclick="switchShopTab('free')">Free Skins</button>
+        <button class="shop-tab-btn" id="tabFlagsBtn" onclick="switchShopTab('flags')">Flags (🪙100)</button>
+        <button class="shop-tab-btn" id="tabGarageBtn" onclick="switchShopTab('garage')">Rent Garage 🛞</button>
+    </div>
+
+    <div class="shop-list" id="shopItemsContainer"></div>
+    <button onclick="closeShop()" style="width:100px; margin-top:5px; background:#e74c3c; color:#fff;">Close</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const radarCanvas = document.getElementById('radar-canvas');
+    const radarCtx = radarCanvas.getContext('2d');
+
+    const MAP_RADIUS = 18000;
+    const MAP_CENTER = 20000;
+    let cameraScale = 0.35;
+    let baseCameraScale = 0.35;
+    let gameRunning = false;
+    let controlType = 'touch';
+    let activeShopTab = 'free';
+    let lastFrameTime = performance.now();
+
+    let savedCoins = parseFloat(localStorage.getItem('dodio_coins') || '1500');
+    let coins = savedCoins < 1500 ? 1500 : savedCoins;
+    localStorage.setItem('dodio_coins', coins.toString());
+
+    let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
+    let ownedSkins = JSON.parse(localStorage.getItem('dodio_owned_skins') || '["free1","free2","free3","free4","free5","free6","free7"]');
+    let garageRentEndTime = parseInt(localStorage.getItem('dodio_garage_rent_end') || '0');
+
+    let score = 0;
+    let currentMultiplier = 1;
+    let manualSpeedBoost = false;
+    let isMagnetActive = false;
+    let isSteeringActive = false;
+    let isSniperActive = false;
+    let activePowers = {};
+    let deadRemains = [];
+    let activeEmojiText = null;
+    let emojiTimer = null;
+    let headshotTextTimer = 0;
+    let isInsideGarageSafe = false;
+
+    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 28 };
+    let bots = [];
+    let fruits = [];
+    let coinItems = [];
+    let powerups = [];
+
+    const flagImageUrls = {
+        'kurdish': 'https://flagcdn.com/w80/krd.png',
+        'spain': 'https://flagcdn.com/w80/es.png',
+        'brazil': 'https://flagcdn.com/w80/br.png',
+        'iraq': 'https://flagcdn.com/w80/iq.png',
+        'turkey': 'https://flagcdn.com/w80/tr.png',
+        'iran': 'https://flagcdn.com/w80/ir.png',
+        'palestine': 'https://flagcdn.com/w80/ps.png',
+        'saudi': 'https://flagcdn.com/w80/sa.png',
+        'uae': 'https://flagcdn.com/w80/ae.png',
+        'usa': 'https://flagcdn.com/w80/us.png',
+        'uk': 'https://flagcdn.com/w80/gb.png',
+        'germany': 'https://flagcdn.com/w80/de.png',
+        'france': 'https://flagcdn.com/w80/fr.png'
+    };
+
+    const loadedFlagImages = {};
+    Object.keys(flagImageUrls).forEach(id => {
+        const img = new Image();
+        img.src = flagImageUrls[id];
+        loadedFlagImages[id] = img;
+    });
+
+    const skinsDatabase = [
+        { id: 'free1', name: '🟢 Lime Green', type: 'free', colors: ['#2ecc71', '#27ae60'] },
+        { id: 'free2', name: '🔵 Sky Blue', type: 'free', colors: ['#3498db', '#2980b9'] },
+        { id: 'free3', name: '🔴 Ruby Red', type: 'free', colors: ['#e74c3c', '#c0392b'] },
+        { id: 'free4', name: '🟡 Bright Yellow', type: 'free', colors: ['#f1c40f', '#f39c12'] },
+        { id: 'free5', name: '🟣 Royal Purple', type: 'free', colors: ['#9b59b6', '#8e44ad'] },
+        { id: 'free6', name: '🟠 Sunset Orange', type: 'free', colors: ['#e67e22', '#d35400'] },
+        { id: 'free7', name: '⚪ Pure White', type: 'free', colors: ['#ffffff', '#bdc3c7'] },
+        
+        { id: 'kurdish', name: 'Kurdistan', type: 'flags', price: 100, flagKey: 'kurdish', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
+        { id: 'spain', name: 'Spain', type: 'flags', price: 100, flagKey: 'spain', colors: ['#aa152b', '#f1bf00', '#aa152b'] },
+        { id: 'brazil', name: 'Brazil', type: 'flags', price: 100, flagKey: 'brazil', colors: ['#009c3b', '#ffdf00', '#002776'] },
+        { id: 'iraq', name: 'Iraq', type: 'flags', price: 100, flagKey: 'iraq', colors: ['#ff0000', '#ffffff', '#000000'] },
+        { id: 'turkey', name: 'Turkey', type: 'flags', price: 100, flagKey: 'turkey', colors: ['#e74c3c', '#ffffff'] },
+        { id: 'iran', name: 'Iran', type: 'flags', price: 100, flagKey: 'iran', colors: ['#239f40', '#ffffff', '#da0000'] },
+        { id: 'palestine', name: 'Palestine', type: 'flags', price: 100, flagKey: 'palestine', colors: ['#000000', '#ffffff', '#007a3d', '#e4312b'] },
+        { id: 'saudi', name: 'Saudi Arabia', type: 'flags', price: 100, flagKey: 'saudi', colors: ['#006c35', '#ffffff'] },
+        { id: 'uae', name: 'UAE', type: 'flags', price: 100, flagKey: 'uae', colors: ['#ff0000', '#00732f', '#ffffff', '#000000'] },
+        { id: 'usa', name: 'USA', type: 'flags', price: 100, flagKey: 'usa', colors: ['#b22234', '#ffffff', '#3c3b6e'] },
+        { id: 'uk', name: 'UK', type: 'flags', price: 100, flagKey: 'uk', colors: ['#00247d', '#ffffff', '#cf142b'] },
+        { id: 'germany', name: 'Germany', type: 'flags', price: 100, flagKey: 'germany', colors: ['#000000', '#dd0000', '#ffce00'] },
+        { id: 'france', name: 'France', type: 'flags', price: 100, flagKey: 'france', colors: ['#002395', '#ffffff', '#ed2939'] }
+    ];
+
+    const garageRentOptions = [
+        { minutes: 10, price: 50 },
+        { minutes: 20, price: 100 },
+        { minutes: 30, price: 150 },
+        { minutes: 60, price: 230 }
+    ];
+
+    const garages = [
+        { x: MAP_CENTER - 10000, y: MAP_CENTER - 10000, size: 480 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER - 10000, size: 480 },
+        { x: MAP_CENTER - 10000, y: MAP_CENTER + 10000, size: 480 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER + 10000, size: 480 }
+    ];
+
+    function playHeadshotSound() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if(!AudioCtx) return;
+            const actx = new AudioCtx();
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, actx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, actx.currentTime + 0.15);
+            osc.frequency.exponentialRampToValueAtTime(80, actx.currentTime + 0.35);
+            gain.gain.setValueAtTime(0.8, actx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.35);
+            osc.connect(gain); gain.connect(actx.destination);
+            osc.start(); osc.stop(actx.currentTime + 0.35);
+        } catch(e){}
+    }
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', () => setTimeout(resize, 200));
+    resize();
+
+    updateMenuStats();
+
+    function updateMenuStats() {
+        let displayCoins = Math.floor(coins);
+        document.getElementById('coinVal').innerText = `🪙 ${displayCoins}`;
+        document.getElementById('menuCoins').innerText = displayCoins;
+        document.getElementById('menuHighScore').innerText = highScore;
+        document.getElementById('shopCoinVal').innerText = `🪙 ${displayCoins}`;
+        renderMenuLeaderboard();
+    }
+
+    function renderMenuLeaderboard() {
+        let dummyRanks = [
+            { name: "🏆 Kurd_Pro_99", score: 45000 },
+            { name: "🥇 Apex_Viper", score: 32000 },
+            { name: "🥈 Shadow_Hunter", score: 24000 },
+            { name: "You (Best)", score: highScore }
+        ];
+        dummyRanks.sort((a,b) => b.score - a.score);
+        let html = "";
+        dummyRanks.forEach((r, idx) => {
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>${idx+1}. ${r.name}</span><span style="color:#2ecc71;">${r.score}</span></div>`;
+        });
+        document.getElementById('menuLeaderboardContainer').innerHTML = html;
+    }
+
+    function triggerEmoji(char) {
+        activeEmojiText = char;
+        if(emojiTimer) clearTimeout(emojiTimer);
+        emojiTimer = setTimeout(() => { activeEmojiText = null; }, 3000);
+    }
+
+    function openShop() { 
+        updateMenuStats();
+        renderShop(); 
+        document.getElementById('shop-modal').style.display = 'flex'; 
+    }
+    function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
+    function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }
+    function closeExitModal() { document.getElementById('exit-modal').style.display = 'none'; }
+    function confirmExit() { gameRunning = false; closeExitModal(); document.getElementById('menu-overlay').style.display = 'flex'; }
+
+    function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
+    function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
+    function changeControlType() {
+        controlType = document.getElementById('controlTypeSelect').value;
+        document.getElementById('btn-controls').style.display = controlType === 'buttons' ? 'grid' : 'none';
+        document.getElementById('joystick-zone').style.display = 'none';
+    }
+
+    function switchShopTab(tab) {
+        activeShopTab = tab;
+        document.getElementById('tabFreeBtn').className = `shop-tab-btn ${tab === 'free' ? 'active' : ''}`;
+        document.getElementById('tabFlagsBtn').className = `shop-tab-btn ${tab === 'flags' ? 'active' : ''}`;
+        document.getElementById('tabGarageBtn').className = `shop-tab-btn ${tab === 'garage' ? 'active' : ''}`;
+        renderShop();
+    }
+
+    function renderShop() {
+        let container = document.getElementById('shopItemsContainer');
+        container.innerHTML = "";
+
+        if(activeShopTab === 'garage') {
+            let isRented = Date.now() < garageRentEndTime;
+            let leftMins = isRented ? Math.ceil((garageRentEndTime - Date.now()) / 60000) : 0;
+
+            container.innerHTML += `<div style="text-align:center; margin-bottom:8px; font-size:11px; color:#f1c40f;">
+                ${isRented ? `✅ Garage Active! Remaining: ${leftMins} Mins` : `❌ Garage Expired. Rent time below:`}
+            </div>`;
+
+            garageRentOptions.forEach(opt => {
+                container.innerHTML += `
+                    <div class="shop-item">
+                        <span>🛞 ${opt.minutes} Minutes Rent</span>
+                        <button style="background:#f39c12; color:#fff; padding:4px 8px;" onclick="rentGarage(${opt.minutes}, ${opt.price})">Rent 🪙${opt.price}</button>
+                    </div>
+                `;
+            });
+            return;
+        }
+
+        let list = skinsDatabase.filter(s => s.type === activeShopTab);
+
+        list.forEach(s => {
+            let isOwned = ownedSkins.includes(s.id);
+            let isSelected = (player.skin === s.id);
+            let btnHtml = "";
+
+            if(isSelected) {
+                btnHtml = `<button style="background:#27ae60; padding:4px 8px;">Equipped</button>`;
+            } else if(isOwned) {
+                btnHtml = `<button style="background:#2980b9; padding:4px 8px;" onclick="selectSkin('${s.id}')">Equip</button>`;
+            } else {
+                btnHtml = `<button style="background:#f39c12; color:#fff; padding:4px 8px;" onclick="buySkin('${s.id}', ${s.price})">Buy 🪙${s.price}</button>`;
+            }
+
+            let flagImgTag = s.flagKey ? `<img src="${flagImageUrls[s.flagKey]}" class="flag-img"/>` : '';
+
+            container.innerHTML += `
+                <div class="shop-item">
+                    <span>${flagImgTag} ${s.name}</span>
+                    ${btnHtml}
+                </div>
+            `;
+        });
+    }
+
+    function rentGarage(minutes, price) {
+        if(coins >= price) {
+            coins -= price;
+            let currentEnd = Date.now() < garageRentEndTime ? garageRentEndTime : Date.now();
+            garageRentEndTime = currentEnd + (minutes * 60 * 1000);
+            localStorage.setItem('dodio_garage_rent_end', garageRentEndTime.toString());
+            saveStats();
+            renderShop();
+            alert(`🎉 Garage rented for ${minutes} minutes!`);
+        } else {
+            alert(`❌ Not enough coins! You need 🪙${price}.`);
+        }
+    }
+
+    function selectSkin(id) { 
+        player.skin = id; 
+        renderShop(); 
+    }
+
+    function buySkin(id, price) {
+        if(coins >= price) {
+            coins -= price;
+            ownedSkins.push(id);
+            localStorage.setItem('dodio_owned_skins', JSON.stringify(ownedSkins));
+            saveStats();
+            selectSkin(id);
+            alert("🎉 Skin unlocked successfully!");
+        } else {
+            alert(`❌ Not enough coins! You need ${price} coins.`);
+        }
+    }
+
+    function startGame() {
+        document.getElementById('menu-overlay').style.display = 'none';
+        gameRunning = true; initGame();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function saveStats() {
+        localStorage.setItem('dodio_coins', coins.toString());
+        if(score > highScore) { highScore = score; localStorage.setItem('dodio_highscore', highScore.toString()); }
+        updateMenuStats();
+    }
+
+    function getRandomMapPos() {
+        let angle = Math.random() * Math.PI * 2;
+        let r = Math.sqrt(Math.random()) * (MAP_RADIUS - 400);
+        return {
+            x: MAP_CENTER + Math.cos(angle) * r,
+            y: MAP_CENTER + Math.sin(angle) * r
         };
+    }
 
-        // پێکهێنانی یاریزان
-        class Player {
-            constructor(name) {
-                this.name = name;
-                this.x = canvas.width / 2;
-                this.y = canvas.height / 2;
-                this.radius = 25;
-                this.speed = 5;
-                this.color = '#00d2d3';
-            }
+    function exitGarageManually() {
+        isInsideGarageSafe = false;
+        player.x += 350;
+        document.getElementById('garage-safe-status').style.display = 'none';
+    }
 
-            draw() {
-                // سێبەر
-                ctx.shadowColor = this.color;
-                ctx.shadowBlur = 20;
-                
-                // کێشانی یاریزان
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 3;
-                ctx.stroke();
+    function initGame() {
+        score = 0; currentMultiplier = 1; cameraScale = 0.35; baseCameraScale = 0.35; activePowers = {}; headshotTextTimer = 0; isInsideGarageSafe = false;
+        document.getElementById('scoreVal').innerText = score;
+        document.getElementById('boost-btn').style.display = 'none';
+        
+        player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
+        player.sizeRadius = 28; player.body = [];
+        for(let i=0; i<45; i++) player.body.push({x: player.x - i*10, y: player.y});
 
-                // ناو
-                ctx.fillStyle = '#fff';
-                ctx.font = '16px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(this.name, this.x, this.y - this.radius - 12);
-            }
+        bots = [];
+        for(let i=0; i<12; i++) spawnBot(i);
 
-            update(keys) {
-                let moved = false;
-                if (keys['ArrowUp'] || keys['w'] || keys['W']) { this.y -= this.speed; moved = true; }
-                if (keys['ArrowDown'] || keys['s'] || keys['S']) { this.y += this.speed; moved = true; }
-                if (keys['ArrowLeft'] || keys['a'] || keys['A']) { this.x -= this.speed; moved = true; }
-                if (keys['ArrowRight'] || keys['d'] || keys['D']) { this.x += this.speed; moved = true; }
-
-                // سنووردارکردن
-                this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
-                this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
-            }
+        fruits = [];
+        const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
+        for(let i=0; i<5000; i++) {
+            let pos = getRandomMapPos();
+            fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
         }
 
-        // پێکهێنانی بۆت
-        class Bot {
-            constructor(name, color, x, y) {
-                this.name = name;
-                this.color = color;
-                this.x = x;
-                this.y = y;
-                this.radius = 20;
-                this.speed = 1.5;
-                this.angle = Math.random() * Math.PI * 2;
-                this.changeTimer = Math.floor(Math.random() * 100);
-            }
+        coinItems = [];
+        for(let i=0; i<800; i++) {
+            let pos = getRandomMapPos();
+            coinItems.push({ x: pos.x, y: pos.y });
+        }
 
-            draw() {
+        powerups = [];
+        const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2', 'x4', 'x6'];
+        for(let i=0; i<600; i++) {
+            let pos = getRandomMapPos();
+            powerups.push({ x: pos.x, y: pos.y, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
+        }
+    }
+
+    function spawnBot(id) {
+        let pos = getRandomMapPos();
+        let body = [];
+        for(let j=0; j<65; j++) body.push({x: pos.x - j*10, y: pos.y});
+        const botNames = ['Apex_Viper', 'Shadow_Hunter', 'Anaconda_King', 'Kurd_Pro', 'Slayer_99', 'Toxic_Bite', 'Alpha_Dragon', 'Speed_Master', 'Mega_Snake', 'Venom_X', 'Titan_Rider', 'Phantom_Bite'];
+        bots[id] = { id, name: botNames[id], x: pos.x, y: pos.y, angle: Math.random()*Math.PI*2, body, score: 2000, alive: true, sizeRadius: 30 };
+    }
+
+    function explodeSnake(body) {
+        const colors = ['#2ecc71', '#f1c40f', '#e74c3c', '#3498db', '#9b59b6'];
+        body.forEach(p => deadRemains.push({ x: p.x, y: p.y, color: colors[Math.floor(Math.random() * colors.length)], spawnTime: Date.now() }));
+    }
+
+    const joyZone = document.getElementById('joystick-zone');
+    const joyKnob = document.getElementById('joystick-knob');
+    let joyActive = false, joyCenterX = 0, joyCenterY = 0;
+
+    window.addEventListener('touchstart', (e) => {
+        if(!gameRunning || !player.alive || controlType !== 'joystick') return;
+        const touch = e.touches[0];
+        if(touch.clientX < 110 && touch.clientY < 110) return;
+
+        joyCenterX = touch.clientX; joyCenterY = touch.clientY;
+        joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
+        joyZone.style.display = 'block'; joyActive = true;
+    });
+
+    window.addEventListener('touchmove', (e) => {
+        if(!joyActive || controlType !== 'joystick') return;
+        const touch = e.touches[0];
+        const dx = touch.clientX - joyCenterX; const dy = touch.clientY - joyCenterY;
+        const dist = Math.hypot(dx, dy); const maxDist = 28;
+        let knobX = dx, knobY = dy;
+        if(dist > maxDist) { knobX = (dx / dist) * maxDist; knobY = (dy / dist) * maxDist; }
+        joyKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+        player.targetAngle = Math.atan2(dy, dx);
+    });
+
+    window.addEventListener('touchend', () => { joyActive = false; joyZone.style.display = 'none'; });
+
+    const boostBtn = document.getElementById('boost-btn');
+    boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); manualSpeedBoost = true; });
+    boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); manualSpeedBoost = false; });
+    boostBtn.addEventListener('mousedown', (e) => { e.preventDefault(); manualSpeedBoost = true; });
+    boostBtn.addEventListener('mouseup', (e) => { e.preventDefault(); manualSpeedBoost = false; });
+
+    window.addEventListener('touchmove', (e) => {
+        if(!gameRunning || !player.alive) return;
+        const touch = e.touches[0];
+        if(controlType === 'touch') {
+            player.targetAngle = Math.atan2(touch.clientY - canvas.height/2, touch.clientX - canvas.width/2);
+        }
+    });
+
+    function setDir(x, y) { player.targetAngle = Math.atan2(y, x); }
+    function loginFacebook() { alert("Connected with Facebook successfully! 📘"); }
+    function loginGuest() { alert("Logged in as Guest / Email successfully! 👤"); }
+
+    function addPowerupTimer(key, name, icon, durationMs, onExpire) {
+        let expireTime = Date.now() + durationMs;
+        
+        if(activePowers[key]) {
+            activePowers[key].expireTime = expireTime;
+            clearTimeout(activePowers[key].timerId);
+            activePowers[key].timerId = setTimeout(() => {
+                delete activePowers[key];
+                if(onExpire) onExpire();
+            }, durationMs);
+        } else {
+            let timerId = setTimeout(() => {
+                delete activePowers[key];
+                if(onExpire) onExpire();
+            }, durationMs);
+
+            activePowers[key] = { name, icon, expireTime, timerId };
+        }
+    }
+
+    function renderPowerBadges() {
+        let container = document.getElementById('active-powers-container');
+        let html = ""; let now = Date.now();
+        Object.keys(activePowers).forEach(key => {
+            let p = activePowers[key];
+            let timeLeft = Math.max(0, Math.ceil((p.expireTime - now) / 1000));
+            html += `<div class="power-badge"><span>${p.icon}</span> <span>${p.name} (${timeLeft}s)</span></div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
+        
+        ctx.fillStyle = mainColor; ctx.beginPath();
+        ctx.moveTo(radius * 2.4, 0); 
+        ctx.lineTo(-radius * 0.4, -radius * 1.6); 
+        ctx.lineTo(-radius * 0.9, 0); 
+        ctx.lineTo(-radius * 0.4, radius * 1.6); 
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
+
+        ctx.fillStyle = '#f1c40f'; ctx.beginPath();
+        ctx.ellipse(radius*0.7, -radius*0.5, radius*0.3, radius*0.16, Math.PI*0.1, 0, Math.PI * 2);
+        ctx.ellipse(radius*0.7, radius*0.5, radius*0.3, radius*0.16, -Math.PI*0.1, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#000'; ctx.beginPath();
+        ctx.arc(radius*0.75, -radius*0.5, radius*0.09, 0, Math.PI * 2);
+        ctx.arc(radius*0.75, radius*0.5, radius*0.09, 0, Math.PI * 2); ctx.fill();
+
+        if(flagKey && loadedFlagImages[flagKey]) {
+            try {
+                ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.2, -radius * 0.6, radius * 1.2, radius * 0.8);
+            } catch(e){}
+        }
+
+        if(activeEmojiText) {
+            ctx.font = `${radius * 2.2}px Arial`;
+            ctx.fillText(activeEmojiText, 0, -radius * 2.2);
+        }
+
+        if(isMagnetActive) {
+            let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
+            ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
+            ctx.lineWidth = isBlinking ? 4 : 2;
+            ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = isBlinking ? 16 : 2;
+
+            for(let i = -2; i <= 2; i++) {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
+                ctx.arc(radius * 1.8, 0, radius * 1.5 + (i + 2) * 8, -Math.PI * 0.28, Math.PI * 0.28);
                 ctx.stroke();
-
-                ctx.fillStyle = '#fff';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(this.name, this.x, this.y - this.radius - 10);
             }
+            ctx.shadowBlur = 0;
+        }
 
-            update() {
-                this.changeTimer++;
-                // گۆڕینی ئاراستە بە شێوەی هەڕەمەکی
-                if (this.changeTimer > 50 + Math.random() * 50) {
-                    this.angle += (Math.random() - 0.5) * 2;
-                    this.changeTimer = 0;
+        ctx.restore();
+    }
+
+    function updateLeaderboard() {
+        let list = [{ name: document.getElementById('playerName').value || "You (Player)", score: score }];
+        bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score }); });
+        list.sort((a, b) => b.score - a.score);
+
+        let html = "";
+        list.slice(0, 10).forEach((item, idx) => {
+            let isPlayer = item.name.includes("Player");
+            html += `<div style="color:${isPlayer ? '#2ecc71' : '#fff'};">${idx+1}. ${item.name} - ${item.score}</div>`;
+        });
+        document.getElementById('topList').innerHTML = html;
+    }
+
+    function drawMapGrid() {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 2;
+        const gridSize = 120;
+        const startX = MAP_CENTER - MAP_RADIUS;
+        const endX = MAP_CENTER + MAP_RADIUS;
+
+        ctx.beginPath();
+        for(let x = startX; x <= endX; x += gridSize) {
+            ctx.moveTo(x, MAP_CENTER - MAP_RADIUS);
+            ctx.lineTo(x, MAP_CENTER + MAP_RADIUS);
+        }
+        for(let y = startX; y <= endX; y += gridSize) {
+            ctx.moveTo(MAP_CENTER - MAP_RADIUS, y);
+            ctx.lineTo(MAP_CENTER + MAP_RADIUS, y);
+        }
+        ctx.stroke();
+    }
+
+    function gameLoop(now) {
+        if(!gameRunning) return;
+
+        let dt = (now - lastFrameTime) / 1000;
+        if(dt > 0.1 || isNaN(dt)) dt = 0.016;
+        lastFrameTime = now;
+
+        deadRemains = deadRemains.filter(r => Date.now() - r.spawnTime < 25000);
+
+        let isGarageRented = Date.now() < garageRentEndTime;
+
+        if(player.alive) {
+            baseCameraScale = Math.max(0.18, 0.35 - (player.sizeRadius - 28) * 0.002);
+            cameraScale = isSniperActive ? 0.20 : baseCameraScale;
+
+            let inAnyGarage = false;
+            garages.forEach(g => {
+                let half = g.size / 2;
+                if(player.x >= g.x - half && player.x <= g.x + half && player.y >= g.y - half && player.y <= g.y + half) {
+                    inAnyGarage = true;
                 }
+            });
 
-                // جووڵە
-                this.x += Math.cos(this.angle) * this.speed;
-                this.y += Math.sin(this.angle) * this.speed;
-
-                // سنووردارکردن
-                if (this.x < this.radius || this.x > canvas.width - this.radius) this.angle = Math.PI - this.angle;
-                if (this.y < this.radius || this.y > canvas.height - this.radius) this.angle = -this.angle;
-            }
-        }
-
-        // پێکهێنانی خواردن (Food)
-        class Food {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.radius = 6 + Math.random() * 4;
-                this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+            if(inAnyGarage && isGarageRented && isInsideGarageSafe === false) {
+                isInsideGarageSafe = true;
             }
 
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-            }
-        }
-
-        // =========================================================
-        // دەستپێکردن و گەیم لووپ
-        // =========================================================
-
-        function startGame() {
-            document.getElementById('lobby').style.display = 'none';
-            gameRunning = true;
-
-            // پێکهێنانی یاریزان
-            state.player = new Player("Hero");
-            state.score = 0;
-
-            // پێکهێنانی بۆتەکان
-            state.bots = [];
-            const botColors = ['#e74c3c', '#9b59b6', '#3498db', '#e67e22', '#1abc9c', '#f1c40f'];
-            for (let i = 0; i < 10; i++) {
-                let bot = new Bot(
-                    'Bot ' + (i + 1),
-                    botColors[i % botColors.length],
-                    Math.random() * canvas.width,
-                    Math.random() * canvas.height
-                );
-                state.bots.push(bot);
+            if(isInsideGarageSafe) {
+                document.getElementById('garage-safe-status').style.display = 'block';
+                let leftSecs = Math.max(0, Math.ceil((garageRentEndTime - Date.now()) / 1000));
+                let m = Math.floor(leftSecs / 60); let s = leftSecs % 60;
+                document.getElementById('garageTimerVal').innerText = `Rent Time Left: ${m}m ${s}s (Safe Zone Active)`;
+            } else {
+                document.getElementById('garage-safe-status').style.display = 'none';
             }
 
-            // پێکهێنانی خواردنەکان
-            state.foods = [];
-            for (let i = 0; i < 80; i++) {
-                state.foods.push(new Food());
+            if(!isInsideGarageSafe) {
+                let diff = player.targetAngle - player.angle;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+
+                player.angle += diff * (isSteeringActive ? 12.0 : 6.0) * dt;
+
+                let moveSpeed = (manualSpeedBoost ? 380 : 210) * dt;
+                player.x += Math.cos(player.angle) * moveSpeed;
+                player.y += Math.sin(player.angle) * moveSpeed;
+                player.body.unshift({x: player.x, y: player.y});
+
+                let maxAllowedSegments = Math.min(3500, 60 + Math.floor((score * currentMultiplier) / 4));
+                while(player.body.length > maxAllowedSegments) player.body.pop();
+            } else {
+                for(let i=1; i<player.body.length; i++) {
+                    player.body[i].x += (player.x - player.body[i].x) * 4.0 * dt;
+                    player.body[i].y += (player.y - player.body[i].y) * 4.0 * dt;
+                }
             }
 
-            // دەستپێکردنی لووپ
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-            gameLoop();
-        }
+            let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
+            if(distFromCenter >= MAP_RADIUS - 50) {
+                player.alive = false; alert("Game Over! You hit the Red Zone!"); location.reload();
+            }
+            document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 1200 ? 'block' : 'none';
 
-        function gameLoop() {
-            if (!gameRunning) return;
-
-            // کلیلەکانی جووڵە
-            const keys = {
-                ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
-                w: false, W: false, s: false, S: false, a: false, A: false, d: false, D: false
-            };
-            document.addEventListener('keydown', (e) => { if (keys.hasOwnProperty(e.key)) keys[e.key] = true; });
-            document.addEventListener('keyup', (e) => { if (keys.hasOwnProperty(e.key)) keys[e.key] = false; });
-
-            // 1. پاککردنەوە و پشتەوە
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#2c3e50';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 2. نوێکردنەوەی یاریزان
-            if (state.player) {
-                state.player.update(keys);
-                state.player.draw();
-
-                // پێکدادان لەگەڵ خواردن
-                for (let i = state.foods.length - 1; i >= 0; i--) {
-                    const food = state.foods[i];
-                    const dx = state.player.x - food.x;
-                    const dy = state.player.y - food.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < state.player.radius + food.radius) {
-                        state.score += 10;
-                        state.player.radius += 0.5;
-                        state.foods.splice(i, 1);
-                        state.foods.push(new Food()); // زیادکردنی خواردنی نوێ
+            if(!isInsideGarageSafe) {
+                bots.forEach(b => {
+                    if(!b.alive) return;
+                    
+                    let headDist = Math.hypot(player.x - b.x, player.y - b.y);
+                    if(headDist < player.sizeRadius + b.sizeRadius) {
+                        b.alive = false;
+                        explodeSnake(b.body);
+                        spawnBot(b.id);
+                        score += 500 * currentMultiplier;
+                        headshotTextTimer = Date.now() + 3000;
+                        playHeadshotSound();
                     }
-                }
 
-                // نیشاندانی سکۆر
-                ctx.fillStyle = '#fff';
-                ctx.font = '24px Arial';
-                ctx.textAlign = 'left';
-                ctx.fillText('Score: ' + state.score, 20, 40);
+                    b.body.forEach((seg, idx) => {
+                        if(idx > 3 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
+                            player.alive = false; alert("Game Over! You crashed into a bot!"); location.reload();
+                        }
+                    });
+                });
             }
 
-            // 3. نوێکردنەوەی بۆتەکان
-            state.bots.forEach(bot => {
-                bot.update();
-                bot.draw();
-            });
+            if(isMagnetActive && !isInsideGarageSafe) {
+                [fruits, coinItems, powerups, deadRemains].forEach(group => {
+                    group.forEach(item => {
+                        if(!item.eatenTime) {
+                            let d = Math.hypot(player.x - item.x, player.y - item.y);
+                            if(d < 550) {
+                                item.x += (player.x - item.x) * 6.0 * dt;
+                                item.y += (player.y - item.y) * 6.0 * dt;
+                            }
+                        }
+                    });
+                });
+            }
 
-            // 4. نوێکردنەوەی خواردنەکان
-            state.foods.forEach(food => food.draw());
-
-            // 5. نوێکردنەوەی ڕیزبەندی (Leaderboard) لە شۆپدا
-            updateLeaderboard();
-
-            // بانگهێشتی خولەکی داهاتوو
-            animationFrameId = requestAnimationFrame(gameLoop);
-        }
-
-        // =========================================================
-        // ڕیزبەندی و شۆپ
-        // =========================================================
-
-        function updateLeaderboard() {
-            const list = document.getElementById('leaderboard-list');
-            if (!list) return;
-
-            // داتای خەیاڵی بۆ نیشاندان
-            let html = '<ul style="list-style:none; padding:0; margin:0; font-size:14px;">';
-            state.leaderboard.forEach((item, index) => {
-                const color = index === 0 ? '#f1c40f' : (index === 1 ? '#bdc3c7' : (index === 2 ? '#e67e22' : '#aaa'));
-                html += `<li style="color:${color}; display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #333;">
-                            <span>${index + 1}. ${item.name}</span>
-                            <span>${item.score}</span>
-                        </li>`;
-            });
-            html += '</ul>';
-            list.innerHTML = html;
-        }
-
-        function showShopTab(tab) {
-            document.getElementById('shop-modal').style.display = 'block';
-            const shopList = document.getElementById('shop-list');
-            if (tab === 'skins') shopList.innerHTML = '🟢 Skin 1 - 100 coins<br>🔵 Skin 2 - 200 coins';
-            else if (tab === 'flags') shopList.innerHTML = '🇺🇸 Flag 1 - 50 coins<br>🇬🇧 Flag 2 - 75 coins';
-            else shopList.innerHTML = '🚗 Garage items coming soon!';
-        }
-
-        function closeShop() {
-            document.getElementById('shop-modal').style.display = 'none';
-        }
-
-        // کرانەوەی شۆپ بە کلیل (S)
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 's' || e.key === 'S') {
-                if (document.getElementById('shop-modal').style.display === 'none') {
-                    showShopTab('skins');
-                } else {
-                    closeShop();
+            fruits.forEach((f) => {
+                if(f.eatenTime && Date.now() - f.eatenTime > 15000) {
+                    let pos = getRandomMapPos();
+                    f.x = pos.x; f.y = pos.y;
+                    f.eatenTime = null;
                 }
+                else if(!f.eatenTime && Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
+                    score += 5 * currentMultiplier;
+                    document.getElementById('scoreVal').innerText = score;
+                    f.eatenTime = Date.now();
+                    f.x = -99999; f.y = -99999;
+                    if(player.sizeRadius < 95) player.sizeRadius += (0.35 * currentMultiplier);
+                }
+            });
+
+            coinItems.forEach((c) => {
+                if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
+                    coins += 0.5 * currentMultiplier;
+                    document.getElementById('coinVal').innerText = `🪙 ${Math.floor(coins)}`;
+                    saveStats();
+                    let pos = getRandomMapPos();
+                    c.x = pos.x; c.y = pos.y;
+                }
+            });
+
+            deadRemains.forEach((r, i) => {
+                if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
+                    score += 15 * currentMultiplier;
+                    document.getElementById('scoreVal').innerText = score;
+                    deadRemains.splice(i, 1);
+                    if(player.sizeRadius < 95) player.sizeRadius += (0.45 * currentMultiplier);
+                }
+            });
+
+            powerups.forEach((p) => {
+                if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
+                    if(p.icon === '🧲') {
+                        isMagnetActive = true;
+                        addPowerupTimer('magnet', 'Magnet', '🧲', 15000, () => isMagnetActive = false);
+                    }
+                    if(p.icon.includes('x')) {
+                        let val = parseInt(p.icon.replace('x', '')) || 2;
+                        currentMultiplier = val;
+                        addPowerupTimer('multiplier', `Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
+                    }
+                    if(p.icon === '🚀') {
+                        document.getElementById('boost-btn').style.display = 'flex';
+                        addPowerupTimer('boost', 'Boost Active', '🚀', 15000, () => {
+                            document.getElementById('boost-btn').style.display = 'none';
+                            manualSpeedBoost = false;
+                        });
+                    }
+                    if(p.icon === '🛞') {
+                        isSteeringActive = true;
+                        addPowerupTimer('steering', 'Fast Steering', '🛞', 15000, () => isSteeringActive = false);
+                    }
+                    if(p.icon === '🎯') {
+                        isSniperActive = true;
+                        addPowerupTimer('sniper', 'Sniper Zoom Out', '🎯', 15000, () => isSniperActive = false);
+                    }
+
+                    let pos = getRandomMapPos();
+                    p.x = pos.x; p.y = pos.y;
+                }
+            });
+        }
+
+        bots.forEach(b => {
+            if(!b.alive) return;
+            let distToPlayer = Math.hypot(player.x - b.x, player.y - b.y);
+            if(distToPlayer < 1200 && player.alive && !isInsideGarageSafe) {
+                b.angle = Math.atan2(player.y - b.y, player.x - b.x);
+            } else { b.angle += (Math.random() - 0.5) * 2.0 * dt; }
+
+            let botSpeed = 190 * dt;
+            b.x += Math.cos(b.angle) * botSpeed; b.y += Math.sin(b.angle) * botSpeed;
+            b.body.unshift({x: b.x, y: b.y}); b.body.pop();
+
+            if(!isInsideGarageSafe) {
+                player.body.forEach((pSeg, idx) => {
+                    if(idx > 3 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
+                        b.alive = false; explodeSnake(b.body); spawnBot(b.id);
+                    }
+                });
             }
         });
 
-        // ڕێکخستنی کانڤاس کە قەبارەکە بگۆڕدرا
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        const camX = canvas.width / 2 - player.x * cameraScale;
+        const camY = canvas.height / 2 - player.y * cameraScale;
+
+        ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
+
+        drawMapGrid();
+
+        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
+        ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
+
+        garages.forEach(g => {
+            let half = g.size / 2;
+            ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
+            ctx.strokeRect(g.x - half - 40, g.y - half - 40, g.size + 80, g.size + 80);
+            
+            ctx.fillStyle = isGarageRented ? 'rgba(46, 204, 113, 0.35)' : 'rgba(127, 140, 141, 0.35)'; 
+            ctx.fillRect(g.x - half, g.y - half, g.size, g.size);
+            ctx.strokeStyle = isGarageRented ? '#2ecc71' : '#f1c40f'; ctx.lineWidth = 6;
+            ctx.strokeRect(g.x - half, g.y - half, g.size, g.size);
+
+            ctx.fillStyle = '#fff'; ctx.font = "bold 26px Arial"; 
+            ctx.fillText(isGarageRented ? "GARAGE 🛞 (SAFE ZONE)" : "GARAGE 🔒 (RENT REQUIRED)", g.x - 140, g.y + 10);
         });
 
-        // چاپکردن لە کۆنسۆل
-        console.log('✅ Shanshen.io Full Version Loaded!');
-    </script>
+        fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "24px Arial"; ctx.fillText(f.type, f.x, f.y); } });
+        coinItems.forEach(c => { ctx.font = "22px Arial"; ctx.fillText("🪙", c.x, c.y); });
+        deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
+        powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
+
+        if(player.alive) {
+            let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
+            
+            for(let i = player.body.length - 1; i >= 2; i--) {
+                let p = player.body[i];
+                let color = skinObj.colors[i % skinObj.colors.length];
+                ctx.fillStyle = color; ctx.beginPath();
+                ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
+
+                if(skinObj.flagKey && loadedFlagImages[skinObj.flagKey] && i % 4 === 0) {
+                    try {
+                        ctx.drawImage(loadedFlagImages[skinObj.flagKey], p.x - player.sizeRadius * 0.6, p.y - player.sizeRadius * 0.4, player.sizeRadius * 1.2, player.sizeRadius * 0.8);
+                    } catch(e){}
+                }
+            }
+            drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, skinObj.flagKey);
+        }
+
+        bots.forEach(b => {
+            if(!b.alive) return;
+            for(let j = b.body.length - 1; j >= 2; j--) {
+                let bp = b.body[j];
+                ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#3498db';
+                ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.8, 0, Math.PI*2); ctx.fill();
+            }
+            drawSnakeHead(b.body[0], b.angle, '#e74c3c', b.sizeRadius, null);
+        });
+
+        ctx.restore();
+
+        if(Date.now() < headshotTextTimer) {
+            ctx.save();
+            ctx.font = "900 36px Arial";
+            ctx.fillStyle = "#e74c3c";
+            ctx.textAlign = "center";
+            ctx.shadowColor = "#f1c40f";
+            ctx.shadowBlur = 12;
+            ctx.fillText("💥 HEADSHOT! 🎯", canvas.width / 2, canvas.height / 3);
+            ctx.restore();
+        }
+
+        radarCtx.clearRect(0, 0, 65, 65);
+        garages.forEach(g => {
+            radarCtx.fillStyle = isGarageRented ? '#2ecc71' : '#f1c40f';
+            radarCtx.fillRect(((g.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65 - 3, ((g.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65 - 3, 6, 6);
+        });
+        if(player.alive) {
+            radarCtx.fillStyle = '#ffffff'; radarCtx.beginPath();
+            radarCtx.arc(((player.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, ((player.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, 3.5, 0, Math.PI*2); radarCtx.fill();
+        }
+        bots.forEach(b => {
+            if(!b.alive) return;
+            radarCtx.fillStyle = '#e74c3c'; radarCtx.beginPath();
+            radarCtx.arc(((b.x - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, ((b.y - (MAP_CENTER - MAP_RADIUS))/(MAP_RADIUS*2))*65, 2, 0, Math.PI*2); radarCtx.fill();
+        });
+
+        renderPowerBadges(); updateLeaderboard();
+        requestAnimationFrame(gameLoop);
+    }
+</script>
 </body>
 </html>
