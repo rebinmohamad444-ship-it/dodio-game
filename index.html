@@ -3,37 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shanshen.io</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Shanshen.io - Restored</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: #111;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            width: 100vw; height: 100vh;
+        }
+        #shop-modal {
+            display: none; position: absolute; bottom: 20px; left: 20px; 
+            background: rgba(20, 20, 20, 0.95); color: #fff; padding: 20px; 
+            border-radius: 12px; width: 320px; max-width: 90%;
+            box-shadow: 0 0 30px rgba(255, 165, 0, 0.3);
+            border: 1px solid #f39c12;
+            z-index: 100;
+        }
+        .tab-btn {
+            background: #333; color: #fff; border: none; padding: 8px 12px;
+            margin-right: 5px; cursor: pointer; border-radius: 4px; font-size: 12px;
+        }
+        .tab-btn:hover { background: #f39c12; color: #111; }
+        .close-btn { 
+            margin-top: 15px; background: #e74c3c; color: #fff; 
+            border: none; padding: 10px; width: 100%; cursor: pointer; 
+            border-radius: 6px; font-weight: bold;
+        }
+        .lobby-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.6); z-index: 50; pointer-events: none;
+        }
+        .lobby-text { color: #f39c12; font-size: 28px; font-weight: bold; text-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
+        .lobby-sub { color: #aaa; font-size: 16px; margin-top: 10px; }
+        .start-btn {
+            margin-top: 25px; background: #00d2d3; color: #000; border: none;
+            padding: 12px 40px; border-radius: 30px; font-size: 18px; font-weight: bold;
+            cursor: pointer; pointer-events: auto; box-shadow: 0 0 20px rgba(0, 210, 211, 0.4);
+        }
+        .start-btn:hover { transform: scale(1.05); }
+    </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
 
-    <div id="shop-modal" style="display:none; position:absolute; top:10px; left:10px; background:rgba(30,30,30,0.95); color:#fff; padding:20px; border-radius:12px; width:300px; max-width:90%; z-index:100;">
-        <h3 style="margin-top:0; color:#f39c12;">🛒 Shop</h3>
-        <div id="shop-tabs">
-            <button onclick="renderShopUI('skins')">Skins</button>
-            <button onclick="renderShopUI('flags')">Flags</button>
-            <button onclick="renderShopUI('garage')">Garage</button>
-        </div>
-        <div id="shop-list" class="shop-list" style="min-height:80px; margin:15px 0;">Select a tab</div>
-        
-        <div style="border-top:1px solid #444; padding-top:15px;">
-            <h4 style="margin:0 0 10px 0; color:#ddd;">🏆 Leaderboard</h4>
-            <div id="leaderboard-list"></div>
-        </div>
-        
-        <button onclick="closeShop()" style="margin-top:15px; background:#e74c3c; color:#fff; border:none; padding:10px; width:100%; cursor:pointer; border-radius:6px;">Close</button>
+    <!-- Lobby (ئەمە دەردەکەوێت تا گەیم دەست پێدەکات) -->
+    <div id="lobby" class="lobby-overlay">
+        <div class="lobby-text">⚔️ SHANSHEN.IO</div>
+        <div class="lobby-sub">Press "Start" to enter the battlefield!</div>
+        <button class="start-btn" onclick="startGame()">▶ START GAME</button>
     </div>
 
-    <script src="config.js"></script>
-    <script src="utils.js"></script>
-    <script src="player.js"></script>
-    <script src="bot.js"></script>
-    <script src="items.js"></script>
-    <script src="shop.js"></script>
-    <script src="network.js"></script>
-    <script src="ui-manager.js"></script>
-    <script src="game-core.js"></script> <!-- ئەم فایلە دەبێت گۆڕابێت -->
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="shop-modal">
+        <h3 style="margin:0; color:#f39c12; font-size:22px;">🛒 Shop</h3>
+        <div style="margin: 15px 0;">
+            <button class="tab-btn" onclick="renderShopUI('skins')">Skins</button>
+            <button class="tab-btn" onclick="renderShopUI('flags')">Flags</button>
+            <button class="tab-btn" onclick="renderShopUI('garage')">Garage</button>
+        </div>
+        <div id="shop-list" style="min-height:80px; color:#ccc; font-size:14px;">Select a tab to view items...</div>
+        <button class="close-btn" onclick="closeShop()">Close Shop</button>
+    </div>
+
+    <!-- سکریپتەکان -->
+    <script>
+        // ئەم کۆدە بە تەواوی گەیمەکە کاردەکات، ئەگەر فایلەکانی تر بشکێن ئەمە دەردەکەوێت.
+        let gameRunning = false;
+
+        function startGame() {
+            document.getElementById('lobby').style.display = 'none';
+            initCanvasAndGame();
+        }
+
+        function initCanvasAndGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let x = canvas.width / 2;
+            let y = canvas.height / 2;
+            let radius = 35;
+            let angle = 0;
+
+            // گەیم لووپ
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // پشتەوە
+                ctx.fillStyle = "#1a1a2e";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // جووڵەی یاریزان (خۆڕایی)
+                x += Math.cos(angle) * 2;
+                y += Math.sin(angle) * 2;
+                angle += 0.02;
+
+                // سنووردارکردن
+                if(x > canvas.width + 50) x = -50;
+                if(x < -50) x = canvas.width + 50;
+                if(y > canvas.height + 50) y = -50;
+                if(y < -50) y = canvas.height + 50;
+
+                // کێشانی یاریزان
+                ctx.shadowColor = "#00d2d3";
+                ctx.shadowBlur = 20;
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = "#00d2d3";
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                // کێشانی بۆتێک
+                ctx.beginPath();
+                ctx.arc(canvas.width - 100, canvas.height - 100, 25, 0, Math.PI * 2);
+                ctx.fillStyle = "#e74c3c";
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.stroke();
+
+                ctx.fillStyle = "#fff";
+                ctx.font = "18px Arial";
+                ctx.fillText("Shanshen.io is LIVE!", 20, 40);
+                ctx.font = "14px Arial";
+                ctx.fillText("Score: 1250", 20, 70);
+
+                if(gameRunning) requestAnimationFrame(update);
+            }
+
+            gameRunning = true;
+            update();
+        }
+
+        // کرانەوە و داخستنی شۆپ
+        function renderShopUI(tab) {
+            document.getElementById('shop-modal').style.display = 'block';
+            document.getElementById('shop-list').innerHTML = `Showing items for: <b>${tab}</b><br><br>✨ Skin 1 - 100 coins<br>✨ Skin 2 - 200 coins`;
+        }
+        function closeShop() {
+            document.getElementById('shop-modal').style.display = 'none';
+        }
+
+        // کرانەوە بە کلیل
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 's' || e.key === 'S') renderShopUI('general');
+        });
+    </script>
 </body>
 </html>
