@@ -1065,6 +1065,45 @@ if(player.alive) {
                 // وێنەی ئاڵاکە بە قەبارەی گونجاو لەسەر لاشە
                 ctx.drawImage(loadedFlagImages[skinObj.flagKey], p.x - player.sizeRadius * 0.6, p.y - player.sizeRadius * 0.4, player.sizeRadius * 1.2, player.sizeRadius * 0.8);
             } catch(e){}
+            // =============================================
+// دەستکاری کێشانی ئاڵاکان لەسەر لاشەی مار (بە ڕوونی)
+// =============================================
+// ئەم کۆدە جێگەی بەشی کێشانی لاشەی مار دەگرێتەوە لە ناو gameLoopـدا
+// لە شوێنی: if(player.alive) { ... }
+// لە ناو loopـی کێشانی لاشەدا:
+if(player.alive) {
+    let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
+    let flagImg = (skinObj.flagKey && loadedFlagImages[skinObj.flagKey]) ? loadedFlagImages[skinObj.flagKey] : null;
+
+    for(let i = player.body.length - 1; i >= 1; i--) {
+        let p = player.body[i];
+        let color = skinObj.colors[i % skinObj.colors.length];
+        
+        // کێشانی لاشە بە ڕەنگ
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI * 2);
+        ctx.fill();
+
+        // کێشانی ئاڵا لەسەر هەر پارچەیەک (بە ڕوونی و بە شەفافیەت)
+        if(flagImg) {
+            try {
+                // قەبارەی گونجاو بۆ لاشە
+                let size = player.sizeRadius * 0.8;
+                // بۆ ئەوەی ئاڵا سەربگۆڕ نەبێت، پێویستە گۆشەکە ڕێک بکەین
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                // بۆ ئەوەی ئاڵاکان بە ڕاستی لەسەر لاشە دابنیشن
+                ctx.drawImage(flagImg, -size/2, -size/2, size, size * 0.6);
+                ctx.restore();
+            } catch(e){}
+            if(p.icon === 'x') {
+    window.dragonSizeBoost = 1.8;
+    window.dragonSizeTimer = Date.now() + 3000;
+}
+        }
+    }
+}
         }
     }
 }
