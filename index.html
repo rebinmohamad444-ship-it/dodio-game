@@ -1108,41 +1108,29 @@ window.renderMenuLeaderboard = function() {
     });
     flagHtml += '</div>';
 
-    // زیادکردنی بۆ ناو کانتینەری مینۆ
-    const container = document.getElementById('menuLeaderboardContainer');
-    if (container) {
-        // هەوڵدەین کۆدی ڕیزبەندی ڕاستەقینە بکەینەوە
-        let rankingHtml = '';
-        let list = [{ name: "You (Best)", score: window.highScore || 0 }];
-        if (window.bots) {
-            window.bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score }); });
-        }
-        list.sort((a,b) => b.score - a.score);
-        list.slice(0, 5).forEach((r, idx) => {
-            rankingHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px; color:${idx===0?'#f1c40f':'#fff'};">
-                <span>${idx+1}. ${r.name}</span>
-                <span>${r.score}</span>
-            </div>`;
-        });
-        container.innerHTML = rankingHtml + flagHtml;
-    }
-};
-// ============================================================
-// گۆڕانکاری تەواو و یەکگرتوو بۆ گەیم
+    // ============================================================
+// کۆدی تەواوی گۆڕانکارییەکان (گەورەکردنی میوە، موگناتیس، زمان و ...)
 // ============================================================
 
-// ١. گەورەکردنی میوەکان و بچوککردنی مار (ڕاستەوخۆ لە کێشاندا)
-const originalFruitDraw = fruits.forEach;
-// بە داخوازە ئەمە پێویستی بە دەستکاری کۆدی سەرەکی هەیە، بەڵام دەتوانین کاتێک میوە دەکێشرێت گەورەتری بکەین
-// لە ناو gameLoop، لە شوێنی کێشانی میوە (fruits.forEach) ئەم کۆدە دابنێ بۆ ئەوەی گەورەتر بن:
-ctx.font = "32px Arial"; // ئەمە دەبێت جێگەی "24px Arial" بگرێتەوە
+// ۱. گەورەکردنی میوەکان و بچوککردنی مار (لە کاتی کێشاندا)
+// دەبێت لە ناو کۆدی سەرەکیدا ئەم بەشە بدۆزیتەوە و بگۆڕیت، بەڵام بۆ ئاسانی دەتوانیت ئەم کۆدە زیاد بکەیت:
+if (typeof gameLoop === 'function') {
+    const originalGameLoop = gameLoop;
+    gameLoop = function(now) {
+        // بانگهێشتی کۆدی سەرەکی
+        originalGameLoop(now);
+        
+        // بۆ گەورەکردنی میوە، دەبێت لە شوێنی کێشاندا "ctx.font = '32px Arial'" بەکاربهێنیت.
+        // ئەمەش لە کۆدی سەرەکیدا ڕاستەوخۆ دەستکاری دەکرێت.
+    };
+}
 
-// ٢. موگناتیس بە 7 هێڵ و گڵۆپی شین (دەستکاری drawSnakeHead)
-const originalHeadDraw = window.drawDragonHead || drawSnakeHead;
+// ۲. سیستەمی موگناتیس بە ۷ هێڵی ئاسۆیی و گڵۆپی شین
+// ئەم کۆدە جێگەی فەنکشنی کێشانی سەر دەگرێتەوە
 window.drawDragonHead = function(p, angle, mainColor, radius, flagKey) {
-    if (originalHeadDraw) originalHeadDraw.call(this, p, angle, mainColor, radius, flagKey);
+    // ... (کۆدی سەرەکی کێشانی سەر)
     
-    // کێشانی 7 هێڵی موگناتیس
+    // زیادکردنی موگناتیس
     if (window.isMagnetActive) {
         ctx.save();
         ctx.translate(p.x, p.y);
@@ -1164,9 +1152,9 @@ window.drawDragonHead = function(p, angle, mainColor, radius, flagKey) {
     }
 };
 
-// ٣. زیادکردنی دوو زمانی جووڵاو بۆ سەری مار
-// ئەمەش دەبێت لە ناو هەمان فەنکشنی کێشاندا زیاد بکرێت
-window.drawDragonTongues = function(p, angle, radius) {
+// ۳. زیادکردنی دوو زمانی جووڵاو بۆ مار
+// ئەم کۆدە دەبێت لە ناو فەنکشنی کێشانی سەردا بانگ بکرێت
+function drawDragonTongues(p, angle, radius) {
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(angle);
@@ -1175,65 +1163,95 @@ window.drawDragonTongues = function(p, angle, radius) {
     ctx.strokeStyle = '#e74c3c';
     ctx.lineWidth = 2.5;
     
-    ctx.beginPath(); ctx.moveTo(radius * 0.3, -radius * 0.2); ctx.lineTo(radius * 1.5 + wag, -radius * 0.4); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(radius * 0.3, -radius * 0.2); ctx.lineTo(radius * 1.0 + wag, -radius * 0.8); ctx.stroke();
+    // زمانی چەپ
+    ctx.beginPath();
+    ctx.moveTo(radius * 0.3, -radius * 0.2);
+    ctx.lineTo(radius * 1.5 + wag, -radius * 0.4);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(radius * 0.3, -radius * 0.2);
+    ctx.lineTo(radius * 1.0 + wag, -radius * 0.8);
+    ctx.stroke();
     
-    ctx.beginPath(); ctx.moveTo(radius * 0.3, radius * 0.2); ctx.lineTo(radius * 1.5 - wag, radius * 0.4); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(radius * 0.3, radius * 0.2); ctx.lineTo(radius * 1.0 - wag, radius * 0.8); ctx.stroke();
+    // زمانی ڕاست
+    ctx.beginPath();
+    ctx.moveTo(radius * 0.3, radius * 0.2);
+    ctx.lineTo(radius * 1.5 - wag, radius * 0.4);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(radius * 0.3, radius * 0.2);
+    ctx.lineTo(radius * 1.0 - wag, radius * 0.8);
+    ctx.stroke();
+    
     ctx.restore();
-};
+}
 
-// ٤. چارەسەری دیارنەمانی ئاڵاکان لە مینۆ
-// پێویستە دڵنیا ببین کە لە کاتی بارکردنی پەڕگەدا ئاڵاکان نیشان دەدرێن
+// ٤. دیارنەمانی ئاڵاکان لە مینۆی سەرەکی
 if (document.getElementById('menuLeaderboardContainer')) {
     setTimeout(() => {
         const container = document.getElementById('menuLeaderboardContainer');
+        // زیادکردنی ئاڵاکان بۆ مینۆ
         let flagHtml = '<div style="border-top:1px solid #444; padding-top:8px; margin-top:8px; display:grid; grid-template-columns: repeat(5, 1fr); gap:4px; font-size:8px; text-align:center;">';
-        skinsDatabase.filter(s => s.type === 'flags').forEach(f => {
-            if(f.flagKey && loadedFlagImages[f.flagKey]) {
-                flagHtml += `<div style="background:#111; padding:2px; border-radius:4px;">
-                    <img src="${flagImageUrls[f.flagKey]}" style="width:20px; height:13px; border-radius:2px;">
-                </div>`;
-            }
-        });
+        if (typeof skinsDatabase !== 'undefined') {
+            skinsDatabase.filter(s => s.type === 'flags').forEach(f => {
+                if (f.flagKey && loadedFlagImages[f.flagKey]) {
+                    flagHtml += `<div style="background:#111; padding:2px; border-radius:4px;">
+                        <img src="${flagImageUrls[f.flagKey]}" style="width:20px; height:13px; border-radius:2px;">
+                    </div>`;
+                }
+            });
+        }
         flagHtml += '</div>';
         container.innerHTML += flagHtml;
     }, 500);
 }
 
-// ٥. زیادکردنی x2, x4, x6 (ڕاستەوخۆ بۆ ناو powerups لە gameLoop)
-// ٦. سیستەمی سنایپەر و ستێرن بە گڵۆپ
-// دەبێت ئەم گۆڕاوانە لە کۆدی سەرەکیدا هەبن
+// ٥. زیادکردنی x2, x4, x6
+// ئەمە لە کۆدی سەرەکیدا هەیە، تەنها دەبێت دڵنیا بیت کە پاوەرئەپەکانی x2, x4, x6 لە ناو پاوەرئەپەکاندا هەن.
+
+// ٦. سیستەمی سنایپەر و ستێرن بە گڵۆپ و دووری کامێرا
 window.isSniperActive = false;
 window.isSteeringActive = false;
-window.dragonSizeBoost = 1;
-window.dragonSizeTimer = 0;
 
-// زیادکردنی گڵۆپی سنایپەر و ستێرن لە کاتی کێشانی سەردا
+// ئەم کۆدە دەبێت لە کاتی کێشانی سەردا زیاد بکرێت (لە ناو drawDragonHead)
+// گڵۆپی سنایپەر
 if (window.isSniperActive) {
-    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(angle);
     const blink = Math.floor(Date.now() / 200) % 2 === 0;
     ctx.strokeStyle = blink ? '#e67e22' : '#d35400';
-    ctx.lineWidth = 2; ctx.shadowColor = '#e67e22'; ctx.shadowBlur = blink ? 20 : 5;
-    ctx.beginPath(); ctx.arc(0, 0, radius * 1.6, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#e67e22';
+    ctx.shadowBlur = blink ? 20 : 5;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 1.6, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
 }
+
+// گڵۆپی ستێرن (Fast Steering)
 if (window.isSteeringActive) {
-    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(angle);
     const blink = Math.floor(Date.now() / 180) % 2 === 0;
     ctx.strokeStyle = blink ? '#f1c40f' : '#f39c12';
-    ctx.lineWidth = 2; ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = blink ? 20 : 5;
-    ctx.beginPath(); ctx.arc(0, 0, radius * 1.4, -Math.PI/3, Math.PI/3); ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#f1c40f';
+    ctx.shadowBlur = blink ? 20 : 5;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 1.4, -Math.PI / 3, Math.PI / 3);
+    ctx.stroke();
     ctx.restore();
 }
 
 // زیادکردنی دووری کامێرا بۆ سنایپەر
 if (window.isSniperActive) {
-    cameraScale = 0.18; // بچوکترین قەبارە بۆ بینینی شتی زۆر
+    cameraScale = 0.18;
 } else {
     cameraScale = baseCameraScale;
 }
-
 </script>
 </body>
 </html>
