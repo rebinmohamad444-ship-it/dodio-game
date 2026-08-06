@@ -1,162 +1,140 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shanshen.io - Restored</title>
-    <style>
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            background-color: #111;
-            font-family: Arial, sans-serif;
-        }
-        canvas {
-            display: block;
-            width: 100vw; height: 100vh;
-        }
-        #shop-modal {
-            display: none; position: absolute; bottom: 20px; left: 20px; 
-            background: rgba(20, 20, 20, 0.95); color: #fff; padding: 20px; 
-            border-radius: 12px; width: 320px; max-width: 90%;
-            box-shadow: 0 0 30px rgba(255, 165, 0, 0.3);
-            border: 1px solid #f39c12;
-            z-index: 100;
-        }
-        .tab-btn {
-            background: #333; color: #fff; border: none; padding: 8px 12px;
-            margin-right: 5px; cursor: pointer; border-radius: 4px; font-size: 12px;
-        }
-        .tab-btn:hover { background: #f39c12; color: #111; }
-        .close-btn { 
-            margin-top: 15px; background: #e74c3c; color: #fff; 
-            border: none; padding: 10px; width: 100%; cursor: pointer; 
-            border-radius: 6px; font-weight: bold;
-        }
-        .lobby-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(0,0,0,0.6); z-index: 50; pointer-events: none;
-        }
-        .lobby-text { color: #f39c12; font-size: 28px; font-weight: bold; text-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
-        .lobby-sub { color: #aaa; font-size: 16px; margin-top: 10px; }
-        .start-btn {
-            margin-top: 25px; background: #00d2d3; color: #000; border: none;
-            padding: 12px 40px; border-radius: 30px; font-size: 18px; font-weight: bold;
-            cursor: pointer; pointer-events: auto; box-shadow: 0 0 20px rgba(0, 210, 211, 0.4);
-        }
-        .start-btn:hover { transform: scale(1.05); }
-    </style>
-</head>
-<body>
+// ===== Responsive Fullscreen & Landscape Support =====
 
-    <!-- Lobby (ئەمە دەردەکەوێت تا گەیم دەست پێدەکات) -->
-    <div id="lobby" class="lobby-overlay">
-        <div class="lobby-text">⚔️ SHANSHEN.IO</div>
-        <div class="lobby-sub">Press "Start" to enter the battlefield!</div>
-        <button class="start-btn" onclick="startGame()">▶ START GAME</button>
-    </div>
+function resizeGame() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
 
-    <canvas id="gameCanvas"></canvas>
+    if (canvas) {
+        canvas.width = w;
+        canvas.height = h;
+    }
 
-    <div id="shop-modal">
-        <h3 style="margin:0; color:#f39c12; font-size:22px;">🛒 Shop</h3>
-        <div style="margin: 15px 0;">
-            <button class="tab-btn" onclick="renderShopUI('skins')">Skins</button>
-            <button class="tab-btn" onclick="renderShopUI('flags')">Flags</button>
-            <button class="tab-btn" onclick="renderShopUI('garage')">Garage</button>
-        </div>
-        <div id="shop-list" style="min-height:80px; color:#ccc; font-size:14px;">Select a tab to view items...</div>
-        <button class="close-btn" onclick="closeShop()">Close Shop</button>
-    </div>
+    if (typeof camera !== "undefined") {
+        camera.width = w;
+        camera.height = h;
+    }
+}
 
-    <!-- سکریپتەکان -->
-    <script>
-        // ئەم کۆدە بە تەواوی گەیمەکە کاردەکات، ئەگەر فایلەکانی تر بشکێن ئەمە دەردەکەوێت.
-        let gameRunning = false;
+// کاتێک قەبارەی شاشە بگۆڕێت
+window.addEventListener("resize", resizeGame);
 
-        function startGame() {
-            document.getElementById('lobby').style.display = 'none';
-            initCanvasAndGame();
-        }
+// کاتێک مۆبایل بچێتە Landscape یان Portrait
+window.addEventListener("orientationchange", () => {
+    setTimeout(resizeGame, 200);
+});
 
-        function initCanvasAndGame() {
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+// یەکجار لە دەستپێکدا
+resizeGame();
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const radarCanvas = document.getElementById('radar-canvas');
+const radarCtx = radarCanvas.getContext('2d');
 
-            let x = canvas.width / 2;
-            let y = canvas.height / 2;
-            let radius = 35;
-            let angle = 0;
+const MAP_RADIUS = 18000;
+const MAP_CENTER = 20000;
+let cameraScale = 0.50;
+let gameRunning = false;
+let controlType = 'touch';
+let activeShopTab = 'free';
+let lastFrameTime = performance.now();
 
-            // گەیم لووپ
-            function update() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+let coins = parseFloat(localStorage.getItem('dodio_coins') || '0');
+let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
+let ownedSkins = JSON.parse(localStorage.getItem('dodio_owned_skins') || '["free1","free2","free3","free4","free5","free6","free7"]');
+let garageRentEndTime = parseInt(localStorage.getItem('dodio_garage_rent_end') || '0');
 
-                // پشتەوە
-                ctx.fillStyle = "#1a1a2e";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+let score = 0;
+let currentMultiplier = 1;
+let manualSpeedBoost = false;
+let isMagnetActive = false;
+let isSteeringActive = false;
+let activePowers = {};
+let deadRemains = [];
+let activeEmojiText = null;
+let emojiTimer = null;
 
-                // جووڵەی یاریزان (خۆڕایی)
-                x += Math.cos(angle) * 2;
-                y += Math.sin(angle) * 2;
-                angle += 0.02;
+let headshotTextTimer = 0;
 
-                // سنووردارکردن
-                if(x > canvas.width + 50) x = -50;
-                if(x < -50) x = canvas.width + 50;
-                if(y > canvas.height + 50) y = -50;
-                if(y < -50) y = canvas.height + 50;
+let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 28 };
+let bots = [];
+let fruits = [];
+let coinItems = [];
+let powerups = [];
 
-                // کێشانی یاریزان
-                ctx.shadowColor = "#00d2d3";
-                ctx.shadowBlur = 20;
-                ctx.beginPath();
-                ctx.arc(x, y, radius, 0, Math.PI * 2);
-                ctx.fillStyle = "#00d2d3";
-                ctx.fill();
-                ctx.shadowBlur = 0;
-                ctx.strokeStyle = "#fff";
-                ctx.lineWidth = 4;
-                ctx.stroke();
+/* Audio Synthesizer for Headshot sound */
+function playHeadshotSound() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if(!AudioCtx) return;
+        const actx = new AudioCtx();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, actx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, actx.currentTime + 0.15);
+        osc.frequency.exponentialRampToValueAtTime(80, actx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.8, actx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.35);
+    } catch(e){}
+}
 
-                // کێشانی بۆتێک
-                ctx.beginPath();
-                ctx.arc(canvas.width - 100, canvas.height - 100, 25, 0, Math.PI * 2);
-                ctx.fillStyle = "#e74c3c";
-                ctx.fill();
-                ctx.strokeStyle = "#fff";
-                ctx.stroke();
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 200));
+resize();
 
-                ctx.fillStyle = "#fff";
-                ctx.font = "18px Arial";
-                ctx.fillText("Shanshen.io is LIVE!", 20, 40);
-                ctx.font = "14px Arial";
-                ctx.fillText("Score: 1250", 20, 70);
+updateMenuStats();
 
-                if(gameRunning) requestAnimationFrame(update);
-            }
+function updateMenuStats() {
+    let displayCoins = Math.floor(coins);
+    document.getElementById('coinVal').innerText = `🪙 ${displayCoins}`;
+    document.getElementById('menuCoins').innerText = displayCoins;
+    document.getElementById('menuHighScore').innerText = highScore;
+    document.getElementById('shopCoinVal').innerText = `🪙 ${displayCoins}`;
+    renderMenuLeaderboard();
+}
 
-            gameRunning = true;
-            update();
-        }
+function renderMenuLeaderboard() {
+    let dummyRanks = [
+        { name: "🏆 Kurd_Pro_99", score: 45000 },
+        { name: "🥇 Apex_Viper", score: 32000 },
+        { name: "🥈 Shadow_Hunter", score: 24000 },
+        { name: "You (Best)", score: highScore }
+    ];
+    dummyRanks.sort((a,b) => b.score - a.score);
+    let html = "";
+    dummyRanks.forEach((r, idx) => {
+        html += `<div style="display:flex; justify-content:space-between; margin-bottom:1px;"><span>${idx+1}. ${r.name}</span><span style="color:#2ecc71;">${r.score}</span></div>`;
+    });
+    document.getElementById('menuLeaderboardContainer').innerHTML = html;
+}
 
-        // کرانەوە و داخستنی شۆپ
-        function renderShopUI(tab) {
-            document.getElementById('shop-modal').style.display = 'block';
-            document.getElementById('shop-list').innerHTML = `Showing items for: <b>${tab}</b><br><br>✨ Skin 1 - 100 coins<br>✨ Skin 2 - 200 coins`;
-        }
-        function closeShop() {
-            document.getElementById('shop-modal').style.display = 'none';
-        }
+function triggerEmoji(char) {
+    activeEmojiText = char;
+    if(emojiTimer) clearTimeout(emojiTimer);
+    emojiTimer = setTimeout(() => { activeEmojiText = null; }, 3000);
+}
 
-        // کرانەوە بە کلیل
-        document.addEventListener('keydown', (e) => {
-            if(e.key === 's' || e.key === 'S') renderShopUI('general');
-        });
-    </script>
-</body>
-</html>
+function openShop() { 
+    updateMenuStats();
+    renderShop(); 
+    document.getElementById('shop-modal').style.display = 'flex'; 
+}
+function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
+function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }
+function closeExitModal() { document.getElementById('exit-modal').style.display = 'none'; }
+function confirmExit() { gameRunning = false; closeExitModal(); document.getElementById('menu-overlay').style.display = 'flex'; }
+
+function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
+function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
+function changeControlType() {
+    controlType = document.getElementById('controlTypeSelect').value;
+    document.getElementById('btn-controls').style.display = controlType =
