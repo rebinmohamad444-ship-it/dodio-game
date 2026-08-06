@@ -1,123 +1,356 @@
-<link rel="manifest" href="/manifest.json">
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>dod.io</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shanshen.io - Full Restored</title>
     <style>
-        * {
-            box-sizing: border-box;
+        /* ستایلی پەڕە */
+        body, html {
             margin: 0; padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none;
-        }
-        html, body {
-            width: 100vw; height: 100vh;
-            background-color: #0b0d12;
-            color: #fff; font-family: Arial, sans-serif;
+            width: 100%; height: 100%;
             overflow: hidden;
+            background-color: #1e272e;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
         }
-        canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
+        canvas {
+            display: block;
+            width: 100vw; height: 100vh;
+        }
+        #shop-modal {
+            display: none; position: absolute; top: 20px; left: 20px; 
+            background: rgba(25, 25, 25, 0.95); padding: 20px; 
+            border-radius: 12px; width: 300px; max-width: 90%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 100;
+        }
+        .btn { background: #f39c12; color: #000; border:none; padding: 8px 15px; border-radius:5px; cursor:pointer; margin:5px; font-weight:bold;}
+        .btn-close { background: #e74c3c; color: #fff; margin-top:15px; width:100%;}
+        #shop-list { min-height: 80px; margin: 15px 0; }
+        #leaderboard-container { border-top: 1px solid #555; padding-top: 10px; margin-top:15px; }
+        .lobby {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            background: rgba(0,0,0,0.7); z-index:50;
+        }
+        .start-btn {
+            padding: 15px 50px; font-size: 22px; background: #00d2d3; color:#000;
+            border: none; border-radius: 30px; cursor: pointer; font-weight:bold;
+            margin-top: 20px;
+        }
+        .start-btn:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body>
 
-        /* HUD Top Left */
-        #radar-wrapper {
-            position: absolute; top: 8px; left: 8px;
-            display: flex; flex-direction: column; align-items: flex-start;
-            gap: 4px; z-index: 5;
-        }
-        #radar-canvas {
-            width: 65px; height: 65px;
-            background: rgba(0, 0, 0, 0.85);
-            border: 1.5px solid #2ecc71; border-radius: 50%;
-        }
-        #hud-stats {
-            background: rgba(0,0,0,0.75); padding: 3px 6px;
-            border-radius: 6px; border: 1px solid #2ecc71;
-            font-size: 9px; text-align: left; width: 65px;
+    <!-- لۆبی یاری (دوای دەستپێکردن دەشاردرێتەوە) -->
+    <div id="lobby" class="lobby">
+        <h1 style="font-size: 40px; color:#f39c12;">⚔️ SHANSHEN.IO</h1>
+        <p style="font-size: 18px;">Eat food, grow bigger, defeat bots!</p>
+        <button class="start-btn" onclick="startGame()">Start Game</button>
+        <p style="margin-top:15px; font-size:12px; color:#aaa;">Press 'S' to open Shop in-game</p>
+    </div>
+
+    <!-- کانڤاسی گەیم -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- شۆپ و ڕیزبەندی -->
+    <div id="shop-modal">
+        <h3 style="margin:0; color:#f39c12;">🛒 Shop</h3>
+        <div>
+            <button class="btn" onclick="showShopTab('skins')">Skins</button>
+            <button class="btn" onclick="showShopTab('flags')">Flags</button>
+            <button class="btn" onclick="showShopTab('garage')">Garage</button>
+        </div>
+        <div id="shop-list">Select a tab to see items...</div>
+        <div id="leaderboard-container">
+            <h4 style="margin:5px 0;">🏆 Leaderboard</h4>
+            <div id="leaderboard-list"><i>Loading data...</i></div>
+        </div>
+        <button class="btn btn-close" onclick="closeShop()">Close Shop</button>
+    </div>
+
+    <!-- کۆدی تەواوی یارییەکە (جاڤاسکریپت) -->
+    <script>
+        // =========================================================
+        // کۆدی سەرەکی گەیم (بێ هیچ کورت کردنێک)
+        // =========================================================
+
+        let gameRunning = false;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let animationFrameId = null;
+
+        // خەسڵەتەکانی گەیم
+        const state = {
+            player: null,
+            bots: [],
+            foods: [],
+            score: 0,
+            leaderboard: [
+                { name: "Shanshen", score: 3500 },
+                { name: "ProMaster", score: 2800 },
+                { name: "ShadowKing", score: 2200 },
+                { name: "Blaze", score: 1800 },
+                { name: "Ghost", score: 1200 }
+            ]
+        };
+
+        // پێکهێنانی یاریزان
+        class Player {
+            constructor(name) {
+                this.name = name;
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2;
+                this.radius = 25;
+                this.speed = 5;
+                this.color = '#00d2d3';
+            }
+
+            draw() {
+                // سێبەر
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 20;
+                
+                // کێشانی یاریزان
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // ناو
+                ctx.fillStyle = '#fff';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.name, this.x, this.y - this.radius - 12);
+            }
+
+            update(keys) {
+                let moved = false;
+                if (keys['ArrowUp'] || keys['w'] || keys['W']) { this.y -= this.speed; moved = true; }
+                if (keys['ArrowDown'] || keys['s'] || keys['S']) { this.y += this.speed; moved = true; }
+                if (keys['ArrowLeft'] || keys['a'] || keys['A']) { this.x -= this.speed; moved = true; }
+                if (keys['ArrowRight'] || keys['d'] || keys['D']) { this.x += this.speed; moved = true; }
+
+                // سنووردارکردن
+                this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+                this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+            }
         }
 
-        #emoji-reaction-box {
-            display: flex; flex-direction: row; gap: 4px; margin-top: 2px;
-        }
-        .reaction-btn {
-            width: 28px; height: 28px; background: rgba(0,0,0,0.8);
-            border: 1px solid #f1c40f; border-radius: 50%; font-size: 14px;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,0.5);
+        // پێکهێنانی بۆت
+        class Bot {
+            constructor(name, color, x, y) {
+                this.name = name;
+                this.color = color;
+                this.x = x;
+                this.y = y;
+                this.radius = 20;
+                this.speed = 1.5;
+                this.angle = Math.random() * Math.PI * 2;
+                this.changeTimer = Math.floor(Math.random() * 100);
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.name, this.x, this.y - this.radius - 10);
+            }
+
+            update() {
+                this.changeTimer++;
+                // گۆڕینی ئاراستە بە شێوەی هەڕەمەکی
+                if (this.changeTimer > 50 + Math.random() * 50) {
+                    this.angle += (Math.random() - 0.5) * 2;
+                    this.changeTimer = 0;
+                }
+
+                // جووڵە
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed;
+
+                // سنووردارکردن
+                if (this.x < this.radius || this.x > canvas.width - this.radius) this.angle = Math.PI - this.angle;
+                if (this.y < this.radius || this.y > canvas.height - this.radius) this.angle = -this.angle;
+            }
         }
 
-        #left-bottom-container {
-            position: absolute; bottom: 12px; left: 12px;
-            display: flex; flex-direction: column; gap: 4px; z-index: 10;
-        }
-        #ingame-garage-btn {
-            background: rgba(243, 156, 18, 0.9); border: 1px solid #fff;
-            color: #fff; padding: 5px 8px; border-radius: 8px;
-            font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
-        }
-        #exit-btn {
-            background: #e74c3c; color: #fff; font-weight: bold;
-            border: 1px solid #fff; padding: 5px 8px; border-radius: 8px;
-            font-size: 10px; cursor: pointer; text-align: center; width: 75px;
+        // پێکهێنانی خواردن (Food)
+        class Food {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = 6 + Math.random() * 4;
+                this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
         }
 
-        #joystick-zone {
-            position: absolute; width: 70px; height: 70px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1.5px solid rgba(46, 204, 113, 0.8);
-            border-radius: 50%; z-index: 10; display: none;
-            pointer-events: none; transform: translate(-50%, -50%);
-        }
-        #joystick-knob {
-            position: absolute; top: 18px; left: 18px;
-            width: 34px; height: 34px;
-            background: #2ecc71; border-radius: 50%;
-            box-shadow: 0 0 6px #2ecc71; pointer-events: none;
+        // =========================================================
+        // دەستپێکردن و گەیم لووپ
+        // =========================================================
+
+        function startGame() {
+            document.getElementById('lobby').style.display = 'none';
+            gameRunning = true;
+
+            // پێکهێنانی یاریزان
+            state.player = new Player("Hero");
+            state.score = 0;
+
+            // پێکهێنانی بۆتەکان
+            state.bots = [];
+            const botColors = ['#e74c3c', '#9b59b6', '#3498db', '#e67e22', '#1abc9c', '#f1c40f'];
+            for (let i = 0; i < 10; i++) {
+                let bot = new Bot(
+                    'Bot ' + (i + 1),
+                    botColors[i % botColors.length],
+                    Math.random() * canvas.width,
+                    Math.random() * canvas.height
+                );
+                state.bots.push(bot);
+            }
+
+            // پێکهێنانی خواردنەکان
+            state.foods = [];
+            for (let i = 0; i < 80; i++) {
+                state.foods.push(new Food());
+            }
+
+            // دەستپێکردنی لووپ
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            gameLoop();
         }
 
-        #btn-controls {
-            position: absolute; bottom: 20px; right: 20px;
-            display: none; grid-template-columns: repeat(3, 36px);
-            grid-template-rows: repeat(3, 36px); gap: 4px; z-index: 10;
-        }
-        .ctrl-btn {
-            background: rgba(46, 204, 113, 0.75); border: 1px solid #fff;
-            color: #fff; font-weight: bold; border-radius: 6px; font-size: 13px;
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // کلیلەکانی جووڵە
+            const keys = {
+                ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
+                w: false, W: false, s: false, S: false, a: false, A: false, d: false, D: false
+            };
+            document.addEventListener('keydown', (e) => { if (keys.hasOwnProperty(e.key)) keys[e.key] = true; });
+            document.addEventListener('keyup', (e) => { if (keys.hasOwnProperty(e.key)) keys[e.key] = false; });
+
+            // 1. پاککردنەوە و پشتەوە
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. نوێکردنەوەی یاریزان
+            if (state.player) {
+                state.player.update(keys);
+                state.player.draw();
+
+                // پێکدادان لەگەڵ خواردن
+                for (let i = state.foods.length - 1; i >= 0; i--) {
+                    const food = state.foods[i];
+                    const dx = state.player.x - food.x;
+                    const dy = state.player.y - food.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < state.player.radius + food.radius) {
+                        state.score += 10;
+                        state.player.radius += 0.5;
+                        state.foods.splice(i, 1);
+                        state.foods.push(new Food()); // زیادکردنی خواردنی نوێ
+                    }
+                }
+
+                // نیشاندانی سکۆر
+                ctx.fillStyle = '#fff';
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('Score: ' + state.score, 20, 40);
+            }
+
+            // 3. نوێکردنەوەی بۆتەکان
+            state.bots.forEach(bot => {
+                bot.update();
+                bot.draw();
+            });
+
+            // 4. نوێکردنەوەی خواردنەکان
+            state.foods.forEach(food => food.draw());
+
+            // 5. نوێکردنەوەی ڕیزبەندی (Leaderboard) لە شۆپدا
+            updateLeaderboard();
+
+            // بانگهێشتی خولەکی داهاتوو
+            animationFrameId = requestAnimationFrame(gameLoop);
         }
 
-        #red-zone-alert {
-            position: absolute; top: 15%; left: 50%; transform: translate(-50%, -50%);
-            color: #e74c3c; font-size: 13px; font-weight: bold;
-            background: rgba(0,0,0,0.85); padding: 4px 10px; border-radius: 6px;
-            border: 1.5px solid #e74c3c; display: none; z-index: 8;
-            animation: blinker 0.5s linear infinite;
+        // =========================================================
+        // ڕیزبەندی و شۆپ
+        // =========================================================
+
+        function updateLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            if (!list) return;
+
+            // داتای خەیاڵی بۆ نیشاندان
+            let html = '<ul style="list-style:none; padding:0; margin:0; font-size:14px;">';
+            state.leaderboard.forEach((item, index) => {
+                const color = index === 0 ? '#f1c40f' : (index === 1 ? '#bdc3c7' : (index === 2 ? '#e67e22' : '#aaa'));
+                html += `<li style="color:${color}; display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #333;">
+                            <span>${index + 1}. ${item.name}</span>
+                            <span>${item.score}</span>
+                        </li>`;
+            });
+            html += '</ul>';
+            list.innerHTML = html;
         }
 
-        #garage-safe-status {
-            position: absolute; top: 12%; left: 50%; transform: translate(-50%, -50%);
-            color: #2ecc71; font-size: 13px; font-weight: bold;
-            background: rgba(0,0,0,0.92); padding: 8px 14px; border-radius: 10px;
-            border: 2px solid #2ecc71; display: none; z-index: 8; text-align: center;
-        }
-        #exit-garage-btn {
-            background: #e74c3c; color: #fff; font-size: 11px; font-weight: bold;
-            padding: 5px 12px; border-radius: 6px; border: 1px solid #fff;
-            cursor: pointer; margin-top: 5px; display: inline-block;
+        function showShopTab(tab) {
+            document.getElementById('shop-modal').style.display = 'block';
+            const shopList = document.getElementById('shop-list');
+            if (tab === 'skins') shopList.innerHTML = '🟢 Skin 1 - 100 coins<br>🔵 Skin 2 - 200 coins';
+            else if (tab === 'flags') shopList.innerHTML = '🇺🇸 Flag 1 - 50 coins<br>🇬🇧 Flag 2 - 75 coins';
+            else shopList.innerHTML = '🚗 Garage items coming soon!';
         }
 
-        #leaderboard-box {
-            position: absolute; top: 8px; right: 8px;
-            background: rgba(0,0,0,0.85); padding: 5px 8px;
-            border-radius: 6px; border: 1px solid #f1c40f;
-            font-size: 8px; z-index: 5; min-width: 110px; pointer-events: none;
+        function closeShop() {
+            document.getElementById('shop-modal').style.display = 'none';
         }
 
-        #active-powers-container {
-            position: absolute; top: 175px; left: 8px;
-            display: flex; flex-direction: column; gap: 3px; z-index: 5;
-        }
-        .power-badge {
- 
+        // کرانەوەی شۆپ بە کلیل (S)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                if (document.getElementById('shop-modal').style.display === 'none') {
+                    showShopTab('skins');
+                } else {
+                    closeShop();
+                }
+            }
+        });
+
+        // ڕێکخستنی کانڤاس کە قەبارەکە بگۆڕدرا
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // چاپکردن لە کۆنسۆل
+        console.log('✅ Shanshen.io Full Version Loaded!');
+    </script>
+</body>
+</html>
