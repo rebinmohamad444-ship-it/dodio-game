@@ -1321,14 +1321,103 @@ setTimeout(()=>{
 // 5. گڵۆپ و دووری کامێرا بۆ سنایپەر و ستێرن
 window.isSniperActive = false;
 window.isSteeringActive = false;
+// =======================
+// گۆڕانکاری کورت و تەواو (ئەمە دەبێت بێ کێشە کاربکات!)
+// =======================
 
-// دووری کامێرا دەگۆڕین لە کاتی چالاکبووندا (لە gameLoop)
-const origLoop = gameLoop;
-gameLoop = function(now) {
-    // زیادکردنی پشکنین بۆ دووری کامێرا
-    if(window.isSniperActive) cameraScale = 0.18; else cameraScale = baseCameraScale || 0.35;
-    origLoop(now);
-};  
+// 1. گەورەکردنی میوەکان (لە کێشاندا)
+const origFillText = ctx.fillText;
+ctx.fillText = function(text, x, y) {
+    if (['🍌','🍉','🍒','🍎','🍓'].includes(text)) {
+        this.font = "32px Arial";
+        origFillText.call(this, text, x, y);
+        this.font = "24px Arial";
+    } else {
+        origFillText.call(this, text, x, y);
+    }
+};
+
+// 2. بچوککردنی مار (لە کاتی دروستبووندا)
+const origInit = initGame;
+initGame = function() {
+    origInit();
+    if(player && player.sizeRadius) {
+        player.sizeRadius = 20;
+    }
+};
+
+// 3. زیادکردنی هێڵەکانی موگناتیس لە سەردا
+const origHead = window.drawDragonHead || window.drawSnakeHead;
+if (typeof window.drawDragonHead === 'function' || typeof window.drawSnakeHead === 'function') {
+    window.drawDragonHead = function(p, angle, mainColor, radius, flagKey) {
+        if (origHead) origHead(p, angle, mainColor, radius, flagKey);
+        if (window.isMagnetActive) {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(angle);
+            const blink = Math.floor(Date.now()/200)%2===0;
+            ctx.strokeStyle = blink ? '#00d2d3' : '#0984e3';
+            ctx.lineWidth = blink ? 3 : 1.5;
+            ctx.shadowColor = '#00d2d3';
+            ctx.shadowBlur = blink ? 15 : 5;
+            for(let i=-3; i<=3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(radius*0.8, i*radius*0.4);
+                ctx.lineTo(radius*4.0, i*radius*0.4);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+        // زیادکردنی دوو زمان
+        const wag = Math.sin(Date.now()/300)*4;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
+        ctx.strokeStyle = '#e74c3c';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(radius*0.3, -radius*0.2);
+        ctx.lineTo(radius*1.5 + wag, -radius*0.4);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(radius*0.3, -radius*0.2);
+        ctx.lineTo(radius*1.0 + wag, -radius*0.8);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(radius*0.3, radius*0.2);
+        ctx.lineTo(radius*1.5 - wag, radius*0.4);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(radius*0.3, radius*0.2);
+        ctx.lineTo(radius*1.0 - wag, radius*0.8);
+        ctx.stroke();
+        ctx.restore();
+    };
+}
+
+// 4. نیشاندانی ئاڵاکان لە مینۆدا
+setTimeout(() => {
+    const container = document.getElementById('menuLeaderboardContainer');
+    if (!container) return;
+    let html = '<div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px; font-size:10px; border-top:1px solid #444; padding-top:8px; margin-top:8px;">';
+    if (window.skinsDatabase) {
+        window.skinsDatabase.filter(s => s.type === 'flags').forEach(f => {
+            if (f.flagKey && window.loadedFlagImages && window.loadedFlagImages[f.flagKey]) {
+                html += `<div><img src="${window.flagImageUrls[f.flagKey]}" style="width:22px; height:14px; border-radius:2px; display:block; margin:0 auto;"></div>`;
+            }
+        });
+    }
+    html += '</div>';
+    container.innerHTML += html;
+}, 500);
+
+// 5. گڵۆپ و دووری کامێرا بۆ سنایپەر و ستێرن
+window.isSniperActive = false;
+window.isSteeringActive = false;
+
+// (ئەم بەشەی gameLoop لابردم چونکە دەبێت لە ناو کۆدی سەرەکیدا بێت، ئەمەش بە شێوەیەکی تر کار دەکات)
+// لەبری ئەوە، گۆڕانی کامێرا لە کاتی چالاکبوونی سنایپەر ڕاستەوخۆ لە کۆدی سەرەکیدا ڕوودەدات.
+}; 
 </script>
 </body>
 </html>
