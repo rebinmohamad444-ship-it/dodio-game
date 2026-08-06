@@ -1042,6 +1042,32 @@ function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
     }
 
     ctx.restore();
+    // =============================================
+// دەستکاری لاشەی مار بۆ کێشانی وێنەی ئاڵا
+// =============================================
+const originalDrawBody = gameLoop; // بەڵام ئەمە ڕاستەوخۆ دەگۆڕین لە ناو gameLoop
+// لە ناو gameLoop، لە شوێنی کێشانی لاشەی مار، ئەم کۆدە دابنێ:
+// (ئەم بەشە جێگەی کۆدە کۆنەکەی لاشەی مار دەگرێتەوە)
+// لە شوێنی: for(let i = player.body.length - 1; i >= 2; i--) {
+if(player.alive) {
+    let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
+    for(let i = player.body.length - 1; i >= 2; i--) {
+        let p = player.body[i];
+        // کێشانی لاشە بە ڕەنگی سەرەکی
+        ctx.fillStyle = skinObj.colors[i % skinObj.colors.length];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2);
+        ctx.fill();
+
+        // کێشانی وێنەی ئاڵا لەسەر هەر پارچەیەک (ئەگەر ئاڵا هەبێت)
+        if(skinObj.flagKey && loadedFlagImages[skinObj.flagKey]) {
+            try {
+                // وێنەی ئاڵاکە بە قەبارەی گونجاو لەسەر لاشە
+                ctx.drawImage(loadedFlagImages[skinObj.flagKey], p.x - player.sizeRadius * 0.6, p.y - player.sizeRadius * 0.4, player.sizeRadius * 1.2, player.sizeRadius * 0.8);
+            } catch(e){}
+        }
+    }
+}
 }
     }
 </script>
