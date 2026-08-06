@@ -1,140 +1,123 @@
-// ===== Responsive Fullscreen & Landscape Support =====
+<link rel="manifest" href="/manifest.json">
 
-function resizeGame() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>dod.io</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        html, body {
+            width: 100vw; height: 100vh;
+            background-color: #0b0d12;
+            color: #fff; font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
 
-    if (canvas) {
-        canvas.width = w;
-        canvas.height = h;
-    }
+        /* HUD Top Left */
+        #radar-wrapper {
+            position: absolute; top: 8px; left: 8px;
+            display: flex; flex-direction: column; align-items: flex-start;
+            gap: 4px; z-index: 5;
+        }
+        #radar-canvas {
+            width: 65px; height: 65px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1.5px solid #2ecc71; border-radius: 50%;
+        }
+        #hud-stats {
+            background: rgba(0,0,0,0.75); padding: 3px 6px;
+            border-radius: 6px; border: 1px solid #2ecc71;
+            font-size: 9px; text-align: left; width: 65px;
+        }
 
-    if (typeof camera !== "undefined") {
-        camera.width = w;
-        camera.height = h;
-    }
-}
+        #emoji-reaction-box {
+            display: flex; flex-direction: row; gap: 4px; margin-top: 2px;
+        }
+        .reaction-btn {
+            width: 28px; height: 28px; background: rgba(0,0,0,0.8);
+            border: 1px solid #f1c40f; border-radius: 50%; font-size: 14px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,0.5);
+        }
 
-// کاتێک قەبارەی شاشە بگۆڕێت
-window.addEventListener("resize", resizeGame);
+        #left-bottom-container {
+            position: absolute; bottom: 12px; left: 12px;
+            display: flex; flex-direction: column; gap: 4px; z-index: 10;
+        }
+        #ingame-garage-btn {
+            background: rgba(243, 156, 18, 0.9); border: 1px solid #fff;
+            color: #fff; padding: 5px 8px; border-radius: 8px;
+            font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; width: 75px;
+        }
+        #exit-btn {
+            background: #e74c3c; color: #fff; font-weight: bold;
+            border: 1px solid #fff; padding: 5px 8px; border-radius: 8px;
+            font-size: 10px; cursor: pointer; text-align: center; width: 75px;
+        }
 
-// کاتێک مۆبایل بچێتە Landscape یان Portrait
-window.addEventListener("orientationchange", () => {
-    setTimeout(resizeGame, 200);
-});
+        #joystick-zone {
+            position: absolute; width: 70px; height: 70px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1.5px solid rgba(46, 204, 113, 0.8);
+            border-radius: 50%; z-index: 10; display: none;
+            pointer-events: none; transform: translate(-50%, -50%);
+        }
+        #joystick-knob {
+            position: absolute; top: 18px; left: 18px;
+            width: 34px; height: 34px;
+            background: #2ecc71; border-radius: 50%;
+            box-shadow: 0 0 6px #2ecc71; pointer-events: none;
+        }
 
-// یەکجار لە دەستپێکدا
-resizeGame();
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const radarCanvas = document.getElementById('radar-canvas');
-const radarCtx = radarCanvas.getContext('2d');
+        #btn-controls {
+            position: absolute; bottom: 20px; right: 20px;
+            display: none; grid-template-columns: repeat(3, 36px);
+            grid-template-rows: repeat(3, 36px); gap: 4px; z-index: 10;
+        }
+        .ctrl-btn {
+            background: rgba(46, 204, 113, 0.75); border: 1px solid #fff;
+            color: #fff; font-weight: bold; border-radius: 6px; font-size: 13px;
+        }
 
-const MAP_RADIUS = 18000;
-const MAP_CENTER = 20000;
-let cameraScale = 0.50;
-let gameRunning = false;
-let controlType = 'touch';
-let activeShopTab = 'free';
-let lastFrameTime = performance.now();
+        #red-zone-alert {
+            position: absolute; top: 15%; left: 50%; transform: translate(-50%, -50%);
+            color: #e74c3c; font-size: 13px; font-weight: bold;
+            background: rgba(0,0,0,0.85); padding: 4px 10px; border-radius: 6px;
+            border: 1.5px solid #e74c3c; display: none; z-index: 8;
+            animation: blinker 0.5s linear infinite;
+        }
 
-let coins = parseFloat(localStorage.getItem('dodio_coins') || '0');
-let highScore = parseInt(localStorage.getItem('dodio_highscore') || '0');
-let ownedSkins = JSON.parse(localStorage.getItem('dodio_owned_skins') || '["free1","free2","free3","free4","free5","free6","free7"]');
-let garageRentEndTime = parseInt(localStorage.getItem('dodio_garage_rent_end') || '0');
+        #garage-safe-status {
+            position: absolute; top: 12%; left: 50%; transform: translate(-50%, -50%);
+            color: #2ecc71; font-size: 13px; font-weight: bold;
+            background: rgba(0,0,0,0.92); padding: 8px 14px; border-radius: 10px;
+            border: 2px solid #2ecc71; display: none; z-index: 8; text-align: center;
+        }
+        #exit-garage-btn {
+            background: #e74c3c; color: #fff; font-size: 11px; font-weight: bold;
+            padding: 5px 12px; border-radius: 6px; border: 1px solid #fff;
+            cursor: pointer; margin-top: 5px; display: inline-block;
+        }
 
-let score = 0;
-let currentMultiplier = 1;
-let manualSpeedBoost = false;
-let isMagnetActive = false;
-let isSteeringActive = false;
-let activePowers = {};
-let deadRemains = [];
-let activeEmojiText = null;
-let emojiTimer = null;
+        #leaderboard-box {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,0.85); padding: 5px 8px;
+            border-radius: 6px; border: 1px solid #f1c40f;
+            font-size: 8px; z-index: 5; min-width: 110px; pointer-events: none;
+        }
 
-let headshotTextTimer = 0;
-
-let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 28 };
-let bots = [];
-let fruits = [];
-let coinItems = [];
-let powerups = [];
-
-/* Audio Synthesizer for Headshot sound */
-function playHeadshotSound() {
-    try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if(!AudioCtx) return;
-        const actx = new AudioCtx();
-        const osc = actx.createOscillator();
-        const gain = actx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, actx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(600, actx.currentTime + 0.15);
-        osc.frequency.exponentialRampToValueAtTime(80, actx.currentTime + 0.35);
-        gain.gain.setValueAtTime(0.8, actx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.35);
-        osc.connect(gain);
-        gain.connect(actx.destination);
-        osc.start();
-        osc.stop(actx.currentTime + 0.35);
-    } catch(e){}
-}
-
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-window.addEventListener('orientationchange', () => setTimeout(resize, 200));
-resize();
-
-updateMenuStats();
-
-function updateMenuStats() {
-    let displayCoins = Math.floor(coins);
-    document.getElementById('coinVal').innerText = `🪙 ${displayCoins}`;
-    document.getElementById('menuCoins').innerText = displayCoins;
-    document.getElementById('menuHighScore').innerText = highScore;
-    document.getElementById('shopCoinVal').innerText = `🪙 ${displayCoins}`;
-    renderMenuLeaderboard();
-}
-
-function renderMenuLeaderboard() {
-    let dummyRanks = [
-        { name: "🏆 Kurd_Pro_99", score: 45000 },
-        { name: "🥇 Apex_Viper", score: 32000 },
-        { name: "🥈 Shadow_Hunter", score: 24000 },
-        { name: "You (Best)", score: highScore }
-    ];
-    dummyRanks.sort((a,b) => b.score - a.score);
-    let html = "";
-    dummyRanks.forEach((r, idx) => {
-        html += `<div style="display:flex; justify-content:space-between; margin-bottom:1px;"><span>${idx+1}. ${r.name}</span><span style="color:#2ecc71;">${r.score}</span></div>`;
-    });
-    document.getElementById('menuLeaderboardContainer').innerHTML = html;
-}
-
-function triggerEmoji(char) {
-    activeEmojiText = char;
-    if(emojiTimer) clearTimeout(emojiTimer);
-    emojiTimer = setTimeout(() => { activeEmojiText = null; }, 3000);
-}
-
-function openShop() { 
-    updateMenuStats();
-    renderShop(); 
-    document.getElementById('shop-modal').style.display = 'flex'; 
-}
-function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
-function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }
-function closeExitModal() { document.getElementById('exit-modal').style.display = 'none'; }
-function confirmExit() { gameRunning = false; closeExitModal(); document.getElementById('menu-overlay').style.display = 'flex'; }
-
-function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
-function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
-
-function changeControlType() {
-    controlType = document.getElementById('controlTypeSelect').value;
-    document.getElementById('btn-controls').style.display = controlType =
+        #active-powers-container {
+            position: absolute; top: 175px; left: 8px;
+            display: flex; flex-direction: column; gap: 3px; z-index: 5;
+        }
+        .power-badge {
+ 
