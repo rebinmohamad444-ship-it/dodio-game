@@ -15,10 +15,7 @@ export class ShopManager {
         this.garageRentEnd = loadFromLocal('garage_rent_end', 0);
         this.highScore = loadFromLocal('highscore', 0);
         
-        // تەنها 8 ئاڵا لە لیستەکەدا
-        this.availableSkins = {
-            free: CONFIG.SKINS.free,
-            flags: CONFIG.SKINS.flags.slice(0, 8) // تەنها 8 ئاڵای یەکەم
+    flags: CONFIG.SKINS.flags
         };
     }
 
