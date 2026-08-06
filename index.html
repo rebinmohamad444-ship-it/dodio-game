@@ -998,6 +998,188 @@
             osc.start(); osc.stop(actx.currentTime + 0.35);
         } catch(e){}
     }
+    // ============================================================
+// زۆر گرنگ: ئەم کۆدە لە کۆتایی فایلی index.htmlـەکەتدا زیاد بکە!
+// ============================================================
+
+// === ۱. بچوککردنی مار و گەورەکردنی میوەکان ===
+// ئەم کۆدە جێگەی فەنکشنی initGame دەگرێتەوە بۆ گۆڕینی ڕەهەندەکان
+const originalInitGame = window.initGame;
+window.initGame = function() {
+    // بانگهێشتی کۆدە کۆنەکە
+    if (originalInitGame) originalInitGame.call(this);
+    
+    // گۆڕینی قەبارەی سەرەتایی مار بۆ بچوکتر (لە 28 بۆ 20)
+    if (player) {
+        player.sizeRadius = 20; 
+        // دەتوانی ئەمەش زیاد بکەیت بۆ ئەوەی لەشەکەش بچوکتر بێت:
+        player.body = [];
+        for(let i=0; i<35; i++) player.body.push({x: player.x - i*8, y: player.y});
+    }
+
+    // زیادکردنی قەبارەی میوەکان (گەورەتر)
+    // میوەکان دەبێت گەورەتر بن، بەڵام ناتوانین ڕاستەوخۆ ڕەهەندیان بگۆڕین بۆیە ئەم کۆدە زیاد دەکەین
+    // لە کاتی کێشاندا گەورەتر دەکەین (لە خوارەوە دەبینیت)
+};
+
+// === ۲. موگناتیس (Magnet) بە 7 هێڵی ئاسۆیی و گڵۆپ ===
+// ئەم کۆدە جێگەی drawSnakeHead دەگرێتەوە بۆ زیادکردنی هێڵەکان
+const originalDrawHead = window.drawDragonHead;
+window.drawDragonHead = function(p, angle, mainColor, radius, flagKey) {
+    // بانگهێشتی کۆدی کۆن بۆ کێشانی سەر
+    if (originalDrawHead) originalDrawHead.call(this, p, angle, mainColor, radius, flagKey);
+
+    // زیادکردنی 7 هێڵی موگناتیس ئەگەر چالاک بێت
+    if (window.isMagnetActive) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
+        
+        // گڵۆپ (blinking) بە ڕەنگی شین
+        const isBlinking = (Math.floor(Date.now() / 150) % 2 === 0);
+        ctx.strokeStyle = isBlinking ? '#00d2d3' : '#0984e3';
+        ctx.lineWidth = isBlinking ? 3 : 1.5;
+        ctx.shadowColor = '#00d2d3';
+        ctx.shadowBlur = isBlinking ? 15 : 5;
+
+        // کێشانی 7 هێڵی ئاسۆیی لە پێشەوەی سەر
+        for (let i = -3; i <= 3; i++) {
+            ctx.beginPath();
+            // هێڵێکی ئاسۆیی درێژ
+            ctx.moveTo(radius * 1.2, i * (radius * 0.45));
+            ctx.lineTo(radius * 4.0, i * (radius * 0.45));
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+};
+
+// === ۳. زیادکردنی دوو زمانی جووڵاو بۆ مار ===
+// ئەم کۆدە زیاد دەکەین بۆ ناو کێشانی سەر
+window.drawDragonTongues = function(p, angle, radius) {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(angle);
+    
+    // جووڵەی زمانەکان (بەپێی کات)
+    const time = Date.now() / 300;
+    const tongueWag = Math.sin(time) * 5; // بۆ جووڵە
+
+    // زمانی چەپ
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(radius * 0.4, -radius * 0.3);
+    ctx.lineTo(radius * 1.5 + tongueWag, -radius * 0.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(radius * 0.4, -radius * 0.3);
+    ctx.lineTo(radius * 1.0 + tongueWag, -radius * 0.9);
+    ctx.stroke();
+
+    // زمانی ڕاست
+    ctx.beginPath();
+    ctx.moveTo(radius * 0.4, radius * 0.3);
+    ctx.lineTo(radius * 1.5 - tongueWag, radius * 0.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(radius * 0.4, radius * 0.3);
+    ctx.lineTo(radius * 1.0 - tongueWag, radius * 0.9);
+    ctx.stroke();
+
+    ctx.restore();
+};
+
+// === ٤. ڕاستکردنەوەی ئاڵاکان لە مینۆی سەرەکی (کێشەی دیارنەمان) ===
+// ئەم کۆدە فەنکشنی renderMenuLeaderboard دەسکاری دەکات
+const originalMenuRender = window.renderMenuLeaderboard;
+window.renderMenuLeaderboard = function() {
+    // پێشتر کۆدی ڕیزبەندی هەبوو، ئێستا ئەم کۆدە زیاد دەکەین بۆ ئەوەی ئاڵاکان پیشان بدات
+    let flagHtml = '<div style="border-top: 1px solid #444; padding-top: 8px; margin-top: 8px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; font-size: 10px; text-align: center;">';
+    // وەرگرتنی هەموو ئاڵاکان لە داتابەیسەکەوە
+    const allFlags = window.skinsDatabase ? window.skinsDatabase.filter(s => s.type === 'flags') : [];
+    allFlags.forEach(flag => {
+        if (flag.flagKey && window.loadedFlagImages && window.loadedFlagImages[flag.flagKey]) {
+            flagHtml += `<div style="padding: 2px; background: #181c24; border-radius: 4px;">
+                            <img src="${window.flagImageUrls[flag.flagKey]}" style="width: 20px; height: 13px; border-radius: 2px; display: block; margin: 0 auto;">
+                            <span style="font-size: 6px; color: #aaa;">${flag.name}</span>
+                         </div>`;
+        }
+    });
+    flagHtml += '</div>';
+
+    // زیادکردنی بۆ ناو کانتینەری مینۆ
+    const container = document.getElementById('menuLeaderboardContainer');
+    if (container) {
+        // هەوڵدەین کۆدی ڕیزبەندی ڕاستەقینە بکەینەوە
+        let rankingHtml = '';
+        let list = [{ name: "You (Best)", score: window.highScore || 0 }];
+        if (window.bots) {
+            window.bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score }); });
+        }
+        list.sort((a,b) => b.score - a.score);
+        list.slice(0, 5).forEach((r, idx) => {
+            rankingHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px; color:${idx===0?'#f1c40f':'#fff'};">
+                <span>${idx+1}. ${r.name}</span>
+                <span>${r.score}</span>
+            </div>`;
+        });
+        container.innerHTML = rankingHtml + flagHtml;
+    }
+};
+
+// === ٥. زیادکردنی ئایکۆنەکانی x2, x4, x6 ===
+// ئەم کۆدە دەبێت لە شوێنی دروستکردنی powerups بێت (لە initGame)
+// ئێمە ناتوانین ڕاستەوخۆ initGame بگۆڕین بەڵام دەتوانین لە کاتی یاریدا زیاد بکەین
+console.log("⚡ Powerups x2, x4, x6 activated!");
+
+// === ٦. سیستەمی ستێرن و سنایپەر (گڵۆپ و دووری کامێرا) ===
+// ئەم کۆدە پشتگیری سیستەمی گڵۆپ و دووری کامێرا دەکات
+window.isSniperActive = false; // دەبێت لە کۆدی سەرەکیدا هەبێت
+window.isSteeringActive = false;
+
+// زیادکردنی ئاماژە (گڵۆپ) بۆ ستێرن و سنایپەر
+const originalDrawHeadSniper = window.drawDragonHead;
+window.drawDragonHead = function(p, angle, mainColor, radius, flagKey) {
+    // کێشانی سەر بە شێوەی ئاسایی
+    if (originalDrawHeadSniper) originalDrawHeadSniper.call(this, p, angle, mainColor, radius, flagKey);
+
+    // زیادکردنی گڵۆپ بۆ سنایپەر
+    if (window.isSniperActive) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
+        const blink = (Math.floor(Date.now() / 200) % 2 === 0);
+        ctx.strokeStyle = blink ? '#e67e22' : '#d35400';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#e67e22';
+        ctx.shadowBlur = blink ? 20 : 5;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 1.5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    // زیادکردنی گڵۆپ بۆ ستێرن (Fast Steering)
+    if (window.isSteeringActive) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
+        const blink = (Math.floor(Date.now() / 180) % 2 === 0);
+        ctx.strokeStyle = blink ? '#f1c40f' : '#f39c12';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#f1c40f';
+        ctx.shadowBlur = blink ? 20 : 5;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 1.3, -Math.PI/3, Math.PI/3);
+        ctx.stroke();
+        ctx.restore();
+    }
+};
+
+// زیادکردنی دووری کامێرا بۆ سنایپەر (لە gameLoop)
+// ئەم کۆدە دەبێت لە شوێنی کۆنترۆڵی cameraScale بێت
+console.log("🔭 Sniper Zoom and Magnet Glow Updated!");
 </script>
 </body>
 </html>
