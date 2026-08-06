@@ -999,6 +999,50 @@
 
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
+        // =============================================
+// دەستکاری سەری مار (ئەمە دەبێت لە کۆتایی هەموو کۆدەکەدا بێت!)
+// =============================================
+function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(angle);
+
+    // سەری مار بە شێوەی خڕ و جوان
+    ctx.shadowColor = mainColor;
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = mainColor;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 1.1, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // کێشانی ڕووخسار (چاو و دەم)
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(radius * 0.3, -radius * 0.4, radius * 0.25, radius * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(radius * 0.3, radius * 0.4, radius * 0.25, radius * 0.15, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // بڕبڕەی چاو
+    ctx.fillStyle = '#000000';
+    ctx.beginPath();
+    ctx.arc(radius * 0.35, -radius * 0.4, radius * 0.08, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(radius * 0.35, radius * 0.4, radius * 0.08, 0, Math.PI * 2);
+    ctx.fill();
+
+    // ئەگەر ئاڵا هەبێت، بیکێشە
+    if (flagKey && loadedFlagImages[flagKey]) {
+        try {
+            ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.5, -radius * 0.5, radius * 1.2, radius * 0.6);
+        } catch(e){}
+    }
+
+    ctx.restore();
+}
     }
 </script>
 </body>
