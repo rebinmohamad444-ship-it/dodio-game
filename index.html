@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>dod.io - Full Final</title>
+    <title>dod.io</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; touch-action: none; }
         html, body { width: 100vw; height: 100vh; background-color: #0b0d12; color: #fff; font-family: Arial, sans-serif; overflow: hidden; }
@@ -28,12 +28,9 @@
         #active-powers-container { position: absolute; top: 175px; left: 8px; display: flex; flex-direction: column; gap: 3px; z-index: 5; }
         .power-badge { background: rgba(241, 196, 15, 0.95); color: #111; padding: 3px 6px; border-radius: 6px; font-weight: bold; font-size: 9px; box-shadow: 0 0 4px #f1c40f; width: fit-content; }
         #boost-btn { position: absolute; bottom: 20px; right: 20px; width: 60px; height: 60px; background: rgba(231, 76, 60, 0.95); border: 2px solid #fff; border-radius: 50%; color: #fff; font-weight: bold; font-size: 11px; z-index: 10; display: none; justify-content: center; align-items: center; box-shadow: 0 0 10px #e74c3c; cursor: pointer; }
-
-        #menu-overlay, #shop-modal, #exit-modal, #settings-modal {
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(10, 12, 16, 0.96); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20;
-        }
+        #menu-overlay, #shop-modal, #exit-modal, #settings-modal { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 12, 16, 0.96); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 20; }
         #shop-modal, #exit-modal, #settings-modal { display: none; z-index: 30; }
+
         h1 { font-size: 32px; color: #2ecc71; margin-bottom: 2px; }
         .btn-group { display: flex; flex-direction: column; gap: 5px; width: 85%; max-width: 270px; }
         button, input, select { padding: 7px; font-size: 11px; border-radius: 8px; border: none; outline: none; }
@@ -42,8 +39,6 @@
         button.guest-btn { background: #282c34; color: #fff; border: 1px solid #444; }
         button.shop-btn { background: #f39c12; color: #fff; }
         button.settings-btn { background: #e67e22; color: #fff; }
-        .lang-btn { background: #333; color: #fff; padding: 2px 6px; font-size: 9px; border-radius: 4px; border: 1px solid #555; cursor: pointer; margin: 2px; }
-        .lang-btn.active { background: #2ecc71; color: #111; border-color: #2ecc71; }
 
         .shop-tabs { display: flex; gap: 4px; width: 90%; max-width: 320px; margin-bottom: 6px; }
         .shop-tab-btn { flex: 1; padding: 5px; background: #181c24; color: #888; border: 1px solid #333; border-radius: 6px; font-weight: bold; font-size: 10px; cursor: pointer; }
@@ -99,20 +94,10 @@
 
 <!-- Main Menu -->
 <div id="menu-overlay">
-    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #2ecc71, #f1c40f); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 15px #2ecc71; margin-bottom: 6px; border: 2px solid #fff;">
-        <span style="font-size: 42px;">🐍</span>
-    </div>
     <h1>dod.io</h1>
+    <div style="font-size:24px; margin-bottom:2px;">🐍</div>
     <div style="font-size:10px; color:#f1c40f; margin-bottom:6px;">
         High Score: <span id="menuHighScore">0</span> | Coins: <span id="menuCoins">1500</span> 🪙
-    </div>
-
-    <!-- Language Selector -->
-    <div style="margin-bottom: 10px;">
-        <span id="langLabel" style="font-size: 10px; color: #aaa;">Language:</span>
-        <button class="lang-btn active" id="langEn" onclick="setLanguage('en')">EN</button>
-        <button class="lang-btn" id="langKu" onclick="setLanguage('ku')">کوردی</button>
-        <button class="lang-btn" id="langAr" onclick="setLanguage('ar')">العربية</button>
     </div>
 
     <div style="background:rgba(0,0,0,0.7); padding:6px 12px; border-radius:8px; border:1px solid #f1c40f; width:85%; max-width:280px; margin-bottom:8px; font-size:10px;">
@@ -122,14 +107,15 @@
 
     <div class="btn-group">
         <input type="text" id="playerName" placeholder="Enter Player Name" style="border:1px solid #2ecc71; background:#181c24; color:#fff; text-align:center;">
-        <button id="btnPlay" onclick="startGame()">Play Game 🎮</button>
-        <button class="shop-btn" id="btnShop" onclick="openShop()">Skins & Rent Garage 🛒</button>
-        <button class="settings-btn" id="btnSettings" onclick="openSettings()">Controls Settings ⚙️</button>
-        <button class="fb-btn" id="btnFb" onclick="loginFacebook()">Login with Facebook 📘</button>
-        <button class="guest-btn" id="btnGuest" onclick="loginGuest()">Play as Guest / Email 👤</button>
+        <button onclick="startGame()">Play Game 🎮</button>
+        <button class="shop-btn" onclick="openShop()">Skins & Rent Garage 🛒</button>
+        <button class="settings-btn" onclick="openSettings()">Controls Settings ⚙️</button>
+        <button class="fb-btn" onclick="loginFacebook()">Login with Facebook 📘</button>
+        <button class="guest-btn" onclick="loginGuest()">Play as Guest / Email 👤</button>
     </div>
 </div>
 
+<!-- Controls Settings Modal -->
 <div id="settings-modal">
     <h3 style="color:#e67e22; margin-bottom:10px; font-size:15px;">Control Settings ⚙️</h3>
     <div class="btn-group">
@@ -143,6 +129,7 @@
     </div>
 </div>
 
+<!-- Exit Confirm Modal -->
 <div id="exit-modal">
     <h3 style="color:#e74c3c; margin-bottom:10px; font-size:13px;">Exit Game?</h3>
     <div class="btn-group">
@@ -151,6 +138,7 @@
     </div>
 </div>
 
+<!-- Shop Modal -->
 <div id="shop-modal">
     <h3 style="color:#f39c12; margin-bottom:4px; font-size:15px;">Skins & Rent Garage 🛒</h3>
     <div style="font-size:10px; margin-bottom:5px;">Your Coins: <span id="shopCoinVal" style="color:#f1c40f; font-weight:bold;">🪙 1500</span></div>
@@ -168,10 +156,6 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
-    // ============================================================
-    // کۆدی تەواوی گەیم (دەستپێکی گەیم و هەموو تایبەتمەندییەکان)
-    // ============================================================
-
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const radarCanvas = document.getElementById('radar-canvas');
@@ -186,7 +170,6 @@
     let activeShopTab = 'free';
     let lastFrameTime = performance.now();
 
-    // ------- Stats & Save -------
     let savedCoins = parseFloat(localStorage.getItem('dodio_coins') || '1500');
     let coins = savedCoins < 1500 ? 1500 : savedCoins;
     localStorage.setItem('dodio_coins', coins.toString());
@@ -208,13 +191,12 @@
     let headshotTextTimer = 0;
     let isInsideGarageSafe = false;
 
-    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 20 };
+    let player = { x: MAP_CENTER, y: MAP_CENTER, angle: 0, targetAngle: 0, skin: 'free1', body: [], alive: true, sizeRadius: 28 };
     let bots = [];
     let fruits = [];
     let coinItems = [];
     let powerups = [];
 
-    // ------- Flags & Skins -------
     const flagImageUrls = {
         'kurdish': 'https://flagcdn.com/w80/krd.png',
         'spain': 'https://flagcdn.com/w80/es.png',
@@ -230,6 +212,7 @@
         'germany': 'https://flagcdn.com/w80/de.png',
         'france': 'https://flagcdn.com/w80/fr.png'
     };
+
     const loadedFlagImages = {};
     Object.keys(flagImageUrls).forEach(id => {
         const img = new Image();
@@ -238,13 +221,14 @@
     });
 
     const skinsDatabase = [
-        { id: 'free1', name: '🟢 Lime', type: 'free', colors: ['#2ecc71', '#27ae60'] },
-        { id: 'free2', name: '🔵 Blue', type: 'free', colors: ['#3498db', '#2980b9'] },
-        { id: 'free3', name: '🔴 Red', type: 'free', colors: ['#e74c3c', '#c0392b'] },
-        { id: 'free4', name: '🟡 Yellow', type: 'free', colors: ['#f1c40f', '#f39c12'] },
-        { id: 'free5', name: '🟣 Purple', type: 'free', colors: ['#9b59b6', '#8e44ad'] },
-        { id: 'free6', name: '🟠 Orange', type: 'free', colors: ['#e67e22', '#d35400'] },
-        { id: 'free7', name: '⚪ White', type: 'free', colors: ['#ffffff', '#bdc3c7'] },
+        { id: 'free1', name: '🟢 Lime Green', type: 'free', colors: ['#2ecc71', '#27ae60'] },
+        { id: 'free2', name: '🔵 Sky Blue', type: 'free', colors: ['#3498db', '#2980b9'] },
+        { id: 'free3', name: '🔴 Ruby Red', type: 'free', colors: ['#e74c3c', '#c0392b'] },
+        { id: 'free4', name: '🟡 Bright Yellow', type: 'free', colors: ['#f1c40f', '#f39c12'] },
+        { id: 'free5', name: '🟣 Royal Purple', type: 'free', colors: ['#9b59b6', '#8e44ad'] },
+        { id: 'free6', name: '🟠 Sunset Orange', type: 'free', colors: ['#e67e22', '#d35400'] },
+        { id: 'free7', name: '⚪ Pure White', type: 'free', colors: ['#ffffff', '#bdc3c7'] },
+        
         { id: 'kurdish', name: 'Kurdistan', type: 'flags', price: 100, flagKey: 'kurdish', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
         { id: 'spain', name: 'Spain', type: 'flags', price: 100, flagKey: 'spain', colors: ['#aa152b', '#f1bf00', '#aa152b'] },
         { id: 'brazil', name: 'Brazil', type: 'flags', price: 100, flagKey: 'brazil', colors: ['#009c3b', '#ffdf00', '#002776'] },
@@ -252,7 +236,7 @@
         { id: 'turkey', name: 'Turkey', type: 'flags', price: 100, flagKey: 'turkey', colors: ['#e74c3c', '#ffffff'] },
         { id: 'iran', name: 'Iran', type: 'flags', price: 100, flagKey: 'iran', colors: ['#239f40', '#ffffff', '#da0000'] },
         { id: 'palestine', name: 'Palestine', type: 'flags', price: 100, flagKey: 'palestine', colors: ['#000000', '#ffffff', '#007a3d', '#e4312b'] },
-        { id: 'saudi', name: 'Saudi', type: 'flags', price: 100, flagKey: 'saudi', colors: ['#006c35', '#ffffff'] },
+        { id: 'saudi', name: 'Saudi Arabia', type: 'flags', price: 100, flagKey: 'saudi', colors: ['#006c35', '#ffffff'] },
         { id: 'uae', name: 'UAE', type: 'flags', price: 100, flagKey: 'uae', colors: ['#ff0000', '#00732f', '#ffffff', '#000000'] },
         { id: 'usa', name: 'USA', type: 'flags', price: 100, flagKey: 'usa', colors: ['#b22234', '#ffffff', '#3c3b6e'] },
         { id: 'uk', name: 'UK', type: 'flags', price: 100, flagKey: 'uk', colors: ['#00247d', '#ffffff', '#cf142b'] },
@@ -268,38 +252,38 @@
     ];
 
     const garages = [
-        { x: MAP_CENTER - MAP_RADIUS + 200, y: MAP_CENTER - 200, size: 500 },
-        { x: MAP_CENTER + MAP_RADIUS - 200, y: MAP_CENTER - 200, size: 500 },
-        { x: MAP_CENTER - 200, y: MAP_CENTER - MAP_RADIUS + 200, size: 500 },
-        { x: MAP_CENTER - 200, y: MAP_CENTER + MAP_RADIUS - 200, size: 500 }
+        { x: MAP_CENTER - 10000, y: MAP_CENTER - 10000, size: 480 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER - 10000, size: 480 },
+        { x: MAP_CENTER - 10000, y: MAP_CENTER + 10000, size: 480 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER + 10000, size: 480 }
     ];
 
-    // ------- Language -------
-    const LANG = {
-        en: { play: "Play Game 🎮", shop: "Skins & Rent Garage 🛒", settings: "Controls Settings ⚙️", fb: "Login with Facebook 📘", guest: "Play as Guest / Email 👤", namePlaceholder: "Enter Player Name" },
-        ku: { play: "یاری بکە 🎮", shop: "سکین و گەراج 🛒", settings: "ڕێکخستنەکان ⚙️", fb: "بە فەیسبوک بچە ژوورەوە 📘", guest: "وەک میوان یان ئیمەیڵ 👤", namePlaceholder: "ناوی یاریزان بنووسە" },
-        ar: { play: "ابدأ اللعبة 🎮", shop: "الجلود والمرآب 🛒", settings: "إعدادات التحكم ⚙️", fb: "تسجيل عبر فيسبوك 📘", guest: "كلاعب ضيف أو بريد 👤", namePlaceholder: "أدخل اسم اللاعب" }
-    };
-    let currentLang = 'en';
-
-    function setLanguage(lang) {
-        currentLang = lang;
-        const t = LANG[lang];
-        document.getElementById('btnPlay').innerText = t.play;
-        document.getElementById('btnShop').innerText = t.shop;
-        document.getElementById('btnSettings').innerText = t.settings;
-        document.getElementById('btnFb').innerText = t.fb;
-        document.getElementById('btnGuest').innerText = t.guest;
-        document.getElementById('playerName').placeholder = t.namePlaceholder;
-        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('lang' + lang.charAt(0).toUpperCase() + lang.slice(1)).classList.add('active');
+    function playHeadshotSound() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if(!AudioCtx) return;
+            const actx = new AudioCtx();
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, actx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, actx.currentTime + 0.15);
+            osc.frequency.exponentialRampToValueAtTime(80, actx.currentTime + 0.35);
+            gain.gain.setValueAtTime(0.8, actx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.35);
+            osc.connect(gain); gain.connect(actx.destination);
+            osc.start(); osc.stop(actx.currentTime + 0.35);
+        } catch(e){}
     }
 
-    // ------- Core Functions -------
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
     window.addEventListener('resize', resize);
     window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
+
     updateMenuStats();
 
     function updateMenuStats() {
@@ -312,30 +296,18 @@
     }
 
     function renderMenuLeaderboard() {
-        let list = [{ name: "You (Best)", score: highScore }];
-        bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score }); });
-        list.sort((a,b) => b.score - a.score);
+        let dummyRanks = [
+            { name: "🏆 Kurd_Pro_99", score: 45000 },
+            { name: "🥇 Apex_Viper", score: 32000 },
+            { name: "🥈 Shadow_Hunter", score: 24000 },
+            { name: "You (Best)", score: highScore }
+        ];
+        dummyRanks.sort((a,b) => b.score - a.score);
         let html = "";
-        list.slice(0, 5).forEach((r, idx) => {
-            let isYou = r.name.includes("Best");
-            html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px; color:${isYou ? '#2ecc71' : '#fff'};">
-                <span>${idx+1}. ${r.name}</span>
-                <span>${r.score}</span>
-            </div>`;
+        dummyRanks.forEach((r, idx) => {
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>${idx+1}. ${r.name}</span><span style="color:#2ecc71;">${r.score}</span></div>`;
         });
         document.getElementById('menuLeaderboardContainer').innerHTML = html;
-        
-        // زیادکردنی ئاڵاکان بۆ مینۆ
-        let flagHtml = '<div style="border-top:1px solid #444; padding-top:8px; margin-top:8px; display:grid; grid-template-columns: repeat(5, 1fr); gap:4px; font-size:8px; text-align:center;">';
-        skinsDatabase.filter(s => s.type === 'flags').forEach(f => {
-            if(f.flagKey && loadedFlagImages[f.flagKey]) {
-                flagHtml += `<div style="background:#111; padding:2px; border-radius:4px;">
-                    <img src="${flagImageUrls[f.flagKey]}" style="width:22px; height:14px; border-radius:2px;">
-                </div>`;
-            }
-        });
-        flagHtml += '</div>';
-        document.getElementById('menuLeaderboardContainer').innerHTML += flagHtml;
     }
 
     function triggerEmoji(char) {
@@ -344,7 +316,11 @@
         emojiTimer = setTimeout(() => { activeEmojiText = null; }, 3000);
     }
 
-    function openShop() { updateMenuStats(); renderShop(); document.getElementById('shop-modal').style.display = 'flex'; }
+    function openShop() { 
+        updateMenuStats();
+        renderShop(); 
+        document.getElementById('shop-modal').style.display = 'flex'; 
+    }
     function closeShop() { document.getElementById('shop-modal').style.display = 'none'; }
     function openExitModal() { document.getElementById('exit-modal').style.display = 'flex'; }
     function closeExitModal() { document.getElementById('exit-modal').style.display = 'none'; }
@@ -352,6 +328,7 @@
 
     function openSettings() { document.getElementById('settings-modal').style.display = 'flex'; }
     function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+
     function changeControlType() {
         controlType = document.getElementById('controlTypeSelect').value;
         document.getElementById('btn-controls').style.display = controlType === 'buttons' ? 'grid' : 'none';
@@ -369,12 +346,15 @@
     function renderShop() {
         let container = document.getElementById('shopItemsContainer');
         container.innerHTML = "";
+
         if(activeShopTab === 'garage') {
             let isRented = Date.now() < garageRentEndTime;
             let leftMins = isRented ? Math.ceil((garageRentEndTime - Date.now()) / 60000) : 0;
+
             container.innerHTML += `<div style="text-align:center; margin-bottom:8px; font-size:11px; color:#f1c40f;">
                 ${isRented ? `✅ Garage Active! Remaining: ${leftMins} Mins` : `❌ Garage Expired. Rent time below:`}
             </div>`;
+
             garageRentOptions.forEach(opt => {
                 container.innerHTML += `
                     <div class="shop-item">
@@ -385,15 +365,24 @@
             });
             return;
         }
+
         let list = skinsDatabase.filter(s => s.type === activeShopTab);
+
         list.forEach(s => {
             let isOwned = ownedSkins.includes(s.id);
             let isSelected = (player.skin === s.id);
             let btnHtml = "";
-            if(isSelected) btnHtml = `<button style="background:#27ae60; padding:4px 8px;">Equipped</button>`;
-            else if(isOwned) btnHtml = `<button style="background:#2980b9; padding:4px 8px;" onclick="selectSkin('${s.id}')">Equip</button>`;
-            else btnHtml = `<button style="background:#f39c12; color:#fff; padding:4px 8px;" onclick="buySkin('${s.id}', ${s.price})">Buy 🪙${s.price}</button>`;
+
+            if(isSelected) {
+                btnHtml = `<button style="background:#27ae60; padding:4px 8px;">Equipped</button>`;
+            } else if(isOwned) {
+                btnHtml = `<button style="background:#2980b9; padding:4px 8px;" onclick="selectSkin('${s.id}')">Equip</button>`;
+            } else {
+                btnHtml = `<button style="background:#f39c12; color:#fff; padding:4px 8px;" onclick="buySkin('${s.id}', ${s.price})">Buy 🪙${s.price}</button>`;
+            }
+
             let flagImgTag = s.flagKey ? `<img src="${flagImageUrls[s.flagKey]}" class="flag-img"/>` : '';
+
             container.innerHTML += `
                 <div class="shop-item">
                     <span>${flagImgTag} ${s.name}</span>
@@ -409,19 +398,30 @@
             let currentEnd = Date.now() < garageRentEndTime ? garageRentEndTime : Date.now();
             garageRentEndTime = currentEnd + (minutes * 60 * 1000);
             localStorage.setItem('dodio_garage_rent_end', garageRentEndTime.toString());
-            saveStats(); renderShop();
+            saveStats();
+            renderShop();
             alert(`🎉 Garage rented for ${minutes} minutes!`);
-        } else alert(`❌ Not enough coins! You need 🪙${price}.`);
+        } else {
+            alert(`❌ Not enough coins! You need 🪙${price}.`);
+        }
     }
 
-    function selectSkin(id) { player.skin = id; renderShop(); }
+    function selectSkin(id) { 
+        player.skin = id; 
+        renderShop(); 
+    }
+
     function buySkin(id, price) {
         if(coins >= price) {
-            coins -= price; ownedSkins.push(id);
+            coins -= price;
+            ownedSkins.push(id);
             localStorage.setItem('dodio_owned_skins', JSON.stringify(ownedSkins));
-            saveStats(); selectSkin(id);
+            saveStats();
+            selectSkin(id);
             alert("🎉 Skin unlocked successfully!");
-        } else alert(`❌ Not enough coins! You need ${price} coins.`);
+        } else {
+            alert(`❌ Not enough coins! You need ${price} coins.`);
+        }
     }
 
     function startGame() {
@@ -439,7 +439,10 @@
     function getRandomMapPos() {
         let angle = Math.random() * Math.PI * 2;
         let r = Math.sqrt(Math.random()) * (MAP_RADIUS - 400);
-        return { x: MAP_CENTER + Math.cos(angle) * r, y: MAP_CENTER + Math.sin(angle) * r };
+        return {
+            x: MAP_CENTER + Math.cos(angle) * r,
+            y: MAP_CENTER + Math.sin(angle) * r
+        };
     }
 
     function exitGarageManually() {
@@ -454,27 +457,39 @@
         document.getElementById('boost-btn').style.display = 'none';
         
         player.alive = true; player.x = MAP_CENTER; player.y = MAP_CENTER;
-        player.sizeRadius = 20; // مار بچوکتر
-        player.body = [];
-        for(let i=0; i<35; i++) player.body.push({x: player.x - i*8, y: player.y});
+        player.sizeRadius = 28; player.body = [];
+        for(let i=0; i<45; i++) player.body.push({x: player.x - i*10, y: player.y});
 
-        bots = []; for(let i=0; i<12; i++) spawnBot(i);
+        bots = [];
+        for(let i=0; i<12; i++) spawnBot(i);
+
         fruits = [];
-        const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
+        const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓', '🍊', '🍇', '🍑', '🍍', '🥝'];
         for(let i=0; i<8000; i++) {
             let pos = getRandomMapPos();
             fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
         }
-        coinItems = []; for(let i=0; i<800; i++) {
+
+        coinItems = [];
+        for(let i=0; i<1000; i++) {
             let pos = getRandomMapPos();
             coinItems.push({ x: pos.x, y: pos.y });
         }
+
         powerups = [];
         const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', 'x2', 'x4', 'x6'];
-        for(let i=0; i<600; i++) {
+        for(let i=0; i<800; i++) {
             let pos = getRandomMapPos();
             powerups.push({ x: pos.x, y: pos.y, icon: pTypes[Math.floor(Math.random()*pTypes.length)] });
         }
+        
+        if(window.foodSpawnInterval) clearInterval(window.foodSpawnInterval);
+        window.foodSpawnInterval = setInterval(() => {
+            for(let i=0; i<8; i++) {
+                let pos = getRandomMapPos();
+                fruits.push({ x: pos.x, y: pos.y, type: fTypes[Math.floor(Math.random()*fTypes.length)], eatenTime: null });
+            }
+        }, 2000);
     }
 
     function spawnBot(id) {
@@ -498,6 +513,7 @@
         if(!gameRunning || !player.alive || controlType !== 'joystick') return;
         const touch = e.touches[0];
         if(touch.clientX < 110 && touch.clientY < 110) return;
+
         joyCenterX = touch.clientX; joyCenterY = touch.clientY;
         joyZone.style.left = `${joyCenterX}px`; joyZone.style.top = `${joyCenterY}px`;
         joyZone.style.display = 'block'; joyActive = true;
@@ -536,6 +552,7 @@
 
     function addPowerupTimer(key, name, icon, durationMs, onExpire) {
         let expireTime = Date.now() + durationMs;
+        
         if(activePowers[key]) {
             activePowers[key].expireTime = expireTime;
             clearTimeout(activePowers[key].timerId);
@@ -548,6 +565,7 @@
                 delete activePowers[key];
                 if(onExpire) onExpire();
             }, durationMs);
+
             activePowers[key] = { name, icon, expireTime, timerId };
         }
     }
@@ -563,131 +581,235 @@
         container.innerHTML = html;
     }
 
-    // ===========================================================================================
-    // 🐉 کێشانی سەری ئەژدیها (Dragon Head) & Flag Body
-    // ===========================================================================================
+    // ---- سەری ماری کوبرای سەرەکی لەسەر ستایلی وێنە نوێیەکە ----
+    function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
 
-    function drawDragonHead(p, angle, mainColor, radius, flagKey) {
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
-        ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = 20;
-        ctx.fillStyle = mainColor; ctx.beginPath();
-        ctx.arc(0, 0, radius * 1.3, 0, Math.PI * 2); ctx.fill();
+        // 1. گەشە و سێبەری سەر لەگەڵ تریفەی ئاڵتونی
+        ctx.shadowColor = '#d4af37';
+        ctx.shadowBlur = 12;
 
-        ctx.fillStyle = '#2c3e50';
+        // 2. بەشی پشتەوەی سەری کوبرا (کەپشۆن/تاجی تەنیشتەکان)
+        ctx.fillStyle = '#b8860b'; // ئاڵتونی تاریک
         ctx.beginPath();
-        ctx.moveTo(radius * 1.5, 0);
-        ctx.quadraticCurveTo(radius * 1.8, -radius * 0.8, radius * 0.6, -radius * 0.9);
-        ctx.quadraticCurveTo(radius * 0.2, -radius * 1.2, 0, -radius * 1.2);
-        ctx.quadraticCurveTo(-radius * 0.2, -radius * 1.2, -radius * 0.6, -radius * 0.9);
-        ctx.quadraticCurveTo(-radius * 1.8, -radius * 0.8, -radius * 1.5, 0);
-        ctx.quadraticCurveTo(-radius * 1.8, radius * 0.8, -radius * 0.6, radius * 0.9);
-        ctx.quadraticCurveTo(-radius * 0.2, radius * 1.2, 0, radius * 1.2);
-        ctx.quadraticCurveTo(radius * 0.2, radius * 1.2, radius * 0.6, radius * 0.9);
-        ctx.quadraticCurveTo(radius * 1.8, radius * 0.8, radius * 1.5, 0);
-        ctx.closePath(); ctx.fill(); ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.moveTo(radius * 1.8, 0);
+        ctx.quadraticCurveTo(radius * 0.8, -radius * 1.9, -radius * 1.2, -radius * 1.6);
+        ctx.quadraticCurveTo(-radius * 0.8, 0, -radius * 1.2, radius * 1.6);
+        ctx.quadraticCurveTo(radius * 0.8, radius * 1.9, radius * 1.8, 0);
+        ctx.closePath();
+        ctx.fill();
+
+        // 3. دروستکردنی شێوەی سەرەکی زێڕین و سووری سەر (Pentagon Cobra Shape)
+        let headGrad = ctx.createLinearGradient(-radius, 0, radius * 1.8, 0);
+        headGrad.addColorStop(0, '#8b0000'); // سووری تێۆخ
+        headGrad.addColorStop(0.5, mainColor || '#e74c3c');
+        headGrad.addColorStop(1, '#ffd700'); // ئاڵتونی برەق
+
+        ctx.fillStyle = headGrad;
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3.5;
+
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.8, 0);            // لوت
+        ctx.lineTo(radius * 0.7, -radius * 1.35); // چەپی لوت
+        ctx.lineTo(-radius * 0.9, -radius * 1.1); // شانی چەپ
+        ctx.lineTo(-radius * 0.6, 0);            // ناوەڕاستی پشتەوە
+        ctx.lineTo(-radius * 0.9, radius * 1.1);  // شانی ڕاست
+        ctx.lineTo(radius * 0.7, radius * 1.35);  // ڕاستی لوت
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowBlur = 0; // لادانی سێبەرەکە بۆ وردەکاریەکان
+
+        // 4. نەقشی ئاڵتونی و نەقشکاری ناو سەری کوبراکە
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)';
+        ctx.lineWidth = 2.5;
+        
+        // نەقشی چەپ
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, -radius * 0.2);
+        ctx.quadraticCurveTo(radius * 0.3, -radius * 0.9, -radius * 0.4, -radius * 0.6);
+        ctx.stroke();
+
+        // نەقشی ڕاست
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, radius * 0.2);
+        ctx.quadraticCurveTo(radius * 0.3, radius * 0.9, -radius * 0.4, radius * 0.6);
+        ctx.stroke();
+
+        // کریستاڵی ناوەڕاستی سەر
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.3, 0);
+        ctx.lineTo(radius * 0.6, -radius * 0.25);
+        ctx.lineTo(radius * 0.9, 0);
+        ctx.lineTo(radius * 0.6, radius * 0.25);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // 5. چاوە سوورە گەشەکان (Red Glowing Eyes)
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#ff1100';
+
+        // چاوی چەپ
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.85, -radius * 0.45, radius * 0.35, radius * 0.18, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // چاوی ڕاست
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.85, radius * 0.45, radius * 0.35, radius * 0.18, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 6. بڕبڕەی ڕەشی ناو چاوەکان (pupils)
         ctx.shadowBlur = 0;
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.9, -radius * 0.45, radius * 0.1, radius * 0.16, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.9, radius * 0.45, radius * 0.1, radius * 0.16, 0, 0, Math.PI * 2);
+        ctx.fill();
 
-        // چاوەکان
+        // 7. ددانەکانی کوبراکە (Fangs)
         ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.ellipse(radius * 0.6, -radius * 0.5, radius * 0.3, radius * 0.2, 0.1, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#e74c3c';
-        ctx.beginPath(); ctx.arc(radius * 0.8, -radius * 0.5, radius * 0.15, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#000';
-        ctx.beginPath(); ctx.arc(radius * 0.85, -radius * 0.55, radius * 0.06, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.7, -radius * 0.2);
+        ctx.lineTo(radius * 2.0, -radius * 0.15);
+        ctx.lineTo(radius * 1.6, 0);
+        ctx.fill();
 
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.ellipse(radius * 0.6, radius * 0.5, radius * 0.3, radius * 0.2, -0.1, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#e74c3c';
-        ctx.beginPath(); ctx.arc(radius * 0.8, radius * 0.5, radius * 0.15, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#000';
-        ctx.beginPath(); ctx.arc(radius * 0.85, radius * 0.55, radius * 0.06, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.7, radius * 0.2);
+        ctx.lineTo(radius * 2.0, radius * 0.15);
+        ctx.lineTo(radius * 1.6, 0);
+        ctx.fill();
 
-        // ددان
-        ctx.fillStyle = '#ecf0f1';
-        for(let i = -1; i <= 1; i+=2) {
-            for(let j = 1; j <= 2; j++) {
+        // ئاڵا ئەگەر هەبێت
+        if(flagKey && loadedFlagImages[flagKey]) {
+            try {
+                ctx.globalAlpha = 0.5;
+                ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.4, -radius * 0.6, radius * 1.0, radius * 1.2);
+                ctx.globalAlpha = 1.0;
+            } catch(e){}
+        }
+
+        // ئیمۆجی ئەگەر هەیە
+        if(activeEmojiText) {
+            ctx.font = `${radius * 2.2}px Arial`;
+            ctx.fillText(activeEmojiText, 0, -radius * 2.2);
+        }
+
+        // شوێنپێی موگناتیسی
+        if(isMagnetActive) {
+            let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
+            ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
+            ctx.lineWidth = isBlinking ? 4 : 2;
+            ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = isBlinking ? 16 : 2;
+            for(let i = -2; i <= 2; i++) {
                 ctx.beginPath();
-                ctx.moveTo(radius * 1.3 * i, radius * 0.3 * j * i);
-                ctx.lineTo(radius * 1.8 * i, radius * 0.6 * j * i);
-                ctx.lineTo(radius * 1.5 * i, radius * 0.2 * j * i);
-                ctx.closePath(); ctx.fill();
+                ctx.arc(radius * 1.8, 0, radius * 1.5 + (i + 2) * 8, -Math.PI * 0.28, Math.PI * 0.28);
+                ctx.stroke();
             }
+            ctx.shadowBlur = 0;
         }
 
-        // قۆچ
-        ctx.fillStyle = '#d35400';
-        ctx.beginPath();
-        ctx.moveTo(-radius * 0.8, -radius * 1.2);
-        ctx.quadraticCurveTo(-radius * 0.5, -radius * 1.8, radius * 0.2, -radius * 1.3);
-        ctx.closePath(); ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(radius * 0.8, -radius * 1.2);
-        ctx.quadraticCurveTo(radius * 0.5, -radius * 1.8, -radius * 0.2, -radius * 1.3);
-        ctx.closePath(); ctx.fill();
-
-        // زیادکردنی دوو زمان
-        const wag = Math.sin(Date.now() / 300) * 4;
-        ctx.save(); ctx.translate(0, 0);
-        ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.moveTo(radius * 0.3, -radius * 0.2); ctx.lineTo(radius * 1.5 + wag, -radius * 0.4); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(radius * 0.3, -radius * 0.2); ctx.lineTo(radius * 1.0 + wag, -radius * 0.8); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(radius * 0.3, radius * 0.2); ctx.lineTo(radius * 1.5 - wag, radius * 0.4); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(radius * 0.3, radius * 0.2); ctx.lineTo(radius * 1.0 - wag, radius * 0.8); ctx.stroke();
-        ctx.restore();
-
-        if (flagKey && loadedFlagImages[flagKey]) {
-            try { ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.5, -radius * 0.5, radius * 1.0, radius * 0.5); } catch(e){}
-        }
         ctx.restore();
     }
 
-    // ===========================================================================================
-    // Main Game Loop
-    // ===========================================================================================
+    function updateLeaderboard() {
+        let list = [{ name: document.getElementById('playerName').value || "You (Player)", score: score }];
+        bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score }); });
+        list.sort((a, b) => b.score - a.score);
+
+        let html = "";
+        list.slice(0, 10).forEach((item, idx) => {
+            let isPlayer = item.name.includes("Player");
+            html += `<div style="color:${isPlayer ? '#2ecc71' : '#fff'};">${idx+1}. ${item.name} - ${item.score}</div>`;
+        });
+        document.getElementById('topList').innerHTML = html;
+    }
+
+    function drawMapGrid() {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 2;
+        const gridSize = 120;
+        const startX = MAP_CENTER - MAP_RADIUS;
+        const endX = MAP_CENTER + MAP_RADIUS;
+
+        ctx.beginPath();
+        for(let x = startX; x <= endX; x += gridSize) {
+            ctx.moveTo(x, MAP_CENTER - MAP_RADIUS);
+            ctx.lineTo(x, MAP_CENTER + MAP_RADIUS);
+        }
+        for(let y = startX; y <= endX; y += gridSize) {
+            ctx.moveTo(MAP_CENTER - MAP_RADIUS, y);
+            ctx.lineTo(MAP_CENTER + MAP_RADIUS, y);
+        }
+        ctx.stroke();
+    }
 
     function gameLoop(now) {
         if(!gameRunning) return;
+
         let dt = (now - lastFrameTime) / 1000;
         if(dt > 0.1 || isNaN(dt)) dt = 0.016;
         lastFrameTime = now;
+
         deadRemains = deadRemains.filter(r => Date.now() - r.spawnTime < 25000);
+
         let isGarageRented = Date.now() < garageRentEndTime;
 
         if(player.alive) {
-            baseCameraScale = Math.max(0.18, 0.35 - (player.sizeRadius - 20) * 0.002);
-            if(isSniperActive) cameraScale = 0.18; else cameraScale = baseCameraScale;
+            baseCameraScale = Math.max(0.18, 0.35 - (player.sizeRadius - 28) * 0.002);
+            cameraScale = isSniperActive ? 0.20 : baseCameraScale;
 
             let inAnyGarage = false;
             garages.forEach(g => {
                 let half = g.size / 2;
-                if(player.x >= g.x - half && player.x <= g.x + half && player.y >= g.y - half && player.y <= g.y + half) inAnyGarage = true;
+                if(player.x >= g.x - half && player.x <= g.x + half && player.y >= g.y - half && player.y <= g.y + half) {
+                    inAnyGarage = true;
+                }
             });
-            if(inAnyGarage && isGarageRented && isInsideGarageSafe === false) isInsideGarageSafe = true;
+
+            if(inAnyGarage && isGarageRented && isInsideGarageSafe === false) {
+                isInsideGarageSafe = true;
+            } else if(!inAnyGarage && isInsideGarageSafe) {
+                isInsideGarageSafe = false;
+                document.getElementById('garage-safe-status').style.display = 'none';
+            }
 
             if(isInsideGarageSafe) {
                 document.getElementById('garage-safe-status').style.display = 'block';
                 let leftSecs = Math.max(0, Math.ceil((garageRentEndTime - Date.now()) / 1000));
                 let m = Math.floor(leftSecs / 60); let s = leftSecs % 60;
                 document.getElementById('garageTimerVal').innerText = `Rent Time Left: ${m}m ${s}s (Safe Zone Active)`;
-            } else document.getElementById('garage-safe-status').style.display = 'none';
-
-            if(!isInsideGarageSafe) {
-                let diff = player.targetAngle - player.angle;
-                while (diff < -Math.PI) diff += Math.PI * 2;
-                while (diff > Math.PI) diff -= Math.PI * 2;
-                player.angle += diff * (isSteeringActive ? 12.0 : 6.0) * dt;
-                let moveSpeed = (manualSpeedBoost ? 380 : 210) * dt;
-                player.x += Math.cos(player.angle) * moveSpeed;
-                player.y += Math.sin(player.angle) * moveSpeed;
-                player.body.unshift({x: player.x, y: player.y});
-                let maxAllowedSegments = Math.min(3500, 60 + Math.floor((score * currentMultiplier) / 4));
-                while(player.body.length > maxAllowedSegments) player.body.pop();
             } else {
-                for(let i=1; i<player.body.length; i++) {
-                    player.body[i].x += (player.x - player.body[i].x) * 4.0 * dt;
-                    player.body[i].y += (player.y - player.body[i].y) * 4.0 * dt;
-                }
+                document.getElementById('garage-safe-status').style.display = 'none';
             }
+
+            // جوڵە (هەمیشە ئازادە بۆ دەرچوون لە گەراج)
+            let diff = player.targetAngle - player.angle;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+
+            player.angle += diff * (isSteeringActive ? 12.0 : 6.0) * dt;
+
+            let moveSpeed = (manualSpeedBoost ? 380 : 210) * dt;
+            player.x += Math.cos(player.angle) * moveSpeed;
+            player.y += Math.sin(player.angle) * moveSpeed;
+            
+            player.body.unshift({x: player.x, y: player.y});
+
+            let maxAllowedSegments = Math.min(3500, 60 + Math.floor((score * currentMultiplier) / 4));
+            while(player.body.length > maxAllowedSegments) player.body.pop();
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
             if(distFromCenter >= MAP_RADIUS - 50) {
@@ -695,16 +817,21 @@
             }
             document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 1200 ? 'block' : 'none';
 
+            // پێکدادان لەگەڵ بۆتەکان
             if(!isInsideGarageSafe) {
                 bots.forEach(b => {
                     if(!b.alive) return;
+                    
                     let headDist = Math.hypot(player.x - b.x, player.y - b.y);
                     if(headDist < player.sizeRadius + b.sizeRadius) {
-                        b.alive = false; explodeSnake(b.body); spawnBot(b.id);
+                        b.alive = false;
+                        explodeSnake(b.body);
+                        spawnBot(b.id);
                         score += 500 * currentMultiplier;
                         headshotTextTimer = Date.now() + 3000;
-                        playHeadshotSound();
+                        playHeadshotSound(); 
                     }
+
                     b.body.forEach((seg, idx) => {
                         if(idx > 3 && Math.hypot(player.x - seg.x, player.y - seg.y) < player.sizeRadius + b.sizeRadius*0.5) {
                             player.alive = false; alert("Game Over! You crashed into a bot!"); location.reload();
@@ -730,11 +857,12 @@
             fruits.forEach((f) => {
                 if(f.eatenTime && Date.now() - f.eatenTime > 15000) {
                     let pos = getRandomMapPos();
-                    f.x = pos.x; f.y = pos.y; f.eatenTime = null;
+                    f.x = pos.x; f.y = pos.y;
+                    f.eatenTime = null;
                 }
-                else if(!f.eatenTime && Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 22) {
-                    score += 5 * currentMultiplier;
-                    document.getElementById('scoreVal').innerText = score;
+                else if(!f.eatenTime && Math.hypot(player.x - f.x, player.y - f.y) < player.sizeRadius + 32) {
+                    score += (10 * currentMultiplier);
+                    document.getElementById('scoreVal').innerText = Math.floor(score);
                     f.eatenTime = Date.now();
                     f.x = -99999; f.y = -99999;
                     if(player.sizeRadius < 95) player.sizeRadius += (0.35 * currentMultiplier);
@@ -743,9 +871,10 @@
 
             coinItems.forEach((c) => {
                 if(Math.hypot(player.x - c.x, player.y - c.y) < player.sizeRadius + 20) {
-                    coins += 0.5 * currentMultiplier;
+                    coins += (0.5 * currentMultiplier);
                     document.getElementById('coinVal').innerText = `🪙 ${Math.floor(coins)}`;
-                    saveStats(); let pos = getRandomMapPos();
+                    saveStats();
+                    let pos = getRandomMapPos();
                     c.x = pos.x; c.y = pos.y;
                 }
             });
@@ -753,7 +882,7 @@
             deadRemains.forEach((r, i) => {
                 if(Math.hypot(player.x - r.x, player.y - r.y) < player.sizeRadius + 25) {
                     score += 15 * currentMultiplier;
-                    document.getElementById('scoreVal').innerText = score;
+                    document.getElementById('scoreVal').innerText = Math.floor(score);
                     deadRemains.splice(i, 1);
                     if(player.sizeRadius < 95) player.sizeRadius += (0.45 * currentMultiplier);
                 }
@@ -761,11 +890,31 @@
 
             powerups.forEach((p) => {
                 if(Math.hypot(player.x - p.x, player.y - p.y) < player.sizeRadius + 24) {
-                    if(p.icon === '🧲') { isMagnetActive = true; addPowerupTimer('magnet', 'Magnet', '🧲', 15000, () => isMagnetActive = false); }
-                    if(p.icon.includes('x')) { let val = parseInt(p.icon.replace('x', '')) || 2; currentMultiplier = val; addPowerupTimer('multiplier', `Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1); }
-                    if(p.icon === '🚀') { document.getElementById('boost-btn').style.display = 'flex'; addPowerupTimer('boost', 'Boost Active', '🚀', 15000, () => { document.getElementById('boost-btn').style.display = 'none'; manualSpeedBoost = false; }); }
-                    if(p.icon === '🛞') { isSteeringActive = true; addPowerupTimer('steering', 'Fast Steering', '🛞', 15000, () => isSteeringActive = false); }
-                    if(p.icon === '🎯') { isSniperActive = true; addPowerupTimer('sniper', 'Sniper Zoom Out', '🎯', 15000, () => isSniperActive = false); }
+                    if(p.icon === '🧲') {
+                        isMagnetActive = true;
+                        addPowerupTimer('magnet', 'Magnet', '🧲', 15000, () => isMagnetActive = false);
+                    }
+                    if(p.icon.includes('x')) {
+                        let val = parseInt(p.icon.replace('x', '')) || 2;
+                        currentMultiplier = val;
+                        addPowerupTimer('multiplier', `Multiplier ${p.icon}`, p.icon, 15000, () => currentMultiplier = 1);
+                    }
+                    if(p.icon === '🚀') {
+                        document.getElementById('boost-btn').style.display = 'flex';
+                        addPowerupTimer('boost', 'Boost Active', '🚀', 15000, () => {
+                            document.getElementById('boost-btn').style.display = 'none';
+                            manualSpeedBoost = false;
+                        });
+                    }
+                    if(p.icon === '🛞') {
+                        isSteeringActive = true;
+                        addPowerupTimer('steering', 'Fast Steering', '🛞', 15000, () => isSteeringActive = false);
+                    }
+                    if(p.icon === '🎯') {
+                        isSniperActive = true;
+                        addPowerupTimer('sniper', 'Sniper Zoom Out', '🎯', 15000, () => isSniperActive = false);
+                    }
+
                     let pos = getRandomMapPos();
                     p.x = pos.x; p.y = pos.y;
                 }
@@ -778,9 +927,11 @@
             if(distToPlayer < 1200 && player.alive && !isInsideGarageSafe) {
                 b.angle = Math.atan2(player.y - b.y, player.x - b.x);
             } else { b.angle += (Math.random() - 0.5) * 2.0 * dt; }
+
             let botSpeed = 190 * dt;
             b.x += Math.cos(b.angle) * botSpeed; b.y += Math.sin(b.angle) * botSpeed;
             b.body.unshift({x: b.x, y: b.y}); b.body.pop();
+
             if(!isInsideGarageSafe) {
                 player.body.forEach((pSeg, idx) => {
                     if(idx > 3 && Math.hypot(b.x - pSeg.x, b.y - pSeg.y) < b.sizeRadius) {
@@ -796,56 +947,65 @@
         ctx.fillStyle = '#0f131a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.translate(camX, camY); ctx.scale(cameraScale, cameraScale);
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)'; ctx.lineWidth = 2;
-        const startX = MAP_CENTER - MAP_RADIUS; const endX = MAP_CENTER + MAP_RADIUS;
-        ctx.beginPath();
-        for(let x = startX; x <= endX; x += 120) { ctx.moveTo(x, MAP_CENTER - MAP_RADIUS); ctx.lineTo(x, MAP_CENTER + MAP_RADIUS); }
-        for(let y = startX; y <= endX; y += 120) { ctx.moveTo(MAP_CENTER - MAP_RADIUS, y); ctx.lineTo(MAP_CENTER + MAP_RADIUS, y); }
-        ctx.stroke();
+        drawMapGrid();
 
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
+        // گەراجەکان
         garages.forEach(g => {
             let half = g.size / 2;
             ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
             ctx.strokeRect(g.x - half - 40, g.y - half - 40, g.size + 80, g.size + 80);
+            
             ctx.fillStyle = isGarageRented ? 'rgba(46, 204, 113, 0.35)' : 'rgba(127, 140, 141, 0.35)'; 
             ctx.fillRect(g.x - half, g.y - half, g.size, g.size);
             ctx.strokeStyle = isGarageRented ? '#2ecc71' : '#f1c40f'; ctx.lineWidth = 6;
             ctx.strokeRect(g.x - half, g.y - half, g.size, g.size);
+
             ctx.fillStyle = '#fff'; ctx.font = "bold 26px Arial"; 
             ctx.fillText(isGarageRented ? "GARAGE 🛞 (SAFE ZONE)" : "GARAGE 🔒 (RENT REQUIRED)", g.x - 140, g.y + 10);
+
+            // دیواری دەوروبەری گەراج (بەرگری لە هێرشی دەرەوە)
+            ctx.strokeStyle = 'rgba(46, 204, 113, 0.6)';
+            ctx.lineWidth = 20;
+            ctx.strokeRect(g.x - half - 60, g.y - half - 60, g.size + 120, g.size + 120);
         });
 
-        // میوە گەورەتر
-        fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "32px Arial"; ctx.fillText(f.type, f.x, f.y); } });
-        coinItems.forEach(c => { ctx.font = "22px Arial"; ctx.fillText("🪙", c.x, c.y); });
+        fruits.forEach(f => { if(!f.eatenTime) { ctx.font = "bold 34px Arial"; ctx.fillText(f.type, f.x, f.y); } });
+        coinItems.forEach(c => { ctx.font = "bold 28px Arial"; ctx.fillText("🪙", c.x, c.y); });
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
-        powerups.forEach(p => { ctx.font = "bold 28px Arial"; ctx.fillText(p.icon, p.x, p.y); });
+        powerups.forEach(p => { ctx.font = "bold 32px Arial"; ctx.fillText(p.icon, p.x, p.y); });
 
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
-            let flagImg = (skinObj.flagKey && loadedFlagImages[skinObj.flagKey]) ? loadedFlagImages[skinObj.flagKey] : null;
-
-            for(let i = player.body.length - 1; i >= 1; i--) {
+            
+            // کێشانی لەش و ئاڵاکان
+            for(let i = player.body.length - 1; i >= 2; i--) {
                 let p = player.body[i];
                 let color = skinObj.colors[i % skinObj.colors.length];
                 ctx.fillStyle = color; ctx.beginPath();
-                ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI * 2); ctx.fill();
+                ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
 
-                if(flagImg) {
+                // زیادکردنی ئاڵا بە شێوەی بڵاو لەسەر لەش
+                if(skinObj.flagKey && loadedFlagImages[skinObj.flagKey] && i % 3 === 0) {
                     try {
-                        let size = player.sizeRadius * 0.8;
-                        ctx.save(); ctx.translate(p.x, p.y);
-                        ctx.drawImage(flagImg, -size/2, -size/2, size, size * 0.6);
-                        ctx.restore();
+                        ctx.globalAlpha = 0.5;
+                        ctx.drawImage(loadedFlagImages[skinObj.flagKey], 
+                            p.x - player.sizeRadius * 0.7, 
+                            p.y - player.sizeRadius * 0.5, 
+                            player.sizeRadius * 1.4, 
+                            player.sizeRadius * 1.0
+                        );
+                        ctx.globalAlpha = 1.0;
                     } catch(e){}
                 }
             }
-            drawDragonHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, skinObj.flagKey);
+            // کێشانی سەر بە دیزاینە نوێیەکە
+            drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, skinObj.flagKey);
         }
 
+        // کێشانی بۆتەکان
         bots.forEach(b => {
             if(!b.alive) return;
             for(let j = b.body.length - 1; j >= 2; j--) {
@@ -853,17 +1013,20 @@
                 ctx.fillStyle = j % 2 === 0 ? '#e74c3c' : '#3498db';
                 ctx.beginPath(); ctx.arc(bp.x, bp.y, b.sizeRadius * 0.8, 0, Math.PI*2); ctx.fill();
             }
-            ctx.save(); ctx.translate(b.body[0].x, b.body[0].y); ctx.rotate(b.angle);
-            ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(0, 0, b.sizeRadius * 1.3, 0, Math.PI*2); ctx.fill();
-            ctx.restore();
+            drawSnakeHead(b.body[0], b.angle, '#e74c3c', b.sizeRadius, null);
         });
 
         ctx.restore();
 
         if(Date.now() < headshotTextTimer) {
-            ctx.save(); ctx.font = "900 36px Arial"; ctx.fillStyle = "#e74c3c"; ctx.textAlign = "center";
-            ctx.shadowColor = "#f1c40f"; ctx.shadowBlur = 12;
-            ctx.fillText("💥 HEADSHOT! 🎯", canvas.width / 2, canvas.height / 3); ctx.restore();
+            ctx.save();
+            ctx.font = "900 36px Arial";
+            ctx.fillStyle = "#e74c3c";
+            ctx.textAlign = "center";
+            ctx.shadowColor = "#f1c40f";
+            ctx.shadowBlur = 12;
+            ctx.fillText("💥 HEADSHOT! 🎯", canvas.width / 2, canvas.height / 3);
+            ctx.restore();
         }
 
         radarCtx.clearRect(0, 0, 65, 65);
@@ -884,497 +1047,6 @@
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
     }
-
-    function updateLeaderboard() {
-        let list = [{ name: document.getElementById('playerName').value || "You (Player)", score: score }];
-        bots.forEach(b => { if(b.alive) list.push({ name: b.name, score: b.score }); });
-        list.sort((a, b) => b.score - a.score);
-        let html = "";
-        list.slice(0, 10).forEach((item, idx) => {
-            let isPlayer = item.name.includes("Player");
-            html += `<div style="color:${isPlayer ? '#2ecc71' : '#fff'};">${idx+1}. ${item.name} - ${item.score}</div>`;
-        });
-        document.getElementById('topList').innerHTML = html;
-    }
-
-    function playHeadshotSound() {
-        try {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            if(!AudioCtx) return;
-            const actx = new AudioCtx();
-            const osc = actx.createOscillator();
-            const gain = actx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(150, actx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(600, actx.currentTime + 0.15);
-            osc.frequency.exponentialRampToValueAtTime(80, actx.currentTime + 0.35);
-            gain.gain.setValueAtTime(0.8, actx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.35);
-            osc.connect(gain); gain.connect(actx.destination);
-            osc.start(); osc.stop(actx.currentTime + 0.35);
-        } catch(e){}
-    }
-    // ============================================================
-// کۆدی ڕاست و کۆتایی بۆ کرانەوەی گەیم
-// ============================================================
-
-// 1. دروستکردنی فەنکشنی کرانەوەی گەیم (ئەمە نەبوو، بۆیە نەدەکرایەوە)
-window.startGame = function() {
-    document.getElementById('menu-overlay').style.display = 'none';
-    window.gameRunning = true;
-    window.initGame();
-    requestAnimationFrame(window.gameLoop);
-};
-
-// 2. گەورەکردنی میوەکان (لە کاتی کێشاندا)
-if (typeof ctx !== 'undefined') {
-    const originalFill = ctx.fillText;
-    ctx.fillText = function(text, x, y) {
-        if (text === '🍌' || text === '🍉' || text === '🍒' || text === '🍎' || text === '🍓') {
-            this.font = '32px Arial';
-            originalFill.call(this, text, x, y);
-            this.font = '24px Arial';
-        } else {
-            originalFill.call(this, text, x, y);
-        }
-    };
-}
-
-// 3. بچوککردنی سەرەتایی مار
-if (typeof window.initGame === 'function') {
-    const origInit = window.initGame;
-    window.initGame = function() {
-        origInit.call(this);
-        if (window.player && window.player.sizeRadius) {
-            window.player.sizeRadius = 20; // بچوکتر
-        }
-    };
-}
-
-// 4. زیادکردنی ئاڵاکان بۆ مینۆ
-setTimeout(() => {
-    const container = document.getElementById('menuLeaderboardContainer');
-    if (!container) return;
-    let html = '<div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px; border-top:1px solid #444; padding-top:8px; margin-top:8px; font-size:8px; text-align:center;">';
-    if (window.skinsDatabase) {
-        window.skinsDatabase.filter(s => s.type === 'flags').forEach(f => {
-            if (f.flagKey && window.loadedFlagImages && window.loadedFlagImages[f.flagKey]) {
-                html += `<div style="background:#111; padding:2px; border-radius:4px;">
-                    <img src="${window.flagImageUrls[f.flagKey]}" style="width:24px; height:16px; border-radius:2px;">
-                </div>`;
-            }
-        });
-    }
-    html += '</div>';
-    container.innerHTML += html;
-}, 500);
-
-// 5. زیادکردنی سیستەمی موگناتیس و گڵۆپ
-window.isMagnetActive = false;
-window.isSteeringActive = false;
-window.isSniperActive = false;
-
-// 6. زیادکردنی دووری کامێرا بۆ سنایپەر
-if (typeof window.gameLoop === 'function') {
-    const origLoop = window.gameLoop;
-    window.gameLoop = function(now) {
-        if (window.isSniperActive) {
-            window.cameraScale = 0.18;
-        } else {
-            window.cameraScale = window.baseCameraScale || 0.35;
-        }
-        origLoop.call(this, now);
-    };
-}
-
-console.log("✅ گەیم بە سەرکەوتوویی چاککرایەوە!");
-    // =============================================
-// کۆدی کرانەوەی گەیم و مار
-// =============================================
-
-// 1. دروستکردنی فەنکشنی کرانەوەی گەیم (ئەمە نەبوو، بۆیە نەدەکرایەوە)
-window.startGame = function() {
-    document.getElementById('menu-overlay').style.display = 'none';
-    window.gameRunning = true;
-    window.initGame();
-    window.gameLoop(performance.now());
-};
-
-console.log("✅ گەیم بە سەرکەوتوویی چاککرایەوە!");
-    // =============================================
-// کۆدی گەڕاندنەوەی مار و میوەکان
-// =============================================
-
-// 1. گەڕاندنەوەی سنوورەکانی گەیم
-window.MAP_CENTER = 20000;
-window.MAP_RADIUS = 18000;
-
-// 2. گەڕاندنەوەی فەنکشنی initGame (ئەگەر ون بووە)
-if (typeof window.initGame !== 'function') {
-    window.initGame = function() {
-        console.log("Initializing game...");
-        window.score = 0;
-        window.player = {
-            x: window.MAP_CENTER,
-            y: window.MAP_CENTER,
-            angle: 0,
-            targetAngle: 0,
-            skin: 'free1',
-            body: [],
-            alive: true,
-            sizeRadius: 20
-        };
-        // دروستکردنی لاشەی مار
-        for(let i=0; i<35; i++) {
-            window.player.body.push({
-                x: window.MAP_CENTER - i*8,
-                y: window.MAP_CENTER
-            });
-        }
-        window.bots = [];
-        // دروستکردنی میوەکان
-        window.fruits = [];
-        const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
-        for(let i=0; i<2000; i++) {
-            let pos = window.getRandomMapPos();
-            if (window.getRandomMapPos) {
-                window.fruits.push({
-                    x: pos.x,
-                    y: pos.y,
-                    type: fTypes[Math.floor(Math.random()*fTypes.length)],
-                    eatenTime: null
-                });
-            }
-        }
-        window.gameRunning = true;
-    };
-}
-
-// 3. گەڕاندنەوەی فەنکشنی گەیم لووپ (ئەگەر ون بووە)
-if (typeof window.gameLoop !== 'function') {
-    window.gameLoop = function(now) {
-        if (!window.gameRunning) return;
-        const ctx = document.getElementById('gameCanvas').getContext('2d');
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        
-        // کێشانی مار
-        if (window.player && window.player.alive) {
-            for(let i = window.player.body.length - 1; i >= 0; i--) {
-                let p = window.player.body[i];
-                ctx.fillStyle = '#2ecc71';
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, window.player.sizeRadius * 0.85, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            // کێشانی سەری مار
-            ctx.fillStyle = '#2ecc71';
-            ctx.beginPath();
-            ctx.arc(window.player.x, window.player.y, window.player.sizeRadius, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        // کێشانی میوەکان
-        if (window.fruits) {
-            ctx.font = "32px Arial";
-            window.fruits.forEach(f => {
-                if(!f.eatenTime) {
-                    ctx.fillText(f.type, f.x, f.y);
-                }
-            });
-        }
-        requestAnimationFrame(window.gameLoop);
-    };
-}
-
-// 4. گەڕاندنەوەی فەنکشنی getRandomMapPos
-if (typeof window.getRandomMapPos !== 'function') {
-    window.getRandomMapPos = function() {
-        let angle = Math.random() * Math.PI * 2;
-        let r = Math.sqrt(Math.random()) * (window.MAP_RADIUS - 400);
-        return {
-            x: window.MAP_CENTER + Math.cos(angle) * r,
-            y: window.MAP_CENTER + Math.sin(angle) * r
-        };
-    };
-}
-
-// 5. گەڕاندنەوەی فەنکشنی startGame (ئەگەر ون بووە)
-if (typeof window.startGame !== 'function') {
-    window.startGame = function() {
-        document.getElementById('menu-overlay').style.display = 'none';
-        window.gameRunning = true;
-        window.initGame();
-        requestAnimationFrame(window.gameLoop);
-    };
-}
-
-console.log("✅ مار و میوەکان گەڕانەوە!");
-    // =============================================
-// چارەسەری مار و گەیم (کۆتایی)
-// =============================================
-
-// ئەمە دڵنیا دەبێت کە سنووری گەیم هەیە
-window.MAP_CENTER = 20000;
-window.MAP_RADIUS = 18000;
-
-// فەنکشنی کرانەوەی گەیم (دەبێت لەم شوێنەدا بێت)
-window.startGame = function() {
-    // شاردنەوەی مینۆ و دەستپێکردنی گەیم
-    document.getElementById('menu-overlay').style.display = 'none';
-    window.gameRunning = true;
-    
-    // پێکهێنانی گەیم
-    if (typeof window.initGame === 'function') {
-        window.initGame();
-    } else {
-        // ئەگەر initGame ونبوو، ئەمە دەیکات
-        window.initGame = function() {
-            window.score = 0;
-            window.player = {
-                x: window.MAP_CENTER,
-                y: window.MAP_CENTER,
-                angle: 0,
-                targetAngle: 0,
-                skin: 'free1',
-                body: [],
-                alive: true,
-                sizeRadius: 20
-            };
-            // پێکهێنانی لاشە
-            for(let i=0; i<30; i++) {
-                window.player.body.push({x: window.MAP_CENTER - i*8, y: window.MAP_CENTER});
-            }
-            window.fruits = [];
-            const types = ['🍎','🍊','🍋','🍇','🍓'];
-            for(let i=0; i<1000; i++) {
-                let angle = Math.random()*Math.PI*2;
-                let r = Math.sqrt(Math.random())* (window.MAP_RADIUS - 200);
-                window.fruits.push({
-                    x: window.MAP_CENTER + Math.cos(angle)*r,
-                    y: window.MAP_CENTER + Math.sin(angle)*r,
-                    type: types[Math.floor(Math.random()*types.length)],
-                    eatenTime: null
-                });
-            }
-            window.gameRunning = true;
-        };
-        window.initGame();
-    }
-    
-    // دەستپێکردنی لووپ
-    if (typeof window.gameLoop === 'function') {
-        window.gameLoop(performance.now());
-    } else {
-        window.gameLoop = function(now) {
-            if(!window.gameRunning) return;
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            
-            // کێشانی میوە
-            if(window.fruits) {
-                ctx.font = "28px Arial";
-                window.fruits.forEach(f => {
-                    if(!f.eatenTime) ctx.fillText(f.type, f.x, f.y);
-                });
-            }
-            
-            // کێشانی مار
-            if(window.player && window.player.alive) {
-                for(let i=window.player.body.length-1; i>=0; i--) {
-                    let p = window.player.body[i];
-                    ctx.fillStyle = '#2ecc71';
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, window.player.sizeRadius*0.8, 0, Math.PI*2);
-                    ctx.fill();
-                }
-                // کێشانی سەر
-                ctx.fillStyle = '#27ae60';
-                ctx.beginPath();
-                ctx.arc(window.player.x, window.player.y, window.player.sizeRadius, 0, Math.PI*2);
-                ctx.fill();
-            }
-            
-            requestAnimationFrame(window.gameLoop);
-        };
-        window.gameLoop(performance.now());
-    }
-};
-
-console.log("✅ گەیم و مار گەڕانەوە!");
-    // =============================================
-// کۆدی گەڕاندنەوەی مار و میوە
-// =============================================
-
-// 1. پێناسەکردنی سنوورەکانی گەیم
-window.MAP_CENTER = 20000;
-window.MAP_RADIUS = 18000;
-
-// 2. فەنکشنی کرانەوەی گەیم (تەنها مار دەکێشێت)
-window.startGame = function() {
-    // شاردنەوەی مینۆ
-    document.getElementById('menu-overlay').style.display = 'none';
-    window.gameRunning = true;
-
-    // پێکهێنانی مار
-    window.player = {
-        x: window.MAP_CENTER,
-        y: window.MAP_CENTER,
-        body: [],
-        alive: true,
-        sizeRadius: 20
-    };
-    for(let i=0; i<25; i++) {
-        window.player.body.push({
-            x: window.MAP_CENTER - i*8,
-            y: window.MAP_CENTER
-        });
-    }
-
-    // پێکهێنانی میوەکان
-    window.fruits = [];
-    const types = ['🍎', '🍊', '🍋', '🍇', '🍓'];
-    for(let i=0; i<1500; i++) {
-        let angle = Math.random() * Math.PI * 2;
-        let r = Math.sqrt(Math.random()) * (window.MAP_RADIUS - 200);
-        window.fruits.push({
-            x: window.MAP_CENTER + Math.cos(angle) * r,
-            y: window.MAP_CENTER + Math.sin(angle) * r,
-            type: types[Math.floor(Math.random() * types.length)],
-            eatenTime: null
-        });
-    }
-
-    // دەستپێکردنی گەیم لووپ
-    window.gameLoop();
-};
-
-// 3. فەنکشنی گەیم لووپ (تەنها کێشان)
-window.gameLoop = function() {
-    if (!window.gameRunning) return;
-
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // کێشانی میوەکان
-    if (window.fruits) {
-        ctx.font = "28px Arial";
-        window.fruits.forEach(f => {
-            if (!f.eatenTime) ctx.fillText(f.type, f.x, f.y);
-        });
-    }
-
-    // کێشانی مار
-    if (window.player && window.player.alive) {
-        // لاشە
-        for (let i = window.player.body.length - 1; i >= 0; i--) {
-            let p = window.player.body[i];
-            ctx.fillStyle = '#2ecc71';
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, window.player.sizeRadius * 0.8, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        // سەر
-        ctx.fillStyle = '#27ae60';
-        ctx.beginPath();
-        ctx.arc(window.player.x, window.player.y, window.player.sizeRadius, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    requestAnimationFrame(window.gameLoop);
-};
-
-// 4. ئەم کۆدە دەبێت لە کاتی بارکردنەوەدا کاربکات
-if (document.getElementById('gameCanvas')) {
-    console.log("✅ کۆدی مارەکە بە سەرکەوتوویی دانرا!");
-}// =============================================
-// کۆدی گەڕاندنەوەی مار و میوە
-// =============================================
-
-// 1. پێناسەکردنی سنوورەکانی گەیم
-window.MAP_CENTER = 20000;
-window.MAP_RADIUS = 18000;
-
-// 2. فەنکشنی کرانەوەی گەیم (تەنها مار دەکێشێت)
-window.startGame = function() {
-    // شاردنەوەی مینۆ
-    document.getElementById('menu-overlay').style.display = 'none';
-    window.gameRunning = true;
-
-    // پێکهێنانی مار
-    window.player = {
-        x: window.MAP_CENTER,
-        y: window.MAP_CENTER,
-        body: [],
-        alive: true,
-        sizeRadius: 20
-    };
-    for(let i=0; i<25; i++) {
-        window.player.body.push({
-            x: window.MAP_CENTER - i*8,
-            y: window.MAP_CENTER
-        });
-    }
-
-    // پێکهێنانی میوەکان
-    window.fruits = [];
-    const types = ['🍎', '🍊', '🍋', '🍇', '🍓'];
-    for(let i=0; i<1500; i++) {
-        let angle = Math.random() * Math.PI * 2;
-        let r = Math.sqrt(Math.random()) * (window.MAP_RADIUS - 200);
-        window.fruits.push({
-            x: window.MAP_CENTER + Math.cos(angle) * r,
-            y: window.MAP_CENTER + Math.sin(angle) * r,
-            type: types[Math.floor(Math.random() * types.length)],
-            eatenTime: null
-        });
-    }
-
-    // دەستپێکردنی گەیم لووپ
-    window.gameLoop();
-};
-
-// 3. فەنکشنی گەیم لووپ (تەنها کێشان)
-window.gameLoop = function() {
-    if (!window.gameRunning) return;
-
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // کێشانی میوەکان
-    if (window.fruits) {
-        ctx.font = "28px Arial";
-        window.fruits.forEach(f => {
-            if (!f.eatenTime) ctx.fillText(f.type, f.x, f.y);
-        });
-    }
-
-    // کێشانی مار
-    if (window.player && window.player.alive) {
-        // لاشە
-        for (let i = window.player.body.length - 1; i >= 0; i--) {
-            let p = window.player.body[i];
-            ctx.fillStyle = '#2ecc71';
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, window.player.sizeRadius * 0.8, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        // سەر
-        ctx.fillStyle = '#27ae60';
-        ctx.beginPath();
-        ctx.arc(window.player.x, window.player.y, window.player.sizeRadius, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    requestAnimationFrame(window.gameLoop);
-};
-
-// 4. ئەم کۆدە دەبێت لە کاتی بارکردنەوەدا کاربکات
-if (document.getElementById('gameCanvas')) {
-    console.log("✅ کۆدی مارەکە بە سەرکەوتوویی دانرا!");
-}
 </script>
 </body>
 </html>
