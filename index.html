@@ -914,6 +914,80 @@
             osc.start(); osc.stop(actx.currentTime + 0.35);
         } catch(e){}
     }
+    // ============================================================
+// کۆدی ڕاست و کۆتایی بۆ کرانەوەی گەیم
+// ============================================================
+
+// 1. دروستکردنی فەنکشنی کرانەوەی گەیم (ئەمە نەبوو، بۆیە نەدەکرایەوە)
+window.startGame = function() {
+    document.getElementById('menu-overlay').style.display = 'none';
+    window.gameRunning = true;
+    window.initGame();
+    requestAnimationFrame(window.gameLoop);
+};
+
+// 2. گەورەکردنی میوەکان (لە کاتی کێشاندا)
+if (typeof ctx !== 'undefined') {
+    const originalFill = ctx.fillText;
+    ctx.fillText = function(text, x, y) {
+        if (text === '🍌' || text === '🍉' || text === '🍒' || text === '🍎' || text === '🍓') {
+            this.font = '32px Arial';
+            originalFill.call(this, text, x, y);
+            this.font = '24px Arial';
+        } else {
+            originalFill.call(this, text, x, y);
+        }
+    };
+}
+
+// 3. بچوککردنی سەرەتایی مار
+if (typeof window.initGame === 'function') {
+    const origInit = window.initGame;
+    window.initGame = function() {
+        origInit.call(this);
+        if (window.player && window.player.sizeRadius) {
+            window.player.sizeRadius = 20; // بچوکتر
+        }
+    };
+}
+
+// 4. زیادکردنی ئاڵاکان بۆ مینۆ
+setTimeout(() => {
+    const container = document.getElementById('menuLeaderboardContainer');
+    if (!container) return;
+    let html = '<div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:4px; border-top:1px solid #444; padding-top:8px; margin-top:8px; font-size:8px; text-align:center;">';
+    if (window.skinsDatabase) {
+        window.skinsDatabase.filter(s => s.type === 'flags').forEach(f => {
+            if (f.flagKey && window.loadedFlagImages && window.loadedFlagImages[f.flagKey]) {
+                html += `<div style="background:#111; padding:2px; border-radius:4px;">
+                    <img src="${window.flagImageUrls[f.flagKey]}" style="width:24px; height:16px; border-radius:2px;">
+                </div>`;
+            }
+        });
+    }
+    html += '</div>';
+    container.innerHTML += html;
+}, 500);
+
+// 5. زیادکردنی سیستەمی موگناتیس و گڵۆپ
+window.isMagnetActive = false;
+window.isSteeringActive = false;
+window.isSniperActive = false;
+
+// 6. زیادکردنی دووری کامێرا بۆ سنایپەر
+if (typeof window.gameLoop === 'function') {
+    const origLoop = window.gameLoop;
+    window.gameLoop = function(now) {
+        if (window.isSniperActive) {
+            window.cameraScale = 0.18;
+        } else {
+            window.cameraScale = window.baseCameraScale || 0.35;
+        }
+        origLoop.call(this, now);
+    };
+}
+
+console.log("✅ گەیم بە سەرکەوتوویی چاککرایەوە!");
 </script>
 </body>
 </html>
