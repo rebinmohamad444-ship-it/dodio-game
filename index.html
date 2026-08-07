@@ -1157,6 +1157,40 @@ window.drawSnake = function(ctx, snake) {
         ctx.beginPath();
         ctx.arc(head.x + nx * 18, head.y + ny * 18, 2, 0, Math.PI * 2);
         ctx.fill();
+        // --- 1. Snake Long Red Tongue & Normal Body Size ---
+const originalDrawSnake = window.drawSnake || function(){};
+window.drawSnake = function(ctx, snake) {
+    if (originalDrawSnake !== arguments.callee) originalDrawSnake(ctx, snake);
+    if (snake && snake.length > 0) {
+        let head = snake[0];
+        let dx = head.vx || head.dx || 1;
+        let dy = head.vy || head.dy || 0;
+        let length = Math.hypot(dx, dy) || 1;
+        let nx = dx / length;
+        let ny = dy / length;
+        
+        // زمانێکی درێژتر و سووری تۆخ
+        ctx.strokeStyle = "#ff0000";
+        ctx.lineWidth = 4; // ئەستووری زمانەکە
+        ctx.beginPath();
+        ctx.moveTo(head.x, head.y);
+        ctx.lineTo(head.x + nx * 28, head.y + ny * 28); // درێژییەکەی زیاتر کرا
+        ctx.stroke();
+        
+        // سەری زمانەکە (دوو قەڵفی دیار)
+        ctx.fillStyle = "#ff0000";
+        ctx.beginPath();
+        ctx.arc(head.x + nx * 28, head.y + ny * 28, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+};
+
+// ڕێگریکردن لە ئەستووربوونی ناتەندروستی لاشە کاتێک خواردن دەخوات
+if (typeof snakeRadius !== 'undefined') {
+    // جێگیرکردنی قەبارەی ئاسایی مارەکە
+    window.fixedSnakeRadius = snakeRadius;
+}
+
     }
 };
 
