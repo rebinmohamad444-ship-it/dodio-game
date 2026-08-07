@@ -1109,6 +1109,99 @@ if (typeof window.startGame !== 'function') {
 }
 
 console.log("✅ مار و میوەکان گەڕانەوە!");
+    // =============================================
+// چارەسەری مار و گەیم (کۆتایی)
+// =============================================
+
+// ئەمە دڵنیا دەبێت کە سنووری گەیم هەیە
+window.MAP_CENTER = 20000;
+window.MAP_RADIUS = 18000;
+
+// فەنکشنی کرانەوەی گەیم (دەبێت لەم شوێنەدا بێت)
+window.startGame = function() {
+    // شاردنەوەی مینۆ و دەستپێکردنی گەیم
+    document.getElementById('menu-overlay').style.display = 'none';
+    window.gameRunning = true;
+    
+    // پێکهێنانی گەیم
+    if (typeof window.initGame === 'function') {
+        window.initGame();
+    } else {
+        // ئەگەر initGame ونبوو، ئەمە دەیکات
+        window.initGame = function() {
+            window.score = 0;
+            window.player = {
+                x: window.MAP_CENTER,
+                y: window.MAP_CENTER,
+                angle: 0,
+                targetAngle: 0,
+                skin: 'free1',
+                body: [],
+                alive: true,
+                sizeRadius: 20
+            };
+            // پێکهێنانی لاشە
+            for(let i=0; i<30; i++) {
+                window.player.body.push({x: window.MAP_CENTER - i*8, y: window.MAP_CENTER});
+            }
+            window.fruits = [];
+            const types = ['🍎','🍊','🍋','🍇','🍓'];
+            for(let i=0; i<1000; i++) {
+                let angle = Math.random()*Math.PI*2;
+                let r = Math.sqrt(Math.random())* (window.MAP_RADIUS - 200);
+                window.fruits.push({
+                    x: window.MAP_CENTER + Math.cos(angle)*r,
+                    y: window.MAP_CENTER + Math.sin(angle)*r,
+                    type: types[Math.floor(Math.random()*types.length)],
+                    eatenTime: null
+                });
+            }
+            window.gameRunning = true;
+        };
+        window.initGame();
+    }
+    
+    // دەستپێکردنی لووپ
+    if (typeof window.gameLoop === 'function') {
+        window.gameLoop(performance.now());
+    } else {
+        window.gameLoop = function(now) {
+            if(!window.gameRunning) return;
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            
+            // کێشانی میوە
+            if(window.fruits) {
+                ctx.font = "28px Arial";
+                window.fruits.forEach(f => {
+                    if(!f.eatenTime) ctx.fillText(f.type, f.x, f.y);
+                });
+            }
+            
+            // کێشانی مار
+            if(window.player && window.player.alive) {
+                for(let i=window.player.body.length-1; i>=0; i--) {
+                    let p = window.player.body[i];
+                    ctx.fillStyle = '#2ecc71';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, window.player.sizeRadius*0.8, 0, Math.PI*2);
+                    ctx.fill();
+                }
+                // کێشانی سەر
+                ctx.fillStyle = '#27ae60';
+                ctx.beginPath();
+                ctx.arc(window.player.x, window.player.y, window.player.sizeRadius, 0, Math.PI*2);
+                ctx.fill();
+            }
+            
+            requestAnimationFrame(window.gameLoop);
+        };
+        window.gameLoop(performance.now());
+    }
+};
+
+console.log("✅ گەیم و مار گەڕانەوە!");
 </script>
 </body>
 </html>
