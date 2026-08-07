@@ -1132,6 +1132,34 @@ if (typeof draw === 'function') {
         if (typeof ctx !== 'undefined' && typeof snake !== 'undefined') {
             if (typeof window.drawSnake === 'function') {
                 window.drawSnake(ctx, snake);
+                // --- 1. Snake Long Tongue Fixed ---
+const originalDrawSnake = window.drawSnake || function(){};
+window.drawSnake = function(ctx, snake) {
+    if (originalDrawSnake !== arguments.callee) originalDrawSnake(ctx, snake);
+    if (snake && snake.length > 0) {
+        let head = snake[0];
+        // دیاریکردنی ئاراستەی سەر بەپێی جووڵەی مارەکە
+        let dx = head.vx || head.dx || 1;
+        let dy = head.vy || head.dy || 0;
+        let length = Math.hypot(dx, dy) || 1;
+        let nx = dx / length;
+        let ny = dy / length;
+        
+        ctx.strokeStyle = "#ff3333";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(head.x, head.y);
+        ctx.lineTo(head.x + nx * 18, head.y + ny * 18); // درێژی زمانەکە
+        ctx.stroke();
+        
+        // سەری زمانەکە (دوو قەڵف)
+        ctx.fillStyle = "#ff3333";
+        ctx.beginPath();
+        ctx.arc(head.x + nx * 18, head.y + ny * 18, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+};
+
             }
         }
     };
