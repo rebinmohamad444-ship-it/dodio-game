@@ -1135,6 +1135,13 @@ window.drawSnake = function(ctx, snake) {
         ctx.moveTo(head.x, head.y);
         ctx.lineTo(head.x + nx * 22, head.y + ny * 22);
         ctx.stroke();
+        ctx.strokeStyle = "#ff0000";
+ctx.lineWidth = 3;
+ctx.beginPath();
+ctx.moveTo(head.x, head.y);
+ctx.lineTo(head.x + 20, head.y);
+ctx.stroke();
+
     }
 };
 
