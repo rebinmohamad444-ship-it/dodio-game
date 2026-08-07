@@ -988,6 +988,19 @@ if (typeof window.gameLoop === 'function') {
 }
 
 console.log("✅ گەیم بە سەرکەوتوویی چاککرایەوە!");
+    // =============================================
+// کۆدی کرانەوەی گەیم و مار
+// =============================================
+
+// 1. دروستکردنی فەنکشنی کرانەوەی گەیم (ئەمە نەبوو، بۆیە نەدەکرایەوە)
+window.startGame = function() {
+    document.getElementById('menu-overlay').style.display = 'none';
+    window.gameRunning = true;
+    window.initGame();
+    window.gameLoop(performance.now());
+};
+
+console.log("✅ گەیم بە سەرکەوتوویی چاککرایەوە!");
 </script>
 </body>
 </html>
