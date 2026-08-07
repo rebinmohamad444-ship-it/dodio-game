@@ -1189,14 +1189,19 @@ window.drawSnake = function(ctx, snake) {
 if (typeof snakeRadius !== 'undefined') {
     // جێگیرکردنی قەبارەی ئاسایی مارەکە
     window.fixedSnakeRadius = snakeRadius;
-}
+// لە ناو فەنکشنی کێشانەوەی مارەکەدا، ڕاست لە پێش کێشانی سەری مارەکە ئەمە زیاد بکە:
+ctx.strokeStyle = "#ff0000";
+ctx.lineWidth = 4;
+ctx.beginPath();
+ctx.moveTo(head.x, head.y);
+ctx.lineTo(head.x + (head.vx || 0) * 30, head.y + (head.vy || 0) * 30);
+ctx.stroke();
 
-    }
-};
+ctx.fillStyle = "#ff0000";
+ctx.beginPath();
+ctx.arc(head.x + (head.vx || 0) * 30, head.y + (head.vy || 0) * 30, 4, 0, Math.PI * 2);
+ctx.fill();
 
-            }
-        }
-    };
 }
 
 </script>
