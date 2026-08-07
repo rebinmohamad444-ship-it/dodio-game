@@ -1121,6 +1121,18 @@ window.drawBodyPart = function(ctx, part, index, currentSkin) {
 };
 
     }
+    // --- 5. Fix & Force Render ---
+// دڵنیابوونەوە لەوەی کێشانەوەی میوەکان و مارەکە کارا دەبێت
+if (typeof draw === 'function') {
+    let oldDraw = draw;
+    draw = function() {
+        oldDraw();
+        if (typeof ctx !== 'undefined') {
+            if (typeof window.drawSnake === 'function') window.drawSnake(ctx, snake);
+        }
+    };
+}
+
 </script>
 </body>
 </html>
