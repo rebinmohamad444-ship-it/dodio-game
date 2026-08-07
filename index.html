@@ -1047,101 +1047,147 @@
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
         
-    }// =============================================
-// زیادکردنی تایبەتمەندییە نوێیەکان
+    // =============================================
+// زیادکردنی تایبەتمەندییە نوێیەکان (کۆدی ڕاستەقینە)
 // =============================================
 
-// 1. ئایکۆنەکانی x2, x4, x6, x8 (زیادکراوە)
-const EXTRA_POWERUPS = ['x2', 'x4', 'x6', 'x8'];
-// ئەمە دەبێت لە شوێنی دروستکردنی powerups زیاد بکرێت
+// 1. گەورەکردنی میوەکان و زیادکردنی دوهێندە
+if (typeof initGame === 'function') {
+    const origInit = initGame;
+    initGame = function() {
+        origInit();
+        // زیادکردنی دوهێندە میوە
+        const extraFruits = [];
+        for (let i = 0; i < 4000; i++) {
+            let pos = getRandomMapPos();
+            extraFruits.push({
+                x: pos.x,
+                y: pos.y,
+                type: ['🍌', '🍉', '🍒', '🍎', '🍓'][Math.floor(Math.random() * 5)],
+                eatenTime: null
+            });
+        }
+        fruits.push(...extraFruits);
+        // گەورەکردنی میوەکان لە کاتی کێشاندا
+        const origDraw = ctx.fillText;
+        ctx.fillText = function(text, x, y) {
+            if (['🍌', '🍉', '🍒', '🍎', '🍓'].includes(text)) {
+                this.font = "32px Arial";
+                origDraw.call(this, text, x, y);
+                this.font = "24px Arial";
+            } else {
+                origDraw.call(this, text, x, y);
+            }
+        };
+    };
+}
 
-// 2. سیستەمی گڵۆپ (Blink) بۆ هەموو پاوەرئەپەکان
-// ئەم کۆدە دەبێت لە ناو فەنکشنی کێشانی سەردا زیاد بکرێت (مثلاً drawSnakeHead)
-if (window.isMagnetActive) {
-    const blink = Math.floor(Date.now() / 200) % 2 === 0;
-    ctx.strokeStyle = blink ? '#00d2d3' : '#0984e3';
-    ctx.lineWidth = blink ? 3 : 1.5;
-    ctx.shadowColor = '#00d2d3';
-    ctx.shadowBlur = blink ? 15 : 5;
-    // کێشانی 7 هێڵی پان بە ڕەنگی شین
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate(angle);
-    for (let i = -3; i <= 3; i++) {
-        ctx.beginPath();
-        ctx.moveTo(radius * 0.8, i * (radius * 0.4));
-        ctx.lineTo(radius * 4.0, i * (radius * 0.4));
-        ctx.stroke();
+// 2. زیادکردنی ئایکۆنەکانی x2, x4, x6, x8
+if (typeof powerups !== 'undefined') {
+    const extraIcons = ['x2', 'x4', 'x6', 'x8'];
+    for (let i = 0; i < 200; i++) {
+        let pos = getRandomMapPos();
+        powerups.push({
+            x: pos.x,
+            y: pos.y,
+            icon: extraIcons[Math.floor(Math.random() * extraIcons.length)]
+        });
     }
-    ctx.restore();
 }
 
-// 3. زیادکردنی گڵۆپ بۆ سنایپەر، ستێرن و موگناتیس
-// ئەمە دەبێت لە ناو هەمان فەنکشنی کێشاندا زیاد بکرێت
-if (window.isSniperActive) {
-    const blink = Math.floor(Date.now() / 200) % 2 === 0;
-    ctx.strokeStyle = blink ? '#e67e22' : '#d35400';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = '#e67e22';
-    ctx.shadowBlur = blink ? 20 : 5;
-    ctx.beginPath();
-    ctx.arc(0, 0, radius * 1.6, 0, Math.PI * 2);
-    ctx.stroke();
-}
-if (window.isSteeringActive) {
-    const blink = Math.floor(Date.now() / 180) % 2 === 0;
-    ctx.strokeStyle = blink ? '#f1c40f' : '#f39c12';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = '#f1c40f';
-    ctx.shadowBlur = blink ? 20 : 5;
-    ctx.beginPath();
-    ctx.arc(0, 0, radius * 1.4, -Math.PI / 3, Math.PI / 3);
-    ctx.stroke();
-}
-
-// 4. زیادکردنی دوو زمانی جوڵاو بۆ سەری مار
-// ئەمەش دەبێت لە ناو فەنکشنی کێشانی سەردا زیاد بکرێت
-const wag = Math.sin(Date.now() / 300) * 4;
-ctx.save();
-ctx.translate(p.x, p.y);
-ctx.rotate(angle);
-ctx.strokeStyle = '#e74c3c';
-ctx.lineWidth = 2.5;
-ctx.beginPath();
-ctx.moveTo(radius * 0.3, -radius * 0.2);
-ctx.lineTo(radius * 1.5 + wag, -radius * 0.4);
-ctx.stroke();
-ctx.beginPath();
-ctx.moveTo(radius * 0.3, -radius * 0.2);
-ctx.lineTo(radius * 1.0 + wag, -radius * 0.8);
-ctx.stroke();
-ctx.beginPath();
-ctx.moveTo(radius * 0.3, radius * 0.2);
-ctx.lineTo(radius * 1.5 - wag, radius * 0.4);
-ctx.stroke();
-ctx.beginPath();
-ctx.moveTo(radius * 0.3, radius * 0.2);
-ctx.lineTo(radius * 1.0 - wag, radius * 0.8);
-ctx.stroke();
-ctx.restore();
-
-// 5. زیادکردنی میوەکان (بە دوهێندە)
-// دەبێت لە شوێنی دروستکردنی میوەکان (initGame) زیاد بکرێت
-for (let i = 0; i < 4000; i++) { // دوهێندە زیادکراوە (لەبری 2000)
-    let pos = getRandomMapPos();
-    fruits.push({
-        x: pos.x,
-        y: pos.y,
-        type: fTypes[Math.floor(Math.random() * fTypes.length)],
-        eatenTime: null
-    });
+// 3. زیادکردنی 7 هێڵی شین و گڵۆپ بۆ موگناتیس
+if (typeof drawSnakeHead === 'function') {
+    const origHead = drawSnakeHead;
+    drawSnakeHead = function(p, angle, mainColor, radius, flagKey) {
+        origHead(p, angle, mainColor, radius, flagKey);
+        
+        // 7 هێڵی شین بۆ موگناتیس
+        if (isMagnetActive) {
+            const blink = Math.floor(Date.now() / 200) % 2 === 0;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(angle);
+            ctx.strokeStyle = blink ? '#00d2d3' : '#0984e3';
+            ctx.lineWidth = blink ? 3 : 1.5;
+            ctx.shadowColor = '#00d2d3';
+            ctx.shadowBlur = blink ? 15 : 5;
+            for (let i = -3; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(radius * 0.8, i * (radius * 0.4));
+                ctx.lineTo(radius * 4.0, i * (radius * 0.4));
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+        
+        // زیادکردنی دوو زمانی جوڵاو
+        const wag = Math.sin(Date.now() / 300) * 4;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(angle);
+        ctx.strokeStyle = '#e74c3c';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.3, -radius * 0.2);
+        ctx.lineTo(radius * 1.5 + wag, -radius * 0.4);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.3, -radius * 0.2);
+        ctx.lineTo(radius * 1.0 + wag, -radius * 0.8);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.3, radius * 0.2);
+        ctx.lineTo(radius * 1.5 - wag, radius * 0.4);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.3, radius * 0.2);
+        ctx.lineTo(radius * 1.0 - wag, radius * 0.8);
+        ctx.stroke();
+        ctx.restore();
+    };
 }
 
-// 6. گەورەکردنی قەبارەی میوەکان (لە کاتی کێشاندا)
-// دەبێت لە ناو gameLoop لە شوێنی کێشانی میوەدا بێت
-ctx.font = "32px Arial"; // گەورەتر
+// 4. زیادکردنی گڵۆپ بۆ سنایپەر و ستێرن
+if (typeof drawSnakeHead === 'function') {
+    const origHead2 = drawSnakeHead;
+    drawSnakeHead = function(p, angle, mainColor, radius, flagKey) {
+        origHead2(p, angle, mainColor, radius, flagKey);
+        
+        // گڵۆپی سنایپەر
+        if (isSniperActive) {
+            const blink = Math.floor(Date.now() / 200) % 2 === 0;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(angle);
+            ctx.strokeStyle = blink ? '#e67e22' : '#d35400';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = '#e67e22';
+            ctx.shadowBlur = blink ? 20 : 5;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 1.6, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        // گڵۆپی ستێرن (Fast Steering)
+        if (isSteeringActive) {
+            const blink = Math.floor(Date.now() / 180) % 2 === 0;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(angle);
+            ctx.strokeStyle = blink ? '#f1c40f' : '#f39c12';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = '#f1c40f';
+            ctx.shadowBlur = blink ? 20 : 5;
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 1.4, -Math.PI / 3, Math.PI / 3);
+            ctx.stroke();
+            ctx.restore();
+        }
+    };
+}
 
-console.log("✅ تایبەتمەندییە نوێیەکان بە سەرکەوتوویی زیادکران!");
+console.log("✅ هەموو تایبەتمەندییەکان بە سەرکەوتوویی زیادکران!");
 </script>
 </body>
 </html>
