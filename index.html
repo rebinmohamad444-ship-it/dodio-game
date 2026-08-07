@@ -1046,6 +1046,80 @@
 
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
+        // --- 1. Snake Long Tongue ---
+const originalDrawSnake = window.drawSnake || function(){};
+window.drawSnake = function(ctx, snake) {
+    if (originalDrawSnake !== arguments.callee) originalDrawSnake(ctx, snake);
+    if (snake && snake.length > 0) {
+        let head = snake[0];
+        ctx.fillStyle = "#ff3333";
+        ctx.beginPath();
+        // درێژکردنەوەی زمان بەپێی ئاراستەی سەرەکە
+        let tongueLength = 12;
+        ctx.arc(head.x, head.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#ff3333";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(head.x, head.y);
+        ctx.lineTo(head.x + (head.dirX || 1) * tongueLength, head.y + (head.dirY || 0) * tongueLength);
+        ctx.stroke();
+    }
+};
+// --- 2. Real Players Leaderboard ---
+function updateRealLeaderboard(playerName, playerScore) {
+    let leaderboard = JSON.parse(localStorage.getItem('dod_real_lb') || '[]');
+    let existingIndex = leaderboard.findIndex(p => p.name === playerName);
+    if (existingIndex >= 0) {
+        if (playerScore > leaderboard[existingIndex].score) {
+            leaderboard[existingIndex].score = playerScore;
+        }
+    } else {
+        leaderboard.push({ name: playerName || "Player", score: playerScore });
+    }
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 5); // تەنها پێنج باشترین
+    localStorage.setItem('dod_real_lb', JSON.stringify(leaderboard));
+    
+    // نوێکردنەوەی شانۆی لیدەربۆرد لە ائکراندا ئەگەر هەبێت
+    let lbContainer = document.getElementById('leaderboard-list');
+    if (lbContainer) {
+        lbContainer.innerHTML = leaderboard.map((p, i) => `<div>${i+1}. ${p.name} - ${p.score}</div>`).join('');
+    }
+}
+// --- 3. Double Fruits & Powerups (Magnets, Stars, Speed, X) ---
+if (typeof fruitSpawnRate !== 'undefined') {
+    fruitSpawnRate = fruitSpawnRate * 0.5; // کاتەکە کەم دەکاتەوە بۆ ئەوەی دوو هێندە زووتر و زیاتر بێن
+}
+const powerupTypes = ['magnet', 'star', 'speed', 'x_mark'];
+function spawnExtraPowerups() {
+    if (typeof foods !== 'undefined' && Math.random() < 0.3) {
+        let randomType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+        foods.push({
+            x: Math.random() * (window.innerWidth - 50),
+            y: Math.random() * (window.innerHeight - 50),
+            type: randomType,
+            isPowerup: true
+        });
+    }
+}
+setInterval(spawnExtraPowerups, 4000);
+// --- 4. Flag Skins on Snake Body ---
+const originalDrawBodyPart = window.drawBodyPart || function(){};
+window.drawBodyPart = function(ctx, part, index, currentSkin) {
+    if (currentSkin && currentSkin.startsWith('flag_')) {
+        ctx.fillStyle = currentSkin.includes('kurdistan') ? '#ffcc00' : '#00a86b'; // ڕەنگی ئاڵا
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(part.x, part.y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+    } else {
+        originalDrawBodyPart(ctx, part, index, currentSkin);
+    }
+};
+
     }
 </script>
 </body>
