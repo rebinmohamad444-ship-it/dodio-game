@@ -1001,6 +1001,114 @@ window.startGame = function() {
 };
 
 console.log("✅ گەیم بە سەرکەوتوویی چاککرایەوە!");
+    // =============================================
+// کۆدی گەڕاندنەوەی مار و میوەکان
+// =============================================
+
+// 1. گەڕاندنەوەی سنوورەکانی گەیم
+window.MAP_CENTER = 20000;
+window.MAP_RADIUS = 18000;
+
+// 2. گەڕاندنەوەی فەنکشنی initGame (ئەگەر ون بووە)
+if (typeof window.initGame !== 'function') {
+    window.initGame = function() {
+        console.log("Initializing game...");
+        window.score = 0;
+        window.player = {
+            x: window.MAP_CENTER,
+            y: window.MAP_CENTER,
+            angle: 0,
+            targetAngle: 0,
+            skin: 'free1',
+            body: [],
+            alive: true,
+            sizeRadius: 20
+        };
+        // دروستکردنی لاشەی مار
+        for(let i=0; i<35; i++) {
+            window.player.body.push({
+                x: window.MAP_CENTER - i*8,
+                y: window.MAP_CENTER
+            });
+        }
+        window.bots = [];
+        // دروستکردنی میوەکان
+        window.fruits = [];
+        const fTypes = ['🍌', '🍉', '🍒', '🍎', '🍓'];
+        for(let i=0; i<2000; i++) {
+            let pos = window.getRandomMapPos();
+            if (window.getRandomMapPos) {
+                window.fruits.push({
+                    x: pos.x,
+                    y: pos.y,
+                    type: fTypes[Math.floor(Math.random()*fTypes.length)],
+                    eatenTime: null
+                });
+            }
+        }
+        window.gameRunning = true;
+    };
+}
+
+// 3. گەڕاندنەوەی فەنکشنی گەیم لووپ (ئەگەر ون بووە)
+if (typeof window.gameLoop !== 'function') {
+    window.gameLoop = function(now) {
+        if (!window.gameRunning) return;
+        const ctx = document.getElementById('gameCanvas').getContext('2d');
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        
+        // کێشانی مار
+        if (window.player && window.player.alive) {
+            for(let i = window.player.body.length - 1; i >= 0; i--) {
+                let p = window.player.body[i];
+                ctx.fillStyle = '#2ecc71';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, window.player.sizeRadius * 0.85, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            // کێشانی سەری مار
+            ctx.fillStyle = '#2ecc71';
+            ctx.beginPath();
+            ctx.arc(window.player.x, window.player.y, window.player.sizeRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // کێشانی میوەکان
+        if (window.fruits) {
+            ctx.font = "32px Arial";
+            window.fruits.forEach(f => {
+                if(!f.eatenTime) {
+                    ctx.fillText(f.type, f.x, f.y);
+                }
+            });
+        }
+        requestAnimationFrame(window.gameLoop);
+    };
+}
+
+// 4. گەڕاندنەوەی فەنکشنی getRandomMapPos
+if (typeof window.getRandomMapPos !== 'function') {
+    window.getRandomMapPos = function() {
+        let angle = Math.random() * Math.PI * 2;
+        let r = Math.sqrt(Math.random()) * (window.MAP_RADIUS - 400);
+        return {
+            x: window.MAP_CENTER + Math.cos(angle) * r,
+            y: window.MAP_CENTER + Math.sin(angle) * r
+        };
+    };
+}
+
+// 5. گەڕاندنەوەی فەنکشنی startGame (ئەگەر ون بووە)
+if (typeof window.startGame !== 'function') {
+    window.startGame = function() {
+        document.getElementById('menu-overlay').style.display = 'none';
+        window.gameRunning = true;
+        window.initGame();
+        requestAnimationFrame(window.gameLoop);
+    };
+}
+
+console.log("✅ مار و میوەکان گەڕانەوە!");
 </script>
 </body>
 </html>
