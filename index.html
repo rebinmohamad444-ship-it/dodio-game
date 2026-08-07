@@ -1448,6 +1448,50 @@ if (typeof gameLoop === 'function') {
         }
     };
 }
+    // =============================================
+// کۆدی ڕاست و کۆتایی (ستارت ناکات تێکبچێت)
+// =============================================
+
+// 1. گەورەکردنی میوەکان لە کاتی کێشاندا
+const originalFill = ctx.fillText;
+ctx.fillText = function(text, x, y) {
+    if (text === '🍌' || text === '🍉' || text === '🍒' || text === '🍎' || text === '🍓') {
+        this.font = '32px Arial';
+        originalFill.call(this, text, x, y);
+        this.font = '24px Arial';
+    } else {
+        originalFill.call(this, text, x, y);
+    }
+};
+
+// 2. ئامادەکاری بۆ موگناتیس و زمان
+window.isMagnetActive = false;
+window.isSniperActive = false;
+window.isSteeringActive = false;
+
+// 3. نیشاندانی ئاڵاکان لە مینۆ
+setTimeout(() => {
+    const box = document.getElementById('menuLeaderboardContainer');
+    if (!box) return;
+    let html = '<div style="display:grid; grid-template-columns: repeat(5,1fr); gap:4px; border-top:1px solid #444; padding-top:8px; margin-top:8px;">';
+    if (window.skinsDatabase) {
+        window.skinsDatabase.filter(s => s.type === 'flags').forEach(f => {
+            if (f.flagKey && window.loadedFlagImages && window.loadedFlagImages[f.flagKey]) {
+                html += `<div><img src="${window.flagImageUrls[f.flagKey]}" style="width:24px; height:16px; border-radius:2px;"></div>`;
+            }
+        });
+    }
+    html += '</div>';
+    box.innerHTML += html;
+}, 500);
+
+// 4. دووری کامێرا بۆ سنایپەر (بەبێ دەستکاری gameLoop)
+const baseZoom = window.baseCameraScale || 0.35;
+if (window.isSniperActive) {
+    window.cameraScale = 0.18;
+} else {
+    window.cameraScale = baseZoom;
+}
 </script>
 </body>
 </html>
