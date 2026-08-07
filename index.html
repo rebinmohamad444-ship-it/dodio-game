@@ -1415,25 +1415,39 @@ setTimeout(() => {
 window.isSniperActive = false;
 window.isSteeringActive = false;
 // 5. گڵۆپ و دووری کامێرا بۆ سنایپەر و ستێرن
+// =============================================
+// چارەسەری کۆتایی بۆ سنایپەر و ستێرن (بەبێ تێکچوون)
+// =============================================
+
+// پێناسەکردنی گۆڕاوەکان
 window.isSniperActive = false;
 window.isSteeringActive = false;
 
-// زیادکردنی پشکنینی دووری کامێرا بۆ سنایپەر
-// ئەم کۆدە ناگۆڕێتەوە بۆ ناو گەیم، بەڵام بەڕێوەی دەبات
-// (پێویست ناکات gameLoop بگۆڕیت، ئەمە کاردەکات)
-if (typeof gameLoop !== 'undefined') {
-    const originalGameLoop = gameLoop;
+// گۆڕینی دووری کامێرا بە شێوەیەکی پارێزراو
+// ئەم کۆدە دەبێت لە ناو gameLoop یان لە کاتی چالاکبوونی پاوەرئەپەکەدا کاربکات
+// بەڵام بۆ ئەوەی ئێستا کاربکات، ئەم فەنکشنە دروست دەکەین:
+window.updateSniperZoom = function() {
+    if (window.isSniperActive) {
+        cameraScale = 0.18;
+    } else {
+        cameraScale = baseCameraScale || 0.35;
+    }
+};
+
+// زیادکردنی پشکنینی ئەم گۆڕانکارییە لە کاتی گەیم لووپدا
+if (typeof gameLoop === 'function') {
+    const originalLoop = gameLoop;
     gameLoop = function(now) {
+        // بانگهێشتی سەرەکی
+        originalLoop(now);
+        // دواتر پشکنینی کامێرا
         if (window.isSniperActive) {
             cameraScale = 0.18;
         } else {
             cameraScale = baseCameraScale || 0.35;
         }
-        originalGameLoop(now);
     };
 }
-
-}; 
 </script>
 </body>
 </html>
