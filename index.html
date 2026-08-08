@@ -1175,6 +1175,48 @@ updateTongues();
 
 // لە ناو لۆپی کێشانەوەی یارییەکەدا (Draw / Render Loop)، لە دوای باکگراوند:
 drawTongues();
+// ١. گۆڕاوەکانی زمانە سوورەکان
+let redTongues = [
+    { x: 200, y: 150, width: 25, height: 120, speed: 3, direction: 1, minY: 50, maxY: 350 },
+    { x: 280, y: 250, width: 25, height: 120, speed: 4, direction: -1, minY: 100, maxY: 400 }
+];
+
+// ٢. فەنکشنی نوێکردنەوەی جووڵە
+function updateTongues() {
+    redTongues.forEach(tongue => {
+        tongue.y += tongue.speed * tongue.direction;
+        if (tongue.y <= tongue.minY || tongue.y >= tongue.maxY) {
+            tongue.direction *= -1;
+        }
+    });
+}
+
+// ٣. فەنکشنی کێشانەوە لەسەر شاشە
+function drawTongues() {
+    if (typeof ctx === 'undefined') return;
+    ctx.save();
+    redTongues.forEach(tongue => {
+        ctx.fillStyle = "#ff0000";
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "#ff0000";
+        ctx.fillRect(tongue.x, tongue.y, tongue.width, tongue.height);
+    });
+    ctx.restore();
+}
+
+// ٤. گرێدانی ڕاستەوخۆ بە لۆپی یارییەکەوە (بۆ ئەوەی دەرکەوێت و بجووڵێت)
+if (typeof gameLoop === 'function') {
+    // ئەگەر یارییەکەت فەنکشنی لۆپی هەیە، ئەوا نوێکردنەوەکەی تێدا زیاد دەکەین
+} else {
+    // لۆپی خۆکار بۆ دڵنیابوون لە کارکردنی
+    setInterval(() => {
+        updateTongues();
+        if (typeof draw === 'function') {
+            // ئەگەر فەنکشنی کێشانەی سەرەکی هەبێت
+        }
+        drawTongues();
+    }, 1000 / 60);
+}
 
 }
 
