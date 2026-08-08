@@ -1170,6 +1170,12 @@ function drawTongues() {
         ctx.fillRect(tongue.x, tongue.y, tongue.width, tongue.height);
     });
     ctx.restore();
+    // لە ناو لۆپی نوێکردنەوەی یارییەکەدا (Update Loop):
+updateTongues();
+
+// لە ناو لۆپی کێشانەوەی یارییەکەدا (Draw / Render Loop)، لە دوای باکگراوند:
+drawTongues();
+
 }
 
     }
