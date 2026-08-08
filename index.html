@@ -1141,6 +1141,36 @@ ctx.beginPath();
 ctx.moveTo(head.x, head.y);
 ctx.lineTo(head.x + 20, head.y);
 ctx.stroke();
+        
+// زیادکردنی تایبەتمەندی زمانە سوورەکان لە بەشی گۆڕاوەکانت (Variables)
+let redTongues = [
+    { x: 100, y: 0, width: 20, height: 150, speed: 3, direction: 1, minY: 0, maxY: 300 },
+    { x: 300, y: 200, width: 20, height: 150, speed: 4, direction: -1, minY: 100, maxY: 400 }
+];
+
+// لەناو لۆپی نوێکردنەوەی یارییەکەدا (Update Loop) ئەمە زیاد بکە بۆ جووڵانیان:
+function updateTongues() {
+    redTongues.forEach(tongue => {
+        tongue.y += tongue.speed * tongue.direction;
+        
+        // ئەگەر گەیشتە لوتکە یان بنکە، ئاراستەکەی پێچەوانە بکەرەوە
+        if (tongue.y <= tongue.minY || tongue.y >= tongue.maxY) {
+            tongue.direction *= -1;
+        }
+    });
+}
+
+// لەناو لۆپی کێشانەوەی یارییەکەدا (Draw Loop) ئەمە زیاد بکە بۆ نیشاندانیان بە ڕەنگی سوور:
+function drawTongues() {
+    ctx.save();
+    redTongues.forEach(tongue => {
+        ctx.fillStyle = "#ff0000"; // ڕەنگی سوور
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#ff0000"; // بریقەی سوور بۆ جوانی
+        ctx.fillRect(tongue.x, tongue.y, tongue.width, tongue.height);
+    });
+    ctx.restore();
+}
 
     }
 };
