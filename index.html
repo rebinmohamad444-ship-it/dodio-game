@@ -1046,6 +1046,34 @@
 
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
+        // --- Clean Long Red Snake Tongue ---
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        if (typeof window.drawSnake === 'function' || typeof snake !== 'undefined') {
+            const originalDraw = window.drawSnake;
+            window.drawSnake = function(ctx, s) {
+                if (originalDraw) originalDraw(ctx, s);
+                if (s && s.length > 0) {
+                    let h = s[0];
+                    let dx = h.vx || h.dx || 1;
+                    let dy = h.vy || h.dy || 0;
+                    let len = Math.hypot(dx, dy) || 1;
+                    let nx = dx / len;
+                    let ny = dy / len;
+                    
+                    // درێژکردنەوەی زمانی سوور لە پێش سەری مارەکە
+                    ctx.strokeStyle = "#ff0000";
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(h.x, h.y);
+                    ctx.lineTo(h.x + nx * 24, h.y + ny * 24);
+                    ctx.stroke();
+                }
+            };
+        }
+    }, 1000);
+});
+
     }
 </script>
 </body>
