@@ -772,15 +772,16 @@
             baseCameraScale = Math.max(0.18, 0.35 - (player.sizeRadius - 28) * 0.002);
             cameraScale = isSniperActive ? 0.20 : baseCameraScale;
 
+            // پشکنینی هه‌موو گەراجەکان بە شێوەیەکی گشتی و ڕاست
             let inAnyGarage = false;
             garages.forEach(g => {
                 let half = g.size / 2;
-                if(player.x >= g.x - half && player.x <= g.x + half && player.y >= g.y - half && player.y <= g.y + half) {
+                if(player.x >= g.x - half - 30 && player.x <= g.x + half + 30 && player.y >= g.y - half - 30 && player.y <= g.y + half + 30) {
                     inAnyGarage = true;
                 }
             });
 
-            // ڕاستکردنەوەی دڵنیابوونەوە لە کاتی کرێی گەراج
+            // کارپێکردنی دۆخی پاراستنی گەراج کاتێک کرێ هەبێت
             if(inAnyGarage && isGarageRented) {
                 isInsideGarageSafe = true;
             } else if(!inAnyGarage && isInsideGarageSafe) {
@@ -818,7 +819,6 @@
             }
             document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 1200 ? 'block' : 'none';
 
-            // ئەگەر لە ناو گەراجدا بێت و کرێیەکەی کارا بێت، هێرشی بۆتەکان کاری تێناکات
             if(!isInsideGarageSafe) {
                 bots.forEach(b => {
                     if(!b.alive) return;
@@ -958,7 +958,9 @@
             ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
             ctx.strokeRect(g.x - half - 40, g.y - half - 40, g.size + 80, g.size + 80);
             
-            ctx.fillStyle = isGarageRented ? 'rgba(46, 204, 113, 0.35)' : 'rgba(127, 140, 141, 0.35)'; 
+            // پیشاندانی گەراج بە ڕەنگی سەوز کاتێک کرێیەکەی کارایە
+            let activeGarageColor = isGarageRented ? 'rgba(46, 204, 113, 0.45)' : 'rgba(127, 140, 141, 0.35)';
+            ctx.fillStyle = activeGarageColor; 
             ctx.fillRect(g.x - half, g.y - half, g.size, g.size);
             ctx.strokeStyle = isGarageRented ? '#2ecc71' : '#f1c40f'; ctx.lineWidth = 6;
             ctx.strokeRect(g.x - half, g.y - half, g.size, g.size);
