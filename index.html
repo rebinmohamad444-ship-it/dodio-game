@@ -476,7 +476,6 @@
             coinItems.push({ x: pos.x, y: pos.y });
         }
 
-        // زیادکردنی ڕێژەی ئایکۆنەکان (دوو هێندە زیاتر لە پێشتر: 1600 دانە)
         powerups = [];
         const pTypes = ['🧲', '🧲', '🛞', '🛞', '🎯', '🎯', '🚀', '⭐', 'x2', 'x4', 'x6', 'x8'];
         for(let i=0; i<1600; i++) {
@@ -582,7 +581,6 @@
         container.innerHTML = html;
     }
 
-    // ---- سەری مارەکە لەگەڵ زمانی جووڵاو و درێژی دوو لق ----
     function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
         ctx.save();
         ctx.translate(p.x, p.y);
@@ -681,21 +679,18 @@
         ctx.lineTo(radius * 1.6, 0);
         ctx.fill();
 
-        // ---- زمانی جووڵاو و درێژ (بەردەوام بەملاو ئەولا دەجووڵێت) ----
         let timeFactor = Date.now() * 0.012;
-        let tongueWiggle = Math.sin(timeFactor) * 8; // جووڵەی بەملاو ئەولا
-        let tongueExtend = 22 + Math.abs(Math.cos(timeFactor * 0.5) * 14); // درێژ و کورت بوونەوە
+        let tongueWiggle = Math.sin(timeFactor) * 8;
+        let tongueExtend = 22 + Math.abs(Math.cos(timeFactor * 0.5) * 14);
 
         ctx.strokeStyle = "#ff0000";
         ctx.lineWidth = 3.5;
         
-        // زمانی یەکەم
         ctx.beginPath();
         ctx.moveTo(radius * 1.9, -radius * 0.1);
         ctx.lineTo(radius * 1.9 + tongueExtend, -radius * 0.35 + tongueWiggle);
         ctx.stroke();
 
-        // زمانی دووەم
         ctx.beginPath();
         ctx.moveTo(radius * 1.9, radius * 0.1);
         ctx.lineTo(radius * 1.9 + tongueExtend, radius * 0.35 - tongueWiggle);
@@ -785,7 +780,8 @@
                 }
             });
 
-            if(inAnyGarage && isGarageRented && isInsideGarageSafe === false) {
+            // ڕاستکردنەوەی دڵنیابوونەوە لە کاتی کرێی گەراج
+            if(inAnyGarage && isGarageRented) {
                 isInsideGarageSafe = true;
             } else if(!inAnyGarage && isInsideGarageSafe) {
                 isInsideGarageSafe = false;
@@ -822,6 +818,7 @@
             }
             document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 1200 ? 'block' : 'none';
 
+            // ئەگەر لە ناو گەراجدا بێت و کرێیەکەی کارا بێت، هێرشی بۆتەکان کاری تێناکات
             if(!isInsideGarageSafe) {
                 bots.forEach(b => {
                     if(!b.alive) return;
@@ -978,13 +975,12 @@
         coinItems.forEach(c => { ctx.font = "bold 28px Arial"; ctx.fillText("🪙", c.x, c.y); });
         deadRemains.forEach(r => { ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 14, 0, Math.PI*2); ctx.fill(); });
         
-        // ---- ئەفێکت و بریقەی گڵۆپی (Glow/Blink) بۆ سەرجەم ئایکۆنەکان تاوەکو جیاواز بن ----
-        let glowScale = 1 + Math.sin(now * 0.01) * 0.15; // قەبارەکەی کەمێک گەورە و بچووک دەبێت
+        let glowScale = 1 + Math.sin(now * 0.01) * 0.15;
         powerups.forEach(p => {
             ctx.save();
             ctx.font = "bold 34px Arial";
-            ctx.shadowColor = "#00ffff"; // بریقەی شینی کاڵ یان زێڕین
-            ctx.shadowBlur = 15 + Math.sin(now * 0.015) * 10; // گڵۆپەکە هەڵدەبێت و دەکوژێتەوە
+            ctx.shadowColor = "#00ffff";
+            ctx.shadowBlur = 15 + Math.sin(now * 0.015) * 10;
             ctx.translate(p.x, p.y);
             ctx.scale(glowScale, glowScale);
             ctx.fillText(p.icon, 0, 0);
