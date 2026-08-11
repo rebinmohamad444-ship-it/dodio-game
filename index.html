@@ -581,7 +581,7 @@
         container.innerHTML = html;
     }
 
-    // ---- سەری ماری کوبرای سەرەکی لەسەر ستایلی وێنە نوێیەکە ----
+    // ---- سەری ماری کوبرا لەگەڵ دوو زمانی درێژ و سوور ----
     function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
         ctx.save();
         ctx.translate(p.x, p.y);
@@ -592,7 +592,7 @@
         ctx.shadowBlur = 12;
 
         // 2. بەشی پشتەوەی سەری کوبرا (کەپشۆن/تاجی تەنیشتەکان)
-        ctx.fillStyle = '#b8860b'; // ئاڵتونی تاریک
+        ctx.fillStyle = '#b8860b';
         ctx.beginPath();
         ctx.moveTo(radius * 1.8, 0);
         ctx.quadraticCurveTo(radius * 0.8, -radius * 1.9, -radius * 1.2, -radius * 1.6);
@@ -601,40 +601,38 @@
         ctx.closePath();
         ctx.fill();
 
-        // 3. دروستکردنی شێوەی سەرەکی زێڕین و سووری سەر (Pentagon Cobra Shape)
+        // 3. دروستکردنی شێوەی سەرەکی زێڕین و سووری سەر
         let headGrad = ctx.createLinearGradient(-radius, 0, radius * 1.8, 0);
-        headGrad.addColorStop(0, '#8b0000'); // سووری تێۆخ
+        headGrad.addColorStop(0, '#8b0000');
         headGrad.addColorStop(0.5, mainColor || '#e74c3c');
-        headGrad.addColorStop(1, '#ffd700'); // ئاڵتونی برەق
+        headGrad.addColorStop(1, '#ffd700');
 
         ctx.fillStyle = headGrad;
         ctx.strokeStyle = '#ffd700';
         ctx.lineWidth = 3.5;
 
         ctx.beginPath();
-        ctx.moveTo(radius * 1.8, 0);            // لوت
-        ctx.lineTo(radius * 0.7, -radius * 1.35); // چەپی لوت
-        ctx.lineTo(-radius * 0.9, -radius * 1.1); // شانی چەپ
-        ctx.lineTo(-radius * 0.6, 0);            // ناوەڕاستی پشتەوە
-        ctx.lineTo(-radius * 0.9, radius * 1.1);  // شانی ڕاست
-        ctx.lineTo(radius * 0.7, radius * 1.35);  // ڕاستی لوت
+        ctx.moveTo(radius * 1.8, 0);
+        ctx.lineTo(radius * 0.7, -radius * 1.35);
+        ctx.lineTo(-radius * 0.9, -radius * 1.1);
+        ctx.lineTo(-radius * 0.6, 0);
+        ctx.lineTo(-radius * 0.9, radius * 1.1);
+        ctx.lineTo(radius * 0.7, radius * 1.35);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
-        ctx.shadowBlur = 0; // لادانی سێبەرەکە بۆ وردەکاریەکان
+        ctx.shadowBlur = 0;
 
         // 4. نەقشی ئاڵتونی و نەقشکاری ناو سەری کوبراکە
         ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)';
         ctx.lineWidth = 2.5;
         
-        // نەقشی چەپ
         ctx.beginPath();
         ctx.moveTo(radius * 1.2, -radius * 0.2);
         ctx.quadraticCurveTo(radius * 0.3, -radius * 0.9, -radius * 0.4, -radius * 0.6);
         ctx.stroke();
 
-        // نەقشی ڕاست
         ctx.beginPath();
         ctx.moveTo(radius * 1.2, radius * 0.2);
         ctx.quadraticCurveTo(radius * 0.3, radius * 0.9, -radius * 0.4, radius * 0.6);
@@ -653,22 +651,19 @@
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // 5. چاوە سوورە گەشەکان (Red Glowing Eyes)
+        // 5. چاوە سوورە گەشەکان
         ctx.shadowColor = '#ff0000';
         ctx.shadowBlur = 10;
         ctx.fillStyle = '#ff1100';
 
-        // چاوی چەپ
         ctx.beginPath();
         ctx.ellipse(radius * 0.85, -radius * 0.45, radius * 0.35, radius * 0.18, 0.2, 0, Math.PI * 2);
         ctx.fill();
 
-        // چاوی ڕاست
         ctx.beginPath();
         ctx.ellipse(radius * 0.85, radius * 0.45, radius * 0.35, radius * 0.18, -0.2, 0, Math.PI * 2);
         ctx.fill();
 
-        // 6. بڕبڕەی ڕەشی ناو چاوەکان (pupils)
         ctx.shadowBlur = 0;
         ctx.fillStyle = '#000000';
         ctx.beginPath();
@@ -678,7 +673,7 @@
         ctx.ellipse(radius * 0.9, radius * 0.45, radius * 0.1, radius * 0.16, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // 7. ددانەکانی کوبراکە (Fangs)
+        // ددانەکانی کوبراکە
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.moveTo(radius * 1.7, -radius * 0.2);
@@ -692,6 +687,20 @@
         ctx.lineTo(radius * 1.6, 0);
         ctx.fill();
 
+        // ---- دوو زمانی سوور و درێژ لە دەمی مارەکە ----
+        ctx.strokeStyle = "#ff0000";
+        ctx.lineWidth = 3.5;
+        // زمانی یەکەم (لای سەرەوە)
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.9, -radius * 0.1);
+        ctx.lineTo(radius * 2.8, -radius * 0.25);
+        ctx.stroke();
+        // زمانی دووەم (لای خوارەوە)
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.9, radius * 0.1);
+        ctx.lineTo(radius * 2.8, radius * 0.25);
+        ctx.stroke();
+
         // ئاڵا ئەگەر هەبێت
         if(flagKey && loadedFlagImages[flagKey]) {
             try {
@@ -701,13 +710,11 @@
             } catch(e){}
         }
 
-        // ئیمۆجی ئەگەر هەیە
         if(activeEmojiText) {
             ctx.font = `${radius * 2.2}px Arial`;
             ctx.fillText(activeEmojiText, 0, -radius * 2.2);
         }
 
-        // شوێنپێی موگناتیسی
         if(isMagnetActive) {
             let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
             ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
@@ -795,7 +802,6 @@
                 document.getElementById('garage-safe-status').style.display = 'none';
             }
 
-            // جوڵە (هەمیشە ئازادە بۆ دەرچوون لە گەراج)
             let diff = player.targetAngle - player.angle;
             while (diff < -Math.PI) diff += Math.PI * 2;
             while (diff > Math.PI) diff -= Math.PI * 2;
@@ -808,7 +814,8 @@
             
             player.body.unshift({x: player.x, y: player.y});
 
-            let maxAllowedSegments = Math.min(3500, 60 + Math.floor((score * currentMultiplier) / 4));
+            // کۆنترۆڵکردنی قەبارەی مارەکە بۆ ئەوەی زۆر ئەستوور نەبێت
+            let maxAllowedSegments = Math.min(1800, 60 + Math.floor((score * currentMultiplier) / 5));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
@@ -817,7 +824,6 @@
             }
             document.getElementById('red-zone-alert').style.display = distFromCenter > MAP_RADIUS - 1200 ? 'block' : 'none';
 
-            // پێکدادان لەگەڵ بۆتەکان
             if(!isInsideGarageSafe) {
                 bots.forEach(b => {
                     if(!b.alive) return;
@@ -865,7 +871,7 @@
                     document.getElementById('scoreVal').innerText = Math.floor(score);
                     f.eatenTime = Date.now();
                     f.x = -99999; f.y = -99999;
-                    if(player.sizeRadius < 95) player.sizeRadius += (0.35 * currentMultiplier);
+                    if(player.sizeRadius < 55) player.sizeRadius += (0.15 * currentMultiplier); // سنووردارکردنی قەبارە
                 }
             });
 
@@ -884,7 +890,7 @@
                     score += 15 * currentMultiplier;
                     document.getElementById('scoreVal').innerText = Math.floor(score);
                     deadRemains.splice(i, 1);
-                    if(player.sizeRadius < 95) player.sizeRadius += (0.45 * currentMultiplier);
+                    if(player.sizeRadius < 55) player.sizeRadius += (0.2 * currentMultiplier);
                 }
             });
 
@@ -952,7 +958,6 @@
         ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 30; ctx.beginPath();
         ctx.arc(MAP_CENTER, MAP_CENTER, MAP_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-        // گەراجەکان
         garages.forEach(g => {
             let half = g.size / 2;
             ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
@@ -966,7 +971,6 @@
             ctx.fillStyle = '#fff'; ctx.font = "bold 26px Arial"; 
             ctx.fillText(isGarageRented ? "GARAGE 🛞 (SAFE ZONE)" : "GARAGE 🔒 (RENT REQUIRED)", g.x - 140, g.y + 10);
 
-            // دیواری دەوروبەری گەراج (بەرگری لە هێرشی دەرەوە)
             ctx.strokeStyle = 'rgba(46, 204, 113, 0.6)';
             ctx.lineWidth = 20;
             ctx.strokeRect(g.x - half - 60, g.y - half - 60, g.size + 120, g.size + 120);
@@ -980,14 +984,12 @@
         if(player.alive) {
             let skinObj = skinsDatabase.find(s => s.id === player.skin) || skinsDatabase[0];
             
-            // کێشانی لەش و ئاڵاکان
             for(let i = player.body.length - 1; i >= 2; i--) {
                 let p = player.body[i];
                 let color = skinObj.colors[i % skinObj.colors.length];
                 ctx.fillStyle = color; ctx.beginPath();
                 ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); ctx.fill();
 
-                // زیادکردنی ئاڵا بە شێوەی بڵاو لەسەر لەش
                 if(skinObj.flagKey && loadedFlagImages[skinObj.flagKey] && i % 3 === 0) {
                     try {
                         ctx.globalAlpha = 0.5;
@@ -1001,11 +1003,9 @@
                     } catch(e){}
                 }
             }
-            // کێشانی سەر بە دیزاینە نوێیەکە
             drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, skinObj.flagKey);
         }
 
-        // کێشانی بۆتەکان
         bots.forEach(b => {
             if(!b.alive) return;
             for(let j = b.body.length - 1; j >= 2; j--) {
@@ -1046,34 +1046,6 @@
 
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
-        // --- Clean Long Red Snake Tongue ---
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        if (typeof window.drawSnake === 'function' || typeof snake !== 'undefined') {
-            const originalDraw = window.drawSnake;
-            window.drawSnake = function(ctx, s) {
-                if (originalDraw) originalDraw(ctx, s);
-                if (s && s.length > 0) {
-                    let h = s[0];
-                    let dx = h.vx || h.dx || 1;
-                    let dy = h.vy || h.dy || 0;
-                    let len = Math.hypot(dx, dy) || 1;
-                    let nx = dx / len;
-                    let ny = dy / len;
-                    
-                    // درێژکردنەوەی زمانی سوور لە پێش سەری مارەکە
-                    ctx.strokeStyle = "#ff0000";
-                    ctx.lineWidth = 3.5;
-                    ctx.beginPath();
-                    ctx.moveTo(h.x, h.y);
-                    ctx.lineTo(h.x + nx * 24, h.y + ny * 24);
-                    ctx.stroke();
-                }
-            };
-        }
-    }, 1000);
-});
-
     }
 </script>
 </body>
