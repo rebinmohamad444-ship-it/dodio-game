@@ -1078,6 +1078,21 @@
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
     }
+    // کاتێک یاریزان ئایتمی خێرایی دەخوات
+function applySpeedBoost() {
+    // خێراییەکە دوو هێندە دەکەین
+    player.speed *= 2; 
+    
+    // زیادکردنی ٣ سەهم یان ئاراستە لە بەردەم مارەکە
+    for(let i = 1; i <= 3; i++) {
+        activePowers.push({
+            type: 'arrow_indicator',
+            offset: i * 15, // دووری نێوان سەهمەکان
+            duration: 5000 // ماوەی ماوەوەی سەهمەکان (٥ چرکە)
+        });
+    }
+}
+
 </script>
 </body>
 </html>
