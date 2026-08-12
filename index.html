@@ -7,27 +7,6 @@
     <link rel="icon" type="image/png" href="1785763600347.png">
     <link rel="manifest" href="manifest.json">
     <style>
-        canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
-        #radar-wrapper { position: absolute; top: 8px; left: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; z-index: 5; }
-        #radar-canvas { width: 65px; height: 65px; background: rgba(0, 0, 0, 0.85); border: 1.5px solid #2ecc71; border-radius: 50%; }
-        #hud-stats { background: rgba(0,0,0,0.75); padding: 3px 6px; border-radius: 6px; border: 1px solid #2ecc71; font-size: 9px; text-align: left; width: 65px; color: #fff; }
-        #emoji-reaction-box { display: flex; flex-direction: row; gap: 4px; margin-top: 2px; }
-        .reaction-btn { width: 28px; height: 28px; background: rgba(0,0,0,0.8); border: 1px solid #f1c40f; border-radius: 50%; font-size: 14px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,0.5); }
-        #left-bottom-container { position: absolute; bottom: 12px; left: 12px; display: flex; flex-direction: column; gap: 4px; z-index: 10; }
-        #ingame-garage-btn { background: rgba(243, 156, 18, 0.9); border: 1px solid #fff; color: #fff; padding: 5px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; width: 75px; }
-        #exit-btn { background: #e74c3c; color: #fff; font-weight: bold; border: 1px solid #fff; padding: 5px 8px; border-radius: 8px; font-size: 10px; cursor: pointer; text-align: center; width: 75px; }
-        #joystick-zone { position: absolute; width: 70px; height: 70px; }
-        #red-zone-alert { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(231, 76, 60, 0.9); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: bold; z-index: 20; text-align: center; }
-        #garage-safe-status { display: none; position: absolute; top: 55px; left: 50%; transform: translateX(-50%); background: rgba(46, 204, 113, 0.9); color: #fff; padding: 5px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; z-index: 20; text-align: center; }
-        #active-powers-container { position: absolute; top: 80px; left: 8px; display: flex; flex-direction: column; gap: 4px; z-index: 5; }
-        #leaderboard-box { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.75); border: 1px solid #f1c40f; border-radius: 8px; padding: 6px; width: 130px; z-index: 5; font-size: 10px; color: #fff; }
-    <<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>dod.io</title>
-    <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; touch-action: none; }
         html, body { width: 100vw; height: 100vh; background-color: #0b0d12; color: #fff; font-family: Arial, sans-serif; overflow: hidden; }
         canvas { display: block; width: 100vw; height: 100vh; background: #0f131a; }
@@ -265,40 +244,21 @@
         { id: 'uk', name: 'UK', type: 'flags', price: 100, flagKey: 'uk', colors: ['#00247d', '#ffffff', '#cf142b'] },
         { id: 'germany', name: 'Germany', type: 'flags', price: 100, flagKey: 'germany', colors: ['#000000', '#dd0000', '#ffce00'] },
         { id: 'france', name: 'France', type: 'flags', price: 100, flagKey: 'france', colors: ['#002395', '#ffffff', '#ed2939'] }
-const garageRentOptions = [
-    { minutes: 10, price: 50 },
-    { minutes: 20, price: 100 },
-    { minutes: 30, price: 150 },
-    { minutes: 60, price: 230 }
-];
+    ];
 
-const garages = [
-    { x: MAP_CENTER - 10000, y: MAP_CENTER - 10000, size: 480 },
-    { x: MAP_CENTER + 10000, y: MAP_CENTER - 10000, size: 480 },
-    { x: MAP_CENTER - 10000, y: MAP_CENTER + 10000, size: 480 },
-    { x: MAP_CENTER + 10000, y: MAP_CENTER + 10000, size: 480 }
-];
+    const garageRentOptions = [
+        { minutes: 10, price: 50 },
+        { minutes: 20, price: 100 },
+        { minutes: 30, price: 150 },
+        { minutes: 60, price: 230 }
+    ];
 
-function playHeadshotSound() {
-    try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if(!AudioCtx) return;
-        const actx = new AudioCtx();
-        const osc = actx.createOscillator();
-        const gain = actx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, actx.currentTime);
-        gain.gain.setValueAtTime(0.8, actx.currentTime);
-        osc.connect(gain);
-        gain.connect(actx.destination);
-        osc.start();
-        osc.stop(actx.currentTime + 0.1);
-    } catch(e){}
-}
-
-function playHeadshotSound() {
-    try {
-
+    const garages = [
+        { x: MAP_CENTER - 10000, y: MAP_CENTER - 10000, size: 480 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER - 10000, size: 480 },
+        { x: MAP_CENTER - 10000, y: MAP_CENTER + 10000, size: 480 },
+        { x: MAP_CENTER + 10000, y: MAP_CENTER + 10000, size: 480 }
+    ];
 
     function playHeadshotSound() {
         try {
@@ -814,7 +774,6 @@ function playHeadshotSound() {
             baseCameraScale = Math.max(0.18, 0.35 - (player.sizeRadius - 28) * 0.002);
             cameraScale = isSniperActive ? 0.20 : baseCameraScale;
 
-            // پشکنینی هه‌موو گەراجەکان بە شێوەیەکی گشتی و ڕاست
             let inAnyGarage = false;
             garages.forEach(g => {
                 let half = g.size / 2;
@@ -823,7 +782,6 @@ function playHeadshotSound() {
                 }
             });
 
-            // کارپێکردنی دۆخی پاراستنی گەراج کاتێک کرێ هەبێت
             if(inAnyGarage && isGarageRented) {
                 isInsideGarageSafe = true;
             } else if(!inAnyGarage && isInsideGarageSafe) {
@@ -1000,7 +958,6 @@ function playHeadshotSound() {
             ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 14;
             ctx.strokeRect(g.x - half - 40, g.y - half - 40, g.size + 80, g.size + 80);
             
-            // پیشاندانی گەراج بە ڕەنگی سەوز کاتێک کرێیەکەی کارایە
             let activeGarageColor = isGarageRented ? 'rgba(46, 204, 113, 0.45)' : 'rgba(127, 140, 141, 0.35)';
             ctx.fillStyle = activeGarageColor; 
             ctx.fillRect(g.x - half, g.y - half, g.size, g.size);
@@ -1097,21 +1054,6 @@ function playHeadshotSound() {
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
     }
-    // کاتێک یاریزان ئایتمی خێرایی دەخوات
-function applySpeedBoost() {
-    // خێراییەکە دوو هێندە دەکەین
-    player.speed *= 2; 
-    
-    // زیادکردنی ٣ سەهم یان ئاراستە لە بەردەم مارەکە
-    for(let i = 1; i <= 3; i++) {
-        activePowers.push({
-            type: 'arrow_indicator',
-            offset: i * 15, // دووری نێوان سەهمەکان
-            duration: 5000 // ماوەی ماوەوەی سەهمەکان (٥ چرکە)
-        });
-    }
-}
-
 </script>
 </body>
 </html>
