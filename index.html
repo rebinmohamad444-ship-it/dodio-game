@@ -778,8 +778,14 @@
             garages.forEach(g => {
                 let half = g.size / 2;
                 // مارەکە تەنها ئەوکاتە سەلامەتە کە ڕێک و بەتەواوی لەناو چوارگۆشە سەوزەکەدا بێت
+                            let inAnyGarage = false;
+            garages.forEach(g => {
+                let half = g.size / 2;
                 if(player.x >= g.x - half && player.x <= g.x + half && player.y >= g.y - half && player.y <= g.y + half) {
                     inAnyGarage = true;
+                }
+            });
+
                 }
             });
 
