@@ -777,10 +777,15 @@
             let inAnyGarage = false;
             garages.forEach(g => {
                 let half = g.size / 2;
-                if(player.x >= g.x - half - 30 && player.x <= g.x + half + 30 && player.y >= g.y - half - 30 && player.y <= g.y + half + 30) {
+                            let inAnyGarage = false;
+            garages.forEach(g => {
+                let half = g.size / 2;
+                // فراوانکردنی سنووری پشکنینی ناو گەراج بۆ ئەوەی مارەکە بە ئاسانی بچێتە ژوورەوە
+                if(player.x >= g.x - half - 80 && player.x <= g.x + half + 80 && player.y >= g.y - half - 80 && player.y <= g.y + half + 80) {
                     inAnyGarage = true;
                 }
             });
+
 
             if(inAnyGarage && isGarageRented) {
                 isInsideGarageSafe = true;
