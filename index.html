@@ -810,8 +810,9 @@
             
             player.body.unshift({x: player.x, y: player.y});
 
-            let maxAllowedSegments = Math.min(1800, 60 + Math.floor((score * currentMultiplier) / 5));
-            while(player.body.length > maxAllowedSegments) player.body.pop();
+        let maxAllowedSegments = Math.min(400, 30 + Math.floor((score * currentMultiplier) / 25));
+while(player.body.length > maxAllowedSegments) player.body.pop();
+
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
             if(distFromCenter >= MAP_RADIUS - 50) {
@@ -866,7 +867,8 @@
                     document.getElementById('scoreVal').innerText = Math.floor(score);
                     f.eatenTime = Date.now();
                     f.x = -99999; f.y = -99999;
-                    if(player.sizeRadius < 55) player.sizeRadius += (0.15 * currentMultiplier);
+                    if(player.sizeRadius < 38) player.sizeRadius += (0.05 * currentMultiplier);
+
                 }
             });
 
