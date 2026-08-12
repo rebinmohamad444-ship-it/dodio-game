@@ -281,6 +281,23 @@ const garages = [
 
 function playHeadshotSound() {
     try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if(!AudioCtx) return;
+        const actx = new AudioCtx();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, actx.currentTime);
+        gain.gain.setValueAtTime(0.8, actx.currentTime);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.1);
+    } catch(e){}
+}
+
+function playHeadshotSound() {
+    try {
 
 
     function playHeadshotSound() {
