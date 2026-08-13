@@ -340,6 +340,100 @@ function drawAdvancedKurdistanSkin(ctx, x, y, radius, angle, isHead, isTail) {
         ctx.beginPath();
         ctx.arc(0, 0, radius, 0, Math.PI * 2);
         ctx.stroke();
+        function drawAdvancedFlagSkin(ctx, x, y, radius, angle, flagKey, isHead, isTail) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+
+    // درەوشانەوەی دەرەوە (Glow Effect)
+    ctx.shadowColor = flagKey === 'kurdish' ? '#e31b23' : '#3498db';
+    ctx.shadowBlur = 15;
+
+    if (isHead) {
+        // --- ١. کێشانی سەری مارەکە ---
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 1.1, 0, Math.PI * 2);
+        ctx.fillStyle = "#111";
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#ffd700";
+        ctx.stroke();
+
+        // وێنەی ئاڵای وڵات لەسەر سەر (ئەگەر هەبوو)
+        if (flagKey && loadedFlagImages[flagKey]) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(0, 0, radius * 1.05, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(loadedFlagImages[flagKey], -radius, -radius, radius * 2, radius * 2);
+            ctx.restore();
+        }
+
+        // چاوەکانی پشیلە (Cute Cat Eyes)
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(radius * 0.3, -radius * 0.4, radius * 0.35, 0, Math.PI * 2);
+        ctx.arc(radius * 0.3, radius * 0.4, radius * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#000000";
+        ctx.beginPath();
+        ctx.arc(radius * 0.35, -radius * 0.4, radius * 0.18, 0, Math.PI * 2);
+        ctx.arc(radius * 0.35, radius * 0.4, radius * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+
+        // تاجی پاشایەتی لەسەر سەر (Golden Crown)
+        ctx.fillStyle = "#ffd700";
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.4, -radius * 0.9);
+        ctx.lineTo(-radius * 0.6, -radius * 1.5);
+        ctx.lineTo(0, -radius * 1.1);
+        ctx.lineTo(radius * 0.6, -radius * 1.5);
+        ctx.lineTo(radius * 0.4, -radius * 0.9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#ff8c00";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+    } else if (isTail) {
+        // --- ٢. کێشانی کلکی مارەکە ---
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, 0);
+        ctx.quadraticCurveTo(-radius, -radius * 0.8, -radius * 1.5, 0);
+        ctx.quadraticCurveTo(-radius, radius * 0.8, radius * 1.2, 0);
+        ctx.closePath();
+
+        ctx.fillStyle = "#ffd700";
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+    } else {
+        // --- ٣. کێشانی جەستە بۆ هەموو ئاڵاکان ---
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        if (flagKey && loadedFlagImages[flagKey]) {
+            ctx.drawImage(loadedFlagImages[flagKey], -radius, -radius, radius * 2, radius * 2);
+        } else {
+            ctx.fillStyle = "#2ecc71";
+            ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
+        }
+
+        // چوارچێوەی درەوشاوە بۆ جەستە
+        ctx.strokeStyle = "rgba(255, 215, 0, 0.6)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    ctx.restore();
+}
+
     }
 
     ctx.restore();
