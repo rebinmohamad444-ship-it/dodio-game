@@ -13,7 +13,7 @@
 
         #radar-wrapper { position: absolute; top: 8px; left: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; z-index: 5; }
         #radar-canvas { width: 65px; height: 65px; background: rgba(0, 0, 0, 0.85); border: 1.5px solid #2ecc71; border-radius: 50%; }
-        #hud-stats { background: rgba(0,0,0,0.75); padding: 3px 6px; border-radius: 6px; border: 1px solid #2ecc71; font-size: 9px; text-align: left; width: 65px; }
+        #hud-stats { background: rgba(0,0,0,0.75); padding: 3px 6px; border-radius: 6px; border: 1.5px solid #2ecc71; font-size: 9px; text-align: left; width: 65px; }
         #emoji-reaction-box { display: flex; flex-direction: row; gap: 4px; margin-top: 2px; }
         .reaction-btn { width: 28px; height: 28px; background: rgba(0,0,0,0.8); border: 1px solid #f1c40f; border-radius: 50%; font-size: 14px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 0 4px rgba(0,0,0,0.5); }
         #left-bottom-container { position: absolute; bottom: 12px; left: 12px; display: flex; flex-direction: column; gap: 4px; z-index: 10; }
@@ -222,87 +222,145 @@
         loadedFlagImages[id] = img;
     });
 
-    function drawAdvancedFlagSkin(ctx, x, y, radius, angle, flagKey, isHead, isTail) {
+    function drawSnakeHead(p, angle, mainColor, radius, flagKey) {
         ctx.save();
-        ctx.translate(x, y);
+        ctx.translate(p.x, p.y);
         ctx.rotate(angle);
 
-        ctx.shadowColor = flagKey === 'kurdish' ? '#e31b23' : '#3498db';
-        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#d4af37';
+        ctx.shadowBlur = 12;
 
-        if (isHead) {
-            ctx.beginPath();
-            ctx.arc(0, 0, radius * 1.1, 0, Math.PI * 2);
-            ctx.fillStyle = "#111";
-            ctx.fill();
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = "#ffd700";
-            ctx.stroke();
+        ctx.fillStyle = '#b8860b';
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.8, 0);
+        ctx.quadraticCurveTo(radius * 0.8, -radius * 1.9, -radius * 1.2, -radius * 1.6);
+        ctx.quadraticCurveTo(-radius * 0.8, 0, -radius * 1.2, radius * 1.6);
+        ctx.quadraticCurveTo(radius * 0.8, radius * 1.9, radius * 1.8, 0);
+        ctx.closePath();
+        ctx.fill();
 
-            if (flagKey && loadedFlagImages[flagKey]) {
-                ctx.save();
+        let headGrad = ctx.createLinearGradient(-radius, 0, radius * 1.8, 0);
+        headGrad.addColorStop(0, '#8b0000');
+        headGrad.addColorStop(0.5, mainColor || '#e74c3c');
+        headGrad.addColorStop(1, '#ffd700');
+
+        ctx.fillStyle = headGrad;
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3.5;
+
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.8, 0);
+        ctx.lineTo(radius * 0.7, -radius * 1.35);
+        ctx.lineTo(-radius * 0.9, -radius * 1.1);
+        ctx.lineTo(-radius * 0.6, 0);
+        ctx.lineTo(-radius * 0.9, radius * 1.1);
+        ctx.lineTo(radius * 0.7, radius * 1.35);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+
+        ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)';
+        ctx.lineWidth = 2.5;
+        
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, -radius * 0.2);
+        ctx.quadraticCurveTo(radius * 0.3, -radius * 0.9, -radius * 0.4, -radius * 0.6);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, radius * 0.2);
+        ctx.quadraticCurveTo(radius * 0.3, radius * 0.9, -radius * 0.4, radius * 0.6);
+        ctx.stroke();
+
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.3, 0);
+        ctx.lineTo(radius * 0.6, -radius * 0.25);
+        ctx.lineTo(radius * 0.9, 0);
+        ctx.lineTo(radius * 0.6, radius * 0.25);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.shadowColor = '#ff0000';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#ff1100';
+
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.85, -radius * 0.45, radius * 0.35, radius * 0.18, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.85, radius * 0.45, radius * 0.35, radius * 0.18, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.9, -radius * 0.45, radius * 0.1, radius * 0.16, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(radius * 0.9, radius * 0.45, radius * 0.1, radius * 0.16, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.7, -radius * 0.2);
+        ctx.lineTo(radius * 2.0, -radius * 0.15);
+        ctx.lineTo(radius * 1.6, 0);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.7, radius * 0.2);
+        ctx.lineTo(radius * 2.0, radius * 0.15);
+        ctx.lineTo(radius * 1.6, 0);
+        ctx.fill();
+
+        let timeFactor = Date.now() * 0.012;
+        let tongueWiggle = Math.sin(timeFactor) * 8;
+        let tongueExtend = 22 + Math.abs(Math.cos(timeFactor * 0.5) * 14);
+
+        ctx.strokeStyle = "#ff0000";
+        ctx.lineWidth = 3.5;
+        
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.9, -radius * 0.1);
+        ctx.lineTo(radius * 1.9 + tongueExtend, -radius * 0.35 + tongueWiggle);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.9, radius * 0.1);
+        ctx.lineTo(radius * 1.9 + tongueExtend, radius * 0.35 - tongueWiggle);
+        ctx.stroke();
+
+        if(flagKey && loadedFlagImages[flagKey]) {
+            try {
+                ctx.globalAlpha = 0.5;
+                ctx.drawImage(loadedFlagImages[flagKey], -radius * 0.4, -radius * 0.6, radius * 1.0, radius * 1.2);
+                ctx.globalAlpha = 1.0;
+            } catch(e){}
+        }
+
+        if(activeEmojiText) {
+            ctx.font = `${radius * 2.2}px Arial`;
+            ctx.fillText(activeEmojiText, 0, -radius * 2.2);
+        }
+
+        if(isMagnetActive) {
+            let isBlinking = (Math.floor(Date.now() / 120) % 2 === 0);
+            ctx.strokeStyle = isBlinking ? '#f1c40f' : '#3498db';
+            ctx.lineWidth = isBlinking ? 4 : 2;
+            ctx.shadowColor = '#f1c40f'; ctx.shadowBlur = isBlinking ? 16 : 2;
+            for(let i = -2; i <= 2; i++) {
                 ctx.beginPath();
-                ctx.arc(0, 0, radius * 1.05, 0, Math.PI * 2);
-                ctx.clip();
-                ctx.drawImage(loadedFlagImages[flagKey], -radius, -radius, radius * 2, radius * 2);
-                ctx.restore();
+                ctx.arc(radius * 1.8, 0, radius * 1.5 + (i + 2) * 8, -Math.PI * 0.28, Math.PI * 0.28);
+                ctx.stroke();
             }
-
-            ctx.fillStyle = "#ffffff";
-            ctx.beginPath();
-            ctx.arc(radius * 0.3, -radius * 0.4, radius * 0.35, 0, Math.PI * 2);
-            ctx.arc(radius * 0.3, radius * 0.4, radius * 0.35, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = "#000000";
-            ctx.beginPath();
-            ctx.arc(radius * 0.35, -radius * 0.4, radius * 0.18, 0, Math.PI * 2);
-            ctx.arc(radius * 0.35, radius * 0.4, radius * 0.18, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = "#ffd700";
-            ctx.beginPath();
-            ctx.moveTo(-radius * 0.4, -radius * 0.9);
-            ctx.lineTo(-radius * 0.6, -radius * 1.5);
-            ctx.lineTo(0, -radius * 1.1);
-            ctx.lineTo(radius * 0.6, -radius * 1.5);
-            ctx.lineTo(radius * 0.4, -radius * 0.9);
-            ctx.closePath();
-            ctx.fill();
-            ctx.strokeStyle = "#ff8c00";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-        } else if (isTail) {
-            ctx.beginPath();
-            ctx.moveTo(radius * 1.2, 0);
-            ctx.quadraticCurveTo(-radius, -radius * 0.8, -radius * 1.5, 0);
-            ctx.quadraticCurveTo(-radius, radius * 0.8, radius * 1.2, 0);
-            ctx.closePath();
-
-            ctx.fillStyle = "#ffd700";
-            ctx.fill();
-            ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-        } else {
-            ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.clip();
-
-            if (flagKey && loadedFlagImages[flagKey]) {
-                ctx.drawImage(loadedFlagImages[flagKey], -radius, -radius, radius * 2, radius * 2);
-            } else {
-                ctx.fillStyle = "#2ecc71";
-                ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
-            }
-
-            ctx.strokeStyle = "rgba(255, 215, 0, 0.6)";
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(0, 0, radius, 0, Math.PI * 2);
-            ctx.stroke();
+            ctx.shadowBlur = 0;
         }
 
         ctx.restore();
@@ -317,19 +375,19 @@
         { id: 'free6', name: '🟠 Sunset Orange', type: 'free', colors: ['#e67e22', '#d35400'] },
         { id: 'free7', name: '⚪ Pure White', type: 'free', colors: ['#ffffff', '#bdc3c7'] },
         
-        { id: 'kurdish', name: 'Kurdistan', type: 'flags', price: 100, flagKey: 'kurdish' },
-        { id: 'spain', name: 'Spain', type: 'flags', price: 100, flagKey: 'spain' },
-        { id: 'brazil', name: 'Brazil', type: 'flags', price: 100, flagKey: 'brazil' },
-        { id: 'iraq', name: 'Iraq', type: 'flags', price: 100, flagKey: 'iraq' },
-        { id: 'turkey', name: 'Turkey', type: 'flags', price: 100, flagKey: 'turkey' },
-        { id: 'iran', name: 'Iran', type: 'flags', price: 100, flagKey: 'iran' },
-        { id: 'palestine', name: 'Palestine', type: 'flags', price: 100, flagKey: 'palestine' },
-        { id: 'saudi', name: 'Saudi Arabia', type: 'flags', price: 100, flagKey: 'saudi' },
-        { id: 'uae', name: 'UAE', type: 'flags', price: 100, flagKey: 'uae' },
-        { id: 'usa', name: 'USA', type: 'flags', price: 100, flagKey: 'usa' },
-        { id: 'uk', name: 'UK', type: 'flags', price: 100, flagKey: 'uk' },
-        { id: 'germany', name: 'Germany', type: 'flags', price: 100, flagKey: 'germany' },
-        { id: 'france', name: 'France', type: 'flags', price: 100, flagKey: 'france' }
+        { id: 'kurdish', name: 'Kurdistan', type: 'flags', price: 100, flagKey: 'kurdish', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
+        { id: 'spain', name: 'Spain', type: 'flags', price: 100, flagKey: 'spain', colors: ['#aa152b', '#f1bf00', '#aa152b'] },
+        { id: 'brazil', name: 'Brazil', type: 'flags', price: 100, flagKey: 'brazil', colors: ['#009c3b', '#ffdf00', '#002776'] },
+        { id: 'iraq', name: 'Iraq', type: 'flags', price: 100, flagKey: 'iraq', colors: ['#ff0000', '#ffffff', '#000000'] },
+        { id: 'turkey', name: 'Turkey', type: 'flags', price: 100, flagKey: 'turkey', colors: ['#e74c3c', '#ffffff'] },
+        { id: 'iran', name: 'Iran', type: 'flags', price: 100, flagKey: 'iran', colors: ['#239f40', '#ffffff', '#da0000'] },
+        { id: 'palestine', name: 'Palestine', type: 'flags', price: 100, flagKey: 'palestine', colors: ['#000000', '#ffffff', '#007a3d', '#e4312b'] },
+        { id: 'saudi', name: 'Saudi Arabia', type: 'flags', price: 100, flagKey: 'saudi', colors: ['#006c35', '#ffffff'] },
+        { id: 'uae', name: 'UAE', type: 'flags', price: 100, flagKey: 'uae', colors: ['#ff0000', '#00732f', '#ffffff', '#000000'] },
+        { id: 'usa', name: 'USA', type: 'flags', price: 100, flagKey: 'usa', colors: ['#b22234', '#ffffff', '#3c3b6e'] },
+        { id: 'uk', name: 'UK', type: 'flags', price: 100, flagKey: 'uk', colors: ['#00247d', '#ffffff', '#cf142b'] },
+        { id: 'germany', name: 'Germany', type: 'flags', price: 100, flagKey: 'germany', colors: ['#000000', '#dd0000', '#ffce00'] },
+        { id: 'france', name: 'France', type: 'flags', price: 100, flagKey: 'france', colors: ['#002395', '#ffffff', '#ed2939'] }
     ];
 
     const garageRentOptions = [
@@ -935,24 +993,26 @@
             
             for(let i = player.body.length - 1; i >= 2; i--) {
                 let p = player.body[i];
-                let isTail = (i === player.body.length - 1);
-                
-                if (skinObj.flagKey) {
-                    drawAdvancedFlagSkin(ctx, p.x, p.y, player.sizeRadius * 0.85, 0, skinObj.flagKey, false, isTail);
-                } else {
-                    ctx.fillStyle = skinObj.colors[i % skinObj.colors.length]; 
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); 
-                    ctx.fill();
+                let color = skinObj.colors ? skinObj.colors[i % skinObj.colors.length] : '#2ecc71';
+                ctx.fillStyle = color; 
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, player.sizeRadius * 0.85, 0, Math.PI*2); 
+                ctx.fill();
+
+                if(skinObj.flagKey && loadedFlagImages[skinObj.flagKey] && i % 3 === 0) {
+                    try {
+                        ctx.globalAlpha = 0.5;
+                        ctx.drawImage(loadedFlagImages[skinObj.flagKey], 
+                            p.x - player.sizeRadius * 0.7, 
+                            p.y - player.sizeRadius * 0.5, 
+                            player.sizeRadius * 1.4, 
+                            player.sizeRadius * 1.0
+                        );
+                        ctx.globalAlpha = 1.0;
+                    } catch(e){}
                 }
             }
-
-            let headSkin = skinObj.flagKey ? skinObj.flagKey : null;
-            if (skinObj.flagKey) {
-                drawAdvancedFlagSkin(ctx, player.body[0].x, player.body[0].y, player.sizeRadius, player.angle, headSkin, true, false);
-            } else {
-                drawSnakeHead(player.body[0], player.angle, skinObj.colors[0], player.sizeRadius, null);
-            }
+            drawSnakeHead(player.body[0], player.angle, skinObj.colors ? skinObj.colors[0] : '#2ecc71', player.sizeRadius, skinObj.flagKey);
         }
 
         bots.forEach(b => {
