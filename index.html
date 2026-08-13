@@ -221,30 +221,131 @@
         img.src = flagImageUrls[id];
         loadedFlagImages[id] = img;
     });
+function drawAdvancedKurdistanSkin(ctx, x, y, radius, angle, isHead, isTail) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
 
-    const skinsDatabase = [
-        { id: 'free1', name: '🟢 Lime Green', type: 'free', colors: ['#2ecc71', '#27ae60'] },
-        { id: 'free2', name: '🔵 Sky Blue', type: 'free', colors: ['#3498db', '#2980b9'] },
-        { id: 'free3', name: '🔴 Ruby Red', type: 'free', colors: ['#e74c3c', '#c0392b'] },
-        { id: 'free4', name: '🟡 Bright Yellow', type: 'free', colors: ['#f1c40f', '#f39c12'] },
-        { id: 'free5', name: '🟣 Royal Purple', type: 'free', colors: ['#9b59b6', '#8e44ad'] },
-        { id: 'free6', name: '🟠 Sunset Orange', type: 'free', colors: ['#e67e22', '#d35400'] },
-        { id: 'free7', name: '⚪ Pure White', type: 'free', colors: ['#ffffff', '#bdc3c7'] },
-        
-        { id: 'kurdish', name: 'Kurdistan', type: 'flags', price: 100, flagKey: 'kurdish', colors: ['#e74c3c', '#ffffff', '#2ecc71', '#f1c40f'] },
-        { id: 'spain', name: 'Spain', type: 'flags', price: 100, flagKey: 'spain', colors: ['#aa152b', '#f1bf00', '#aa152b'] },
-        { id: 'brazil', name: 'Brazil', type: 'flags', price: 100, flagKey: 'brazil', colors: ['#009c3b', '#ffdf00', '#002776'] },
-        { id: 'iraq', name: 'Iraq', type: 'flags', price: 100, flagKey: 'iraq', colors: ['#ff0000', '#ffffff', '#000000'] },
-        { id: 'turkey', name: 'Turkey', type: 'flags', price: 100, flagKey: 'turkey', colors: ['#e74c3c', '#ffffff'] },
-        { id: 'iran', name: 'Iran', type: 'flags', price: 100, flagKey: 'iran', colors: ['#239f40', '#ffffff', '#da0000'] },
-        { id: 'palestine', name: 'Palestine', type: 'flags', price: 100, flagKey: 'palestine', colors: ['#000000', '#ffffff', '#007a3d', '#e4312b'] },
-        { id: 'saudi', name: 'Saudi Arabia', type: 'flags', price: 100, flagKey: 'saudi', colors: ['#006c35', '#ffffff'] },
-        { id: 'uae', name: 'UAE', type: 'flags', price: 100, flagKey: 'uae', colors: ['#ff0000', '#00732f', '#ffffff', '#000000'] },
-        { id: 'usa', name: 'USA', type: 'flags', price: 100, flagKey: 'usa', colors: ['#b22234', '#ffffff', '#3c3b6e'] },
-        { id: 'uk', name: 'UK', type: 'flags', price: 100, flagKey: 'uk', colors: ['#00247d', '#ffffff', '#cf142b'] },
-        { id: 'germany', name: 'Germany', type: 'flags', price: 100, flagKey: 'germany', colors: ['#000000', '#dd0000', '#ffce00'] },
-        { id: 'france', name: 'France', type: 'flags', price: 100, flagKey: 'france', colors: ['#002395', '#ffffff', '#ed2939'] }
-    ];
+    // درەوشانەوەی دەرەوە (Glow Effect)
+    ctx.shadowColor = '#e31b23';
+    ctx.shadowBlur = 15;
+
+    if (isHead) {
+        // --- ١. کێشانی سەری مارەکە (Head Style) ---
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 1.1, 0, Math.PI * 2);
+        ctx.fillStyle = "#e31b23";
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "#ffd700";
+        ctx.stroke();
+
+        // بەشی ڕووی سپی و سەوزی ئاڵا لەسەر سەر
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 1.05, 0, Math.PI * 2);
+        ctx.clip();
+
+        // هێڵی سەرەوە (سوور)
+        ctx.fillStyle = "#e31b23";
+        ctx.fillRect(-radius * 1.5, -radius * 1.5, radius * 3, radius * 0.7);
+        // هێڵی ناوەڕاست (سپی)
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(-radius * 1.5, -radius * 0.35, radius * 3, radius * 0.7);
+        // هێڵی خوارەوە (سەوز)
+        ctx.fillStyle = "#169b45";
+        ctx.fillRect(-radius * 1.5, radius * 0.35, radius * 3, radius * 0.7);
+
+        // خۆری ئاڵا لە ناوەڕاستی سەردا
+        ctx.fillStyle = "#f6c900";
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // چاوەکانی پشیلە (Cute Cat Eyes)
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(radius * 0.3, -radius * 0.4, radius * 0.35, 0, Math.PI * 2);
+        ctx.arc(radius * 0.3, radius * 0.4, radius * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#000000";
+        ctx.beginPath();
+        ctx.arc(radius * 0.35, -radius * 0.4, radius * 0.18, 0, Math.PI * 2);
+        ctx.arc(radius * 0.35, radius * 0.4, radius * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+
+        // دەم و سمێڵی پشیلە
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(radius * 0.5, 0, radius * 0.15, 0, Math.PI);
+        ctx.stroke();
+
+        // تاجی پاشایەتی لەسەر سەر (Golden Crown)
+        ctx.fillStyle = "#ffd700";
+        ctx.beginPath();
+        ctx.moveTo(-radius * 0.4, -radius * 0.9);
+        ctx.lineTo(-radius * 0.6, -radius * 1.5);
+        ctx.lineTo(0, -radius * 1.1);
+        ctx.lineTo(radius * 0.6, -radius * 1.5);
+        ctx.lineTo(radius * 0.4, -radius * 0.9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = "#ff8c00";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+    } else if (isTail) {
+        // --- ٢. کێشانی کلکی مارەکە (Tail Style) ---
+        ctx.beginPath();
+        ctx.moveTo(radius * 1.2, 0);
+        ctx.quadraticCurveTo(-radius, -radius * 0.8, -radius * 1.5, 0);
+        ctx.quadraticCurveTo(-radius, radius * 0.8, radius * 1.2, 0);
+        ctx.closePath();
+
+        let tailGrad = ctx.createLinearGradient(-radius, 0, radius, 0);
+        tailGrad.addColorStop(0, '#169b45');
+        tailGrad.addColorStop(0.5, '#ffffff');
+        tailGrad.addColorStop(1, '#e31b23');
+        ctx.fillStyle = tailGrad;
+        ctx.fill();
+        ctx.strokeStyle = "#ffd700";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+    } else {
+        // --- ٣. کێشانی بەشەکانی جەستە (Body Segments) ---
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.fillStyle = "#e31b23";
+        ctx.fillRect(-radius, -radius, radius * 2, radius * 0.67);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(-radius, -radius * 0.33, radius * 2, radius * 0.66);
+        ctx.fillStyle = "#169b45";
+        ctx.fillRect(-radius, radius * 0.33, radius * 2, radius * 0.67);
+
+        // خۆری بچووک لەسەر هەموو پارچەیەکی جەستەدا
+        ctx.fillStyle = "#f6c900";
+        ctx.beginPath();
+        ctx.arc(0, 0, radius * 0.28, 0, Math.PI * 2);
+        ctx.fill();
+
+        // چوارچێوەی درەوشاوە بۆ جەستە
+        ctx.strokeStyle = "rgba(255, 215, 0, 0.6)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    ctx.restore();
+}
+
+      ];
 
     const garageRentOptions = [
         { minutes: 10, price: 50 },
