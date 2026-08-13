@@ -1060,6 +1060,34 @@
         renderPowerBadges(); updateLeaderboard();
         requestAnimationFrame(gameLoop);
     }
+    function drawKurdistanSkin(ctx, x, y, radius, angle) {
+    ctx.save();
+
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.clip();
+
+    // ئاڵای کوردستان
+    ctx.fillStyle = "#e31b23";
+    ctx.fillRect(-radius, -radius, radius * 2, radius * 0.67);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(-radius, -radius * 0.33, radius * 2, radius * 0.66);
+
+    ctx.fillStyle = "#169b45";
+    ctx.fillRect(-radius, radius * 0.33, radius * 2, radius * 0.67);
+
+    // خۆر
+    ctx.fillStyle = "#f6c900";
+    ctx.beginPath();
+    ctx.arc(0, 0, radius * 0.30, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
 </script>
 </body>
 </html>
