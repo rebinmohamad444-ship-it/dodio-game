@@ -808,13 +808,13 @@
 
             player.angle += diff * (isSteeringActive ? 18.0 : Math.max(3.5, 7.0 - (player.sizeRadius * 0.08))) * dt;
 
-            let moveSpeed = (manualSpeedBoost ? 760 : 420) * dt;
+            let moveSpeed = (manualSpeedBoost ? 550 : 320) * dt;
             player.x += Math.cos(player.angle) * moveSpeed;
             player.y += Math.sin(player.angle) * moveSpeed;
             
             player.body.unshift({x: player.x, y: player.y});
 
-            let maxAllowedSegments = Math.min(400, 30 + Math.floor((score * currentMultiplier) / 25));
+            let maxAllowedSegments = Math.min(250, 30 + Math.floor((score * currentMultiplier) / 40));
             while(player.body.length > maxAllowedSegments) player.body.pop();
 
             let distFromCenter = Math.hypot(player.x - MAP_CENTER, player.y - MAP_CENTER);
